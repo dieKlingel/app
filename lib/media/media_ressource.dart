@@ -18,7 +18,10 @@ class MediaRessource {
   }
 
   void close() {
-    _stream?.getTracks().forEach((track) => track.stop());
+    _stream?.getTracks().forEach((track) {
+      track.stop();
+    });
+    _stream?.dispose();
     _stream = null;
   }
 }

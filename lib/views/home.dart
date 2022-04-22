@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import '../media/media_ressource.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -10,7 +11,7 @@ class Home extends StatefulWidget {
 }
 
 class _Home extends State<Home> {
-  bool mytext = false;
+  MediaRessource mediaRessource = MediaRessource();
   final WebSocketChannel channel = WebSocketChannel.connect(
       Uri.parse("ws://dieklingel.com:8889/wsrs/room?key=dev-rtc"));
 
@@ -22,7 +23,6 @@ class _Home extends State<Home> {
       print(event);
     });
     localView.initialize();
-
     super.initState();
   }
 
@@ -50,18 +50,21 @@ class _Home extends State<Home> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     CupertinoButton(
-                      child: Text(mytext ? "true1" : "false1"),
+                      child: const Text("call"),
                       onPressed: () async {
-                        localView.srcObject =
-                            await navigator.mediaDevices.getUserMedia({
-                          'video': true,
-                          'audio': true,
+                        MediaStream? stream =
+                            await mediaRessource.open(true, true);
+                        setState(() {
+                          localView.srcObject = stream;
                         });
                       },
                     ),
                     CupertinoButton(
                       child: const Text("hang up"),
-                      onPressed: () {},
+                      onPressed: () {
+                        mediaRessource.close();
+                        print("a");
+                      },
                     )
                   ],
                 ),
