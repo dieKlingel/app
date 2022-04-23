@@ -63,9 +63,15 @@ class _Home extends State<Home> {
                     CupertinoButton(
                       child: const Text("call"),
                       onPressed: () async {
-                        await mediaRessource.open(true, true);
-                        await rtcClient?.invite("main",
-                            options: {"offerToReceiveVideo": true});
+                        await mediaRessource.open(true, false);
+                        await rtcClient?.invite(
+                          "main",
+                          options: {
+                            'mandatory': {
+                              'OfferToReceiveVideo': true
+                            } // https://github.com/flutter-webrtc/flutter-webrtc/blob/master/example/lib/src/data_channel_sample.dart
+                          },
+                        );
                       },
                     ),
                     CupertinoButton(
