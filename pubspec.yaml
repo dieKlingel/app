@@ -37,6 +37,7 @@ dependencies:
   english_words: ^4.0.0
   flutter_webrtc: ^0.8.5
   web_socket_channel: ^2.1.0
+  mqtt_client: ^9.6.7
 
 dev_dependencies:
   flutter_test:

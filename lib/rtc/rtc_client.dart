@@ -7,8 +7,8 @@ import '../signaling/signaling_message_type.dart';
 import '../signaling/signaling_client.dart';
 
 class RtcClient extends EventEmitter {
-  static const String media_received = "media_received";
-  static const String incomming_call = "incomming_call";
+  static const String mediaReceived = "media_received";
+  static const String incommingCall = "incomming_call";
   static const String offer = "offer";
 
   final SignalingClient _signalingClient;
@@ -104,7 +104,7 @@ class RtcClient extends EventEmitter {
   }
 
   void onTrackReceived(RTCTrackEvent event) {
-    emit(RtcClient.media_received, event.streams[0]);
+    emit(RtcClient.mediaReceived, event.streams[0]);
   }
 
   Future<void> invite(String other,
