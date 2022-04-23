@@ -1,6 +1,7 @@
+import 'package:dieklingel_app/rtc/rtc_client.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
+import '../signaling/signaling_client.dart';
 import '../media/media_ressource.dart';
 
 class Home extends StatefulWidget {
@@ -12,17 +13,27 @@ class Home extends StatefulWidget {
 
 class _Home extends State<Home> {
   MediaRessource mediaRessource = MediaRessource();
-  final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse("ws://dieklingel.com:8889/wsrs/room?key=dev-rtc"));
-
-  RTCVideoRenderer localView = RTCVideoRenderer();
+  SignalingClient signalingClient = SignalingClient();
+  RTCVideoRenderer remoteVideo = RTCVideoRenderer();
+  RtcClient? rtcClient;
 
   @override
   void initState() {
-    channel.stream.listen((event) {
-      print(event);
+    remoteVideo.initialize();
+    signalingClient.identifier = "kmayerflutter";
+    rtcClient = RtcClient(signalingClient, mediaRessource, {
+      "iceServers": {
+        "urls": ["stun:stun1.l.google.com:19302"]
+      }
     });
-    localView.initialize();
+    rtcClient?.addEventListener(RtcClient.media_received, (stream) {
+      print("track received");
+      setState(() {
+        remoteVideo.srcObject = stream;
+      });
+    });
+
+    signalingClient.connect("ws://dieklingel.com:8889/wsrs/room?key=dev-rtc");
     super.initState();
   }
 
@@ -40,7 +51,7 @@ class _Home extends State<Home> {
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.width / (16 / 9),
-                  child: RTCVideoView(localView),
+                  child: RTCVideoView(remoteVideo),
                 )),
             Align(
               alignment: Alignment.bottomCenter,
@@ -52,18 +63,15 @@ class _Home extends State<Home> {
                     CupertinoButton(
                       child: const Text("call"),
                       onPressed: () async {
-                        MediaStream? stream =
-                            await mediaRessource.open(true, true);
-                        setState(() {
-                          localView.srcObject = stream;
-                        });
+                        await mediaRessource.open(true, true);
+                        await rtcClient?.invite("main",
+                            options: {"offerToReceiveVideo": true});
                       },
                     ),
                     CupertinoButton(
                       child: const Text("hang up"),
                       onPressed: () {
-                        mediaRessource.close();
-                        print("a");
+                        rtcClient?.hangup();
                       },
                     )
                   ],
@@ -78,7 +86,7 @@ class _Home extends State<Home> {
 
   @override
   void dispose() {
-    localView.dispose();
+    remoteVideo.dispose();
     super.dispose();
   }
 }
