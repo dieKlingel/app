@@ -16,6 +16,8 @@ class _Home extends State<Home> {
   SignalingClient signalingClient = SignalingClient();
   RTCVideoRenderer remoteVideo = RTCVideoRenderer();
   RtcClient? rtcClient;
+  bool callIsActive = false;
+  bool micIsEnabled = false;
 
   @override
   void initState() {
@@ -47,12 +49,14 @@ class _Home extends State<Home> {
         child: Stack(
           children: [
             Align(
-                alignment: Alignment.topLeft,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.width / (16 / 9),
-                  child: RTCVideoView(remoteVideo),
-                )),
+              alignment: Alignment.topLeft,
+              /*child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.width / (16 / 9),
+                child: InteractiveViewer(child: RTCVideoView(remoteVideo)),
+              ),*/
+              child: InteractiveViewer(child: RTCVideoView(remoteVideo)),
+            ),
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
@@ -61,8 +65,21 @@ class _Home extends State<Home> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     CupertinoButton(
-                      child: const Text("call"),
+                      child: Icon(
+                        callIsActive
+                            ? CupertinoIcons.phone_arrow_down_left
+                            : CupertinoIcons.phone,
+                        size: 40,
+                      ),
                       onPressed: () async {
+                        if (callIsActive) {
+                          rtcClient?.hangup();
+                          setState(() {
+                            callIsActive = false;
+                            micIsEnabled = false;
+                          });
+                          return;
+                        }
                         await mediaRessource.open(true, false);
                         await rtcClient?.invite(
                           "main",
@@ -72,13 +89,41 @@ class _Home extends State<Home> {
                             } // https://github.com/flutter-webrtc/flutter-webrtc/blob/master/example/lib/src/data_channel_sample.dart
                           },
                         );
+                        setState(() {
+                          callIsActive = true;
+                          mediaRessource.stream?.getAudioTracks()[0].enabled =
+                              micIsEnabled = false;
+                        });
                       },
                     ),
                     CupertinoButton(
-                      child: const Text("hang up"),
+                      child: Icon(
+                        micIsEnabled
+                            ? CupertinoIcons.mic
+                            : CupertinoIcons.mic_slash,
+                        size: 40,
+                      ),
                       onPressed: () {
-                        rtcClient?.hangup();
+                        mediaRessource.stream?.getAudioTracks()[0].enabled =
+                            !micIsEnabled;
+                        setState(() {
+                          micIsEnabled = !micIsEnabled;
+                        });
                       },
+                    ),
+                    CupertinoButton(
+                      child: const Icon(
+                        CupertinoIcons.speaker_1,
+                        size: 40,
+                      ),
+                      onPressed: () {},
+                    ),
+                    CupertinoButton(
+                      child: const Icon(
+                        CupertinoIcons.lock,
+                        size: 40,
+                      ),
+                      onPressed: () {},
                     )
                   ],
                 ),
