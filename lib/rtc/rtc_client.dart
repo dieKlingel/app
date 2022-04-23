@@ -1,10 +1,10 @@
-import 'package:dieklingel_app/event/event_emitter.dart';
-import 'package:dieklingel_app/media/media_ressource.dart';
-import 'package:dieklingel_app/signaling/signaling_client.dart';
-import 'package:dieklingel_app/signaling/signaling_message.dart';
-import 'package:dieklingel_app/signaling/signaling_message_type.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+
+import '../event/event_emitter.dart';
+import '../media/media_ressource.dart';
+import '../signaling/signaling_message.dart';
+import '../signaling/signaling_message_type.dart';
+import '../signaling/signaling_client.dart';
 
 class RtcClient extends EventEmitter {
   static const String media_received = "media_received";

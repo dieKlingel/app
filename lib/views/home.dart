@@ -1,7 +1,9 @@
 import 'package:dieklingel_app/rtc/rtc_client.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+
 import '../signaling/signaling_client.dart';
+import '../signaling/signaling_client_ws.dart';
 import '../media/media_ressource.dart';
 
 class Home extends StatefulWidget {
@@ -13,7 +15,7 @@ class Home extends StatefulWidget {
 
 class _Home extends State<Home> {
   MediaRessource mediaRessource = MediaRessource();
-  SignalingClient signalingClient = SignalingClient();
+  SignalingClient signalingClient = SignalingClientWs();
   RTCVideoRenderer remoteVideo = RTCVideoRenderer();
   RtcClient? rtcClient;
   bool callIsActive = false;
