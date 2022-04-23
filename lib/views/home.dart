@@ -114,12 +114,12 @@ class _Home extends State<Home> {
                             }
                           : null,
                     ),
-                    CupertinoButton(
-                      child: const Icon(
+                    const CupertinoButton(
+                      child: Icon(
                         CupertinoIcons.speaker_1,
                         size: 40,
                       ),
-                      onPressed: () {},
+                      onPressed: null,
                     ),
                     CupertinoButton(
                       child: const Icon(
