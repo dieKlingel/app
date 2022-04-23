@@ -103,13 +103,16 @@ class _Home extends State<Home> {
                             : CupertinoIcons.mic_slash,
                         size: 40,
                       ),
-                      onPressed: () {
-                        mediaRessource.stream?.getAudioTracks()[0].enabled =
-                            !micIsEnabled;
-                        setState(() {
-                          micIsEnabled = !micIsEnabled;
-                        });
-                      },
+                      onPressed: callIsActive
+                          ? () {
+                              mediaRessource.stream
+                                  ?.getAudioTracks()[0]
+                                  .enabled = !micIsEnabled;
+                              setState(() {
+                                micIsEnabled = !micIsEnabled;
+                              });
+                            }
+                          : null,
                     ),
                     CupertinoButton(
                       child: const Icon(
