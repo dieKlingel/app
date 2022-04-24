@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -24,6 +25,7 @@ class _Home extends State<Home> {
 
   @override
   void initState() {
+    registerFcmPushNotifications();
     remoteVideo.initialize();
     signalingClient.identifier = "kmayerflutter";
 
@@ -48,6 +50,24 @@ class _Home extends State<Home> {
     signalingClient.connect("dieklingel.com");
     //signalingClient.connect("ws://dieklingel.com:8889/wsrs/room?key=dev-rtc");
     super.initState();
+  }
+
+  void registerFcmPushNotifications() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+    print('User granted permission: ${settings.authorizationStatus}');
+    String? token = await FirebaseMessaging.instance.getToken();
+    if (null != token) {
+      print("Token: $token");
+    }
   }
 
   @override
