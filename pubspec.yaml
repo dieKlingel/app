@@ -39,6 +39,7 @@ dependencies:
   web_socket_channel: ^2.1.0
   mqtt_client: ^9.6.7
   firebase_core: ^1.15.0
+  firebase_messaging: ^11.2.14
 
 dev_dependencies:
   flutter_test:
