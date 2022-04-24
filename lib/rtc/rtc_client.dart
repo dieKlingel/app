@@ -17,9 +17,11 @@ class RtcClient extends EventEmitter {
   String to = "";
   RTCPeerConnection? _rtcPeerConnection;
 
-  RtcClient(SignalingClient signalingClient, MediaRessource mediaRessource,
-      Map<String, dynamic> iceServers)
-      : _signalingClient = signalingClient,
+  RtcClient(
+    SignalingClient signalingClient,
+    MediaRessource mediaRessource,
+    Map<String, dynamic> iceServers,
+  )   : _signalingClient = signalingClient,
         _mediaRessource = mediaRessource,
         _iceServers = iceServers {
     _signalingClient.addEventListener(

@@ -26,11 +26,18 @@ class _Home extends State<Home> {
   void initState() {
     remoteVideo.initialize();
     signalingClient.identifier = "kmayerflutter";
-    rtcClient = RtcClient(signalingClient, mediaRessource, {
+
+    // TODO: platform specific implementation
+    var ice = {
+      "urls": ["stun:stun1.l.google.com:19302"]
+    };
+    /*var ice = {
       "iceServers": {
         "urls": ["stun:stun1.l.google.com:19302"]
       }
-    });
+    }*/
+
+    rtcClient = RtcClient(signalingClient, mediaRessource, ice);
     rtcClient?.addEventListener(RtcClient.mediaReceived, (stream) {
       print("track received");
       setState(() {
