@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:dieklingel_app/event/event_emitter.dart';
-import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 

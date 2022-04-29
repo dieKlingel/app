@@ -1,3 +1,5 @@
+import 'package:dieklingel_app/signaling/signaling_message.dart';
+import 'package:dieklingel_app/signaling/signaling_message_type.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -27,11 +29,23 @@ class _Home extends State<Home> {
   void initState() {
     registerFcmPushNotifications();
     remoteVideo.initialize();
-    signalingClient.identifier = "kmayerflutter";
+    signalingClient.identifier = "flutterapp";
+    signalingClient.addEventListener(
+        "broadcast", (data) => {print("listen object")});
 
     // TODO: platform specific implementation
-    var ice = {
+    /*var ice = {
       "urls": ["stun:stun1.l.google.com:19302"]
+    };*/
+    var ice = <String, dynamic>{
+      "iceServers": [
+        {"url": "stun:stun1.l.google.com:19302"},
+        {
+          'url': 'turn:192.158.29.39:3478?transport=tcp',
+          'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+          'username': '28224511:1379330808'
+        },
+      ]
     };
     /*var ice = {
       "iceServers": {
@@ -113,7 +127,7 @@ class _Home extends State<Home> {
                         }
                         await mediaRessource.open(true, false);
                         await rtcClient?.invite(
-                          "main",
+                          "flutterbase",
                           options: {
                             'mandatory': {
                               'OfferToReceiveVideo': true
@@ -157,7 +171,15 @@ class _Home extends State<Home> {
                         CupertinoIcons.lock,
                         size: 40,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        SignalingMessage message = SignalingMessage();
+                        message.type = SignalingMessageType.leave;
+                        message.from = "Debugger";
+                        message.to = "noreply";
+                        message.data = {};
+                        print("Hallo");
+                        signalingClient.send(message);
+                      },
                     )
                   ],
                 ),
