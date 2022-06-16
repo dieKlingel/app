@@ -1,3 +1,4 @@
+import 'package:dieklingel_app/messaging/messaging_client.dart';
 import 'package:dieklingel_app/signaling/signaling_message.dart';
 import 'package:dieklingel_app/signaling/signaling_message_type.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -5,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import '../rtc/rtc_client.dart';
-import '../signaling/signaling_client_mqtt.dart';
 import '../signaling/signaling_client.dart';
 import '../media/media_ressource.dart';
 
@@ -17,53 +17,52 @@ class Home extends StatefulWidget {
 }
 
 class _Home extends State<Home> {
-  MediaRessource mediaRessource = MediaRessource();
-  SignalingClient signalingClient = SignalingClientMqtt();
-  //SignalingClientWs();
-  RTCVideoRenderer remoteVideo = RTCVideoRenderer();
-  RtcClient? rtcClient;
+  late final MessagingClient _messagingClient;
+  late final RtcClient _rtcClient;
+  late final SignalingClient _signalingClient;
+  final MediaRessource _mediaRessource = MediaRessource();
+  final RTCVideoRenderer _remoteVideo = RTCVideoRenderer();
   bool callIsActive = false;
   bool micIsEnabled = false;
 
   @override
   void initState() {
     registerFcmPushNotifications();
-    remoteVideo.initialize();
-    signalingClient.identifier = "flutterapp";
-    signalingClient.addEventListener(
-        "broadcast", (data) => {print("listen object")});
+    _remoteVideo.initialize();
+    init();
+    super.initState();
+  }
 
-    // TODO: platform specific implementation
-    /*var ice = {
-      "urls": ["stun:stun1.l.google.com:19302"]
-    };*/
+  void init() async {
+    // init messaging client
+    _messagingClient = MessagingClient("dieklingel.com", 1883);
+    await _messagingClient.connect();
+    // init signaling client
+    String uid = "main-door:9873";
+    _signalingClient = SignalingClient.fromMessagingClient(
+      _messagingClient,
+      "com.dieklingel/$uid/rtc/signaling",
+      "app",
+    );
+    // init rtc client
     var ice = <String, dynamic>{
       "iceServers": [
         {"url": "stun:stun1.l.google.com:19302"},
         {
-          'url': 'turn:192.158.29.39:3478?transport=tcp',
-          'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
-          'username': '28224511:1379330808'
+          'url': 'turn:dieklingel.com:3478',
+          'credential': '12345',
+          'username': 'guest'
         },
       ]
     };
-    /*var ice = {
-      "iceServers": {
-        "urls": ["stun:stun1.l.google.com:19302"]
-      }
-    }*/
-
-    rtcClient = RtcClient(signalingClient, mediaRessource, ice);
-    rtcClient?.addEventListener(RtcClient.mediaReceived, (stream) {
-      print("track received");
-      setState(() {
-        remoteVideo.srcObject = stream;
-      });
+    _rtcClient = RtcClient(
+      _signalingClient,
+      _mediaRessource,
+      ice,
+    );
+    _rtcClient.addEventListener("mediatrack-received", (track) {
+      _remoteVideo.srcObject = track;
     });
-
-    signalingClient.connect("dieklingel.com");
-    //signalingClient.connect("ws://dieklingel.com:8889/wsrs/room?key=dev-rtc");
-    super.initState();
   }
 
   void registerFcmPushNotifications() async {
@@ -100,7 +99,7 @@ class _Home extends State<Home> {
                 height: MediaQuery.of(context).size.width / (16 / 9),
                 child: InteractiveViewer(child: RTCVideoView(remoteVideo)),
               ),*/
-              child: InteractiveViewer(child: RTCVideoView(remoteVideo)),
+              child: InteractiveViewer(child: RTCVideoView(_remoteVideo)),
             ),
             Align(
               alignment: Alignment.bottomCenter,
@@ -118,16 +117,16 @@ class _Home extends State<Home> {
                       ),
                       onPressed: () async {
                         if (callIsActive) {
-                          rtcClient?.hangup();
+                          _rtcClient.hangup();
                           setState(() {
                             callIsActive = false;
                             micIsEnabled = false;
                           });
                           return;
                         }
-                        await mediaRessource.open(true, false);
-                        await rtcClient?.invite(
-                          "flutterbase",
+                        await _mediaRessource.open(true, true);
+                        await _rtcClient.invite(
+                          "main-door:9873",
                           options: {
                             'mandatory': {
                               'OfferToReceiveVideo': true
@@ -136,7 +135,7 @@ class _Home extends State<Home> {
                         );
                         setState(() {
                           callIsActive = true;
-                          mediaRessource.stream?.getAudioTracks()[0].enabled =
+                          _mediaRessource.stream?.getAudioTracks()[0].enabled =
                               micIsEnabled = false;
                         });
                       },
@@ -150,7 +149,7 @@ class _Home extends State<Home> {
                       ),
                       onPressed: callIsActive
                           ? () {
-                              mediaRessource.stream
+                              _mediaRessource.stream
                                   ?.getAudioTracks()[0]
                                   .enabled = !micIsEnabled;
                               setState(() {
@@ -166,20 +165,12 @@ class _Home extends State<Home> {
                       ),
                       onPressed: null,
                     ),
-                    CupertinoButton(
-                      child: const Icon(
+                    const CupertinoButton(
+                      child: Icon(
                         CupertinoIcons.lock,
                         size: 40,
                       ),
-                      onPressed: () {
-                        SignalingMessage message = SignalingMessage();
-                        message.type = SignalingMessageType.leave;
-                        message.from = "Debugger";
-                        message.to = "noreply";
-                        message.data = {};
-                        print("Hallo");
-                        signalingClient.send(message);
-                      },
+                      onPressed: null,
                     )
                   ],
                 ),
@@ -193,7 +184,7 @@ class _Home extends State<Home> {
 
   @override
   void dispose() {
-    remoteVideo.dispose();
+    _remoteVideo.dispose();
     super.dispose();
   }
 }
