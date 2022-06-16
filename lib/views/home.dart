@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dieklingel_app/messaging/messaging_client.dart';
 import 'package:dieklingel_app/signaling/signaling_message.dart';
 import 'package:dieklingel_app/signaling/signaling_message_type.dart';
@@ -22,12 +24,12 @@ class _Home extends State<Home> {
   late final SignalingClient _signalingClient;
   final MediaRessource _mediaRessource = MediaRessource();
   final RTCVideoRenderer _remoteVideo = RTCVideoRenderer();
+  String uid = "main-door:9873";
   bool callIsActive = false;
   bool micIsEnabled = false;
 
   @override
   void initState() {
-    registerFcmPushNotifications();
     _remoteVideo.initialize();
     init();
     super.initState();
@@ -63,6 +65,8 @@ class _Home extends State<Home> {
     _rtcClient.addEventListener("mediatrack-received", (track) {
       _remoteVideo.srcObject = track;
     });
+    // init firebase
+    registerFcmPushNotifications();
   }
 
   void registerFcmPushNotifications() async {
@@ -80,6 +84,15 @@ class _Home extends State<Home> {
     String? token = await FirebaseMessaging.instance.getToken();
     if (null != token) {
       print("Token: $token");
+      Map<String, dynamic> message = {
+        "hash": "app",
+        "token": token,
+      };
+      String raw = jsonEncode(message);
+      _messagingClient.send(
+        "com.dieklingel/$uid/firebase/notification/token/add",
+        raw,
+      );
     }
   }
 
