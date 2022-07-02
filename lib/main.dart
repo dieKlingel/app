@@ -1,4 +1,4 @@
-import 'package:dieklingel_app/views/home.dart';
+import 'package:dieklingel_app/views/home_view.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const CupertinoApp(
       home: CupertinoPageScaffold(
-        child: Home(),
+        child: HomeView(),
       ),
     );
   }

@@ -1,8 +1,9 @@
 import 'dart:convert';
 
-import 'package:dieklingel_app/messaging/messaging_client.dart';
-import 'package:dieklingel_app/signaling/signaling_message.dart';
-import 'package:dieklingel_app/signaling/signaling_message_type.dart';
+import 'package:dieklingel_app/views/settings/connection_configuration_view.dart';
+
+import '../messaging/messaging_client.dart';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -10,15 +11,16 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../rtc/rtc_client.dart';
 import '../signaling/signaling_client.dart';
 import '../media/media_ressource.dart';
+import '../views/settings/connections.dart';
 
-class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+class HomeView extends StatefulWidget {
+  const HomeView({Key? key}) : super(key: key);
 
   @override
-  _Home createState() => _Home();
+  _HomeView createState() => _HomeView();
 }
 
-class _Home extends State<Home> {
+class _HomeView extends State<HomeView> {
   late final MessagingClient _messagingClient;
   late final RtcClient _rtcClient;
   late final SignalingClient _signalingClient;
@@ -33,6 +35,14 @@ class _Home extends State<Home> {
     _remoteVideo.initialize();
     init();
     super.initState();
+    Future(() {
+      Navigator.push(
+        context,
+        CupertinoPageRoute(
+          builder: (context) => ConnectionConfigurationView(),
+        ),
+      );
+    });
   }
 
   void init() async {
@@ -85,7 +95,7 @@ class _Home extends State<Home> {
     if (null != token) {
       print("Token: $token");
       Map<String, dynamic> message = {
-        "hash": "app",
+        "hash": "#kai",
         "token": token,
       };
       String raw = jsonEncode(message);
@@ -137,7 +147,7 @@ class _Home extends State<Home> {
                           });
                           return;
                         }
-                        await _mediaRessource.open(true, true);
+                        await _mediaRessource.open(true, false);
                         await _rtcClient.invite(
                           "main-door:9873",
                           options: {
