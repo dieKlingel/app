@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:dieklingel_app/views/settings/connection_configuration_view.dart';
+import 'package:dieklingel_app/views/settings/connections_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../components/connection_configuration.dart';
@@ -13,7 +13,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../rtc/rtc_client.dart';
 import '../signaling/signaling_client.dart';
 import '../media/media_ressource.dart';
-import '../views/settings/connections.dart';
+import 'settings/connections_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -37,23 +37,6 @@ class _HomeView extends State<HomeView> {
     _remoteVideo.initialize();
     init();
     super.initState();
-    Future(() async {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? rawConfiguration = prefs.getString("configuration");
-      if (null != rawConfiguration) {
-        await Navigator.push(
-          context,
-          CupertinoPageRoute(
-            builder: (context) => ConnectionConfigurationView(
-              backButtonEnabled: false,
-            ),
-          ),
-        );
-      } else {
-        //ConnectionConfiguration configuration =
-        //    ConnectionConfiguration.fromJson(jsonDecode(rawConfiguration));
-      }
-    });
   }
 
   void init() async {
@@ -132,7 +115,7 @@ class _HomeView extends State<HomeView> {
                 context,
                 CupertinoPageRoute(
                   builder: (BuildContext context) =>
-                      ConnectionConfigurationView(),
+                      ConnectionsView(),
                 ),
               );
             }),

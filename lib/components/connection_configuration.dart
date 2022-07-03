@@ -34,4 +34,15 @@ class ConnectionConfiguration {
   String toString() {
     return jsonEncode(toJson());
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! ConnectionConfiguration) {
+      return false;
+    }
+    return (other.description == description);
+  }
+
+  @override
+  int get hashCode => description.hashCode;
 }
