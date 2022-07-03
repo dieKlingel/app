@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:dieklingel_app/views/settings/connection_configuration_view.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../components/connection_configuration.dart';
 import '../messaging/messaging_client.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -35,13 +37,22 @@ class _HomeView extends State<HomeView> {
     _remoteVideo.initialize();
     init();
     super.initState();
-    Future(() {
-      Navigator.push(
-        context,
-        CupertinoPageRoute(
-          builder: (context) => ConnectionConfigurationView(),
-        ),
-      );
+    Future(() async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? rawConfiguration = prefs.getString("configuration");
+      if (null != rawConfiguration) {
+        await Navigator.push(
+          context,
+          CupertinoPageRoute(
+            builder: (context) => ConnectionConfigurationView(
+              backButtonEnabled: false,
+            ),
+          ),
+        );
+      } else {
+        //ConnectionConfiguration configuration =
+        //    ConnectionConfiguration.fromJson(jsonDecode(rawConfiguration));
+      }
     });
   }
 
@@ -109,8 +120,22 @@ class _HomeView extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text("dieKlingel"),
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text("dieKlingel"),
+        trailing: CupertinoButton(
+            child: const Icon(
+              CupertinoIcons.settings,
+              size: 16,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                CupertinoPageRoute(
+                  builder: (BuildContext context) =>
+                      ConnectionConfigurationView(),
+                ),
+              );
+            }),
       ),
       child: SafeArea(
         child: Stack(
@@ -122,7 +147,9 @@ class _HomeView extends State<HomeView> {
                 height: MediaQuery.of(context).size.width / (16 / 9),
                 child: InteractiveViewer(child: RTCVideoView(remoteVideo)),
               ),*/
-              child: InteractiveViewer(child: RTCVideoView(_remoteVideo)),
+              child: InteractiveViewer(
+                child: RTCVideoView(_remoteVideo),
+              ),
             ),
             Align(
               alignment: Alignment.bottomCenter,
