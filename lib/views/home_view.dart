@@ -1,9 +1,4 @@
 import 'dart:convert';
-
-import 'package:dieklingel_app/views/settings/connections_view.dart';
-
-import '../messaging/messaging_client.dart';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -11,7 +6,9 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../rtc/rtc_client.dart';
 import '../signaling/signaling_client.dart';
 import '../media/media_ressource.dart';
-import 'settings/connections_view.dart';
+import '../views/settings/connections_view.dart';
+import '../messaging/messaging_client.dart';
+import './settings/connections_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);

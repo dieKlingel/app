@@ -1,13 +1,11 @@
 import 'dart:convert';
-import 'dart:ffi';
-
-import 'package:dieklingel_app/components/radio_box.dart';
-import 'package:dieklingel_app/views/settings/connection_configuration_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../components/connection_configuration.dart';
+import '../../components/radio_box.dart';
+import '../../views/settings/connection_configuration_view.dart';
 
 class ConnectionsView extends StatefulWidget {
   const ConnectionsView({Key? key}) : super(key: key);

@@ -1,17 +1,16 @@
 import 'dart:convert';
-
-import 'package:dieklingel_app/components/connection_configuration.dart';
-import 'package:dieklingel_app/views/home_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../components/simple_alert_dialog.dart';
+import '../../components/connection_configuration.dart';
+import '../../views/home_view.dart';
 
 class ConnectionConfigurationView extends StatelessWidget {
   ConnectionConfigurationView({
     Key? key,
     this.configuration,
   }) : super(key: key) {
-    //descriptionIsEditable = (null == configuration);
     descriptionController.text = configuration?.description ?? "";
     serverUrlController.text = configuration?.url ?? "";
     usernameController.text = configuration?.username ?? "";
@@ -24,7 +23,7 @@ class ConnectionConfigurationView extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController channelPrefixController = TextEditingController();
-  ConnectionConfiguration? configuration;
+  late final ConnectionConfiguration? configuration;
 
   void addConfiguration(BuildContext context) async {
     if (descriptionController.text.isEmpty) {
