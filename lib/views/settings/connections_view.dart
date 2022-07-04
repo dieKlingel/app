@@ -63,9 +63,9 @@ class _ConnectionsView extends State<ConnectionsView> {
       navigationBar: CupertinoNavigationBar(
         middle: const Text("dieKlingel"),
         trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
           child: const Icon(
             CupertinoIcons.add,
-            size: 16,
           ),
           onPressed: () async {
             await Navigator.push(
