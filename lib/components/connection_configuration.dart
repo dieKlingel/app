@@ -9,6 +9,7 @@ class ConnectionConfiguration {
   String? username;
   String? password;
   String? channelPrefix;
+  bool isDefault;
 
   ConnectionConfiguration({
     this.description = "",
@@ -16,6 +17,7 @@ class ConnectionConfiguration {
     this.channelPrefix,
     this.username,
     this.password,
+    this.isDefault = false,
   }) : key = UniqueKey();
 
   ConnectionConfiguration.fromJson(Map<String, dynamic> json)
@@ -24,7 +26,8 @@ class ConnectionConfiguration {
         url = json['url'],
         username = json['username'],
         password = json['password'],
-        channelPrefix = json['channel_prefix'];
+        channelPrefix = json['channel_prefix'],
+        isDefault = json['isDefault'];
 
   Map<String, dynamic> toJson() => {
         '_key': key.toString(),
@@ -33,6 +36,7 @@ class ConnectionConfiguration {
         'username': username,
         'password': password,
         'channel_prefix': channelPrefix,
+        'isDefault': isDefault,
       };
 
   @override

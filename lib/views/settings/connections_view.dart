@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ffi';
 
+import 'package:dieklingel_app/components/radio_box.dart';
 import 'package:dieklingel_app/views/settings/connection_configuration_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class _ConnectionsView extends State<ConnectionsView> {
     refreshList();
   }
 
+  Key? selectedConfigurationKey;
   List<ConnectionConfiguration> configurations =
       List<ConnectionConfiguration>.empty(growable: true);
 
@@ -46,6 +48,12 @@ class _ConnectionsView extends State<ConnectionsView> {
     List<ConnectionConfiguration> configurations = await getConfigurations();
     setState(() {
       this.configurations = configurations;
+      selectedConfigurationKey = configurations
+          .firstWhere(
+            (element) => element.isDefault,
+            orElse: () => configurations.first,
+          )
+          .key;
     });
   }
 
@@ -115,14 +123,34 @@ class _ConnectionsView extends State<ConnectionsView> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(10),
-                      child: Text(
-                        configurations[i].description,
-                        style: TextStyle(
-                          color: CupertinoDynamicColor.withBrightness(
-                            color: CupertinoColors.black,
-                            darkColor: CupertinoColors.white,
-                          ).resolveFrom(context),
-                        ),
+                      child: Row(
+                        children: [
+                          RadioBox(
+                            value:
+                                configuration.key != selectedConfigurationKey,
+                            onChanged: (state) {
+                              setState(() {
+                                configurations
+                                    .firstWhere((element) =>
+                                        element.key == selectedConfigurationKey)
+                                    .isDefault = false;
+                                selectedConfigurationKey = configuration.key;
+                                configuration.isDefault = true;
+                                print(configurations);
+                                setConfigurations(configurations);
+                              });
+                            },
+                          ),
+                          Text(
+                            configurations[i].description,
+                            style: TextStyle(
+                              color: const CupertinoDynamicColor.withBrightness(
+                                color: CupertinoColors.black,
+                                darkColor: CupertinoColors.white,
+                              ).resolveFrom(context),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     CupertinoButton(

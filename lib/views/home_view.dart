@@ -1,9 +1,7 @@
 import 'dart:convert';
 
 import 'package:dieklingel_app/views/settings/connections_view.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../components/connection_configuration.dart';
 import '../messaging/messaging_client.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -106,19 +104,20 @@ class _HomeView extends State<HomeView> {
       navigationBar: CupertinoNavigationBar(
         middle: const Text("dieKlingel"),
         trailing: CupertinoButton(
-            child: const Icon(
-              CupertinoIcons.settings,
-              size: 16,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                CupertinoPageRoute(
-                  builder: (BuildContext context) =>
-                      ConnectionsView(),
-                ),
-              );
-            }),
+          padding: EdgeInsets.zero,
+          child: const Icon(
+            CupertinoIcons.text_badge_plus,
+          ),
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              CupertinoPageRoute(
+                builder: (BuildContext context) => const ConnectionsView(),
+              ),
+            );
+            // refresh the connection here
+          },
+        ),
       ),
       child: SafeArea(
         child: Stack(
@@ -208,7 +207,7 @@ class _HomeView extends State<HomeView> {
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
