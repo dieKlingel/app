@@ -134,7 +134,6 @@ class _ConnectionsView extends State<ConnectionsView> {
                                     .isDefault = false;
                                 selectedConfigurationKey = configuration.key;
                                 configuration.isDefault = true;
-                                print(configurations);
                                 setConfigurations(configurations);
                               });
                             },
