@@ -23,7 +23,7 @@ class ConnectionConfigurationView extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController channelPrefixController = TextEditingController();
-  late final ConnectionConfiguration? configuration;
+  final ConnectionConfiguration? configuration;
 
   void addConfiguration(BuildContext context) async {
     if (descriptionController.text.isEmpty) {
@@ -42,24 +42,25 @@ class ConnectionConfigurationView extends StatelessWidget {
       );
       return;
     }
-    configuration ??= ConnectionConfiguration();
-    configuration!.description = descriptionController.text;
-    configuration!.url = serverUrlController.text;
-    configuration!.channelPrefix = channelPrefixController.text.isEmpty
+    ConnectionConfiguration configuration =
+        this.configuration ?? ConnectionConfiguration();
+    configuration.description = descriptionController.text;
+    configuration.url = serverUrlController.text;
+    configuration.channelPrefix = channelPrefixController.text.isEmpty
         ? null
         : channelPrefixController.text;
-    configuration!.username =
+    configuration.username =
         usernameController.text.isEmpty ? null : usernameController.text;
-    configuration!.password =
+    configuration.password =
         passwordController.text.isEmpty ? null : passwordController.text;
 
     List<ConnectionConfiguration> configurations = await getConfigurations();
     if (configurations.contains(configuration)) {
-      int index = configurations.indexOf(configuration!);
-      configurations.remove(configuration!);
-      configurations.insert(index, configuration!);
+      int index = configurations.indexOf(configuration);
+      configurations.remove(configuration);
+      configurations.insert(index, configuration);
     } else {
-      configurations.add(configuration!);
+      configurations.add(configuration);
     }
     await setConfigurations(configurations);
 
