@@ -9,9 +9,8 @@ import '../../components/simple_alert_dialog.dart';
 class ConnectionConfigurationView extends StatelessWidget {
   ConnectionConfigurationView({
     Key? key,
-    ConnectionConfiguration? configuration,
-  })  : descriptionIsEditable = (configuration == null),
-        super(key: key) {
+    this.configuration,
+  }) : super(key: key) {
     //descriptionIsEditable = (null == configuration);
     descriptionController.text = configuration?.description ?? "";
     serverUrlController.text = configuration?.url ?? "";
@@ -25,50 +24,44 @@ class ConnectionConfigurationView extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController channelPrefixController = TextEditingController();
-  final bool descriptionIsEditable;
+  ConnectionConfiguration? configuration;
 
   void addConfiguration(BuildContext context) async {
     if (descriptionController.text.isEmpty) {
       await displaySimpleAlertDialog(
         context,
-        Text("Error"),
-        Text("Please enter a description"),
+        const Text("Error"),
+        const Text("Please enter a description"),
       );
       return;
     }
     if (serverUrlController.text.isEmpty) {
       await displaySimpleAlertDialog(
         context,
-        Text("Error"),
-        Text("Please enter a server url"),
+        const Text("Error"),
+        const Text("Please enter a server url"),
       );
       return;
     }
-    ConnectionConfiguration configuration = ConnectionConfiguration(
-      descriptionController.text,
-      serverUrlController.text,
-      channelPrefixController.text,
-      username:
-          usernameController.text.isEmpty ? null : usernameController.text,
-      password:
-          passwordController.text.isEmpty ? null : passwordController.text,
-    );
+    configuration ??= ConnectionConfiguration();
+    configuration!.description = descriptionController.text;
+    configuration!.url = serverUrlController.text;
+    configuration!.channelPrefix = channelPrefixController.text.isEmpty
+        ? null
+        : channelPrefixController.text;
+    configuration!.username =
+        usernameController.text.isEmpty ? null : usernameController.text;
+    configuration!.password =
+        passwordController.text.isEmpty ? null : passwordController.text;
 
     List<ConnectionConfiguration> configurations = await getConfigurations();
     if (configurations.contains(configuration)) {
-      if (descriptionIsEditable) {
-        displaySimpleAlertDialog(
-          context,
-          const Text("Fehler"),
-          const Text(
-            "Eine Konfiguration mit dieser Bescreibung existiert schon!",
-          ),
-        );
-        return;
-      }
-      configurations.remove(configuration);
+      int index = configurations.indexOf(configuration!);
+      configurations.remove(configuration!);
+      configurations.insert(index, configuration!);
+    } else {
+      configurations.add(configuration!);
     }
-    configurations.add(configuration);
     await setConfigurations(configurations);
 
     if (Navigator.canPop(context)) {
@@ -119,7 +112,6 @@ class ConnectionConfigurationView extends StatelessWidget {
                 CupertinoTextFormFieldRow(
                   prefix: const Text("Description"),
                   placeholder: "Description",
-                  enabled: descriptionIsEditable,
                   controller: descriptionController,
                 ),
               ],

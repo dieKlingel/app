@@ -78,13 +78,24 @@ class _ConnectionsView extends State<ConnectionsView> {
           itemBuilder: (BuildContext context, int index) {
             ///if (index.isOdd) return const Divider();
             int i = index; //~/ 2;
+            ConnectionConfiguration configuration = configurations[i];
             return Container(
               decoration: BoxDecoration(
                 border: Border(
                   top: i == 0
-                      ? BorderSide(color: Colors.grey.shade300)
+                      ? BorderSide(
+                          color: const CupertinoDynamicColor.withBrightness(
+                            color: CupertinoColors.lightBackgroundGray,
+                            darkColor: CupertinoColors.secondaryLabel,
+                          ).resolveFrom(context),
+                        )
                       : BorderSide.none,
-                  bottom: BorderSide(color: Colors.grey.shade300),
+                  bottom: BorderSide(
+                    color: const CupertinoDynamicColor.withBrightness(
+                      color: CupertinoColors.lightBackgroundGray,
+                      darkColor: CupertinoColors.secondaryLabel,
+                    ).resolveFrom(context),
+                  ),
                 ),
               ),
               child: Dismissible(
@@ -98,7 +109,7 @@ class _ConnectionsView extends State<ConnectionsView> {
                     ),
                   ),
                 ),
-                key: UniqueKey(),
+                key: configuration.key,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -119,15 +130,16 @@ class _ConnectionsView extends State<ConnectionsView> {
                         CupertinoIcons.forward,
                         color: Colors.grey.shade500,
                       ),
-                      onPressed: () {
-                        Navigator.push(
+                      onPressed: () async {
+                        await Navigator.push(
                           context,
                           CupertinoPageRoute(
                             builder: (context) => ConnectionConfigurationView(
-                              configuration: configurations[i],
+                              configuration: configuration,
                             ),
                           ),
                         );
+                        refreshList();
                       },
                     ),
                   ],
@@ -136,12 +148,18 @@ class _ConnectionsView extends State<ConnectionsView> {
                   configurations.removeAt(i);
                   await setConfigurations(configurations);
                   if (configurations.isEmpty) {
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => ConnectionConfigurationView(),
-                        ),
-                        (route) => false);
+                    Navigator.popUntil(context, (route) {
+                      if (!route.isFirst) {
+                        Navigator.replaceRouteBelow(
+                          context,
+                          anchorRoute: route,
+                          newRoute: CupertinoPageRoute(
+                            builder: (context) => ConnectionConfigurationView(),
+                          ),
+                        );
+                      }
+                      return route.isFirst;
+                    });
                   } else {
                     refreshList();
                   }
