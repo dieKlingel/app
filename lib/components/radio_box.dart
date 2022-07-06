@@ -27,7 +27,7 @@ class RadioBox extends StatelessWidget {
     return CupertinoButton(
       padding: EdgeInsets.zero,
       child: Icon(
-        value ? CupertinoIcons.circle : CupertinoIcons.check_mark_circled,
+        value ? CupertinoIcons.check_mark_circled : CupertinoIcons.circle,
       ),
       onPressed: (onChanged == null)
           ? null
