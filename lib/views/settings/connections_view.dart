@@ -7,6 +7,8 @@ import '../../components/connection_configuration.dart';
 import '../../components/radio_box.dart';
 import '../../views/settings/connection_configuration_view.dart';
 
+import '../../globals.dart' as app;
+
 class ConnectionsView extends StatefulWidget {
   const ConnectionsView({Key? key}) : super(key: key);
 
@@ -15,45 +17,41 @@ class ConnectionsView extends StatefulWidget {
 }
 
 class _ConnectionsView extends State<ConnectionsView> {
-  _ConnectionsView() : super() {
-    refreshList();
-  }
+  _ConnectionsView() : super();
 
-  Key? selectedConfigurationKey;
-  List<ConnectionConfiguration> configurations =
-      List<ConnectionConfiguration>.empty(growable: true);
+  Key selectedConfigurationKey = app.defaultConnectionConfiguration.key;
+  List<ConnectionConfiguration> configurations = app.connectionConfigurations;
 
-  Future<List<ConnectionConfiguration>> getConfigurations() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> rawConnectionConfig = prefs.getStringList("configuration") ??
-        List<String>.empty(growable: true);
-    List<ConnectionConfiguration> connectionConfig = rawConnectionConfig
-        .map((config) => ConnectionConfiguration.fromJson(jsonDecode(config)))
-        .toList(growable: true);
-    return connectionConfig;
-  }
-
-  Future<void> setConfigurations(
-    List<ConnectionConfiguration> configuration,
-  ) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> rawConnectionConfig =
-        configuration.map((config) => config.toString()).toList();
-    prefs.setStringList("configuration", rawConnectionConfig);
-  }
-
-  void refreshList() async {
-    List<ConnectionConfiguration> configurations = await getConfigurations();
+  Future<void> _goToConnectionConfigurationView({
+    ConnectionConfiguration? configuration,
+  }) async {
+    await Navigator.push(
+      context,
+      CupertinoPageRoute(
+        builder: (BuildContext context) => ConnectionConfigurationView(
+          configuration: configuration,
+        ),
+      ),
+    );
     setState(() {
-      this.configurations = configurations;
-      selectedConfigurationKey = configurations
-          .firstWhere(
-            (element) => element.isDefault,
-            orElse: () => configurations.first,
-          )
-          .key;
+      configurations = app.connectionConfigurations;
+      selectedConfigurationKey = app.defaultConnectionConfiguration.key;
     });
   }
+
+  BorderSide get _listViewBorderSide => BorderSide(
+        color: const CupertinoDynamicColor.withBrightness(
+          color: CupertinoColors.lightBackgroundGray,
+          darkColor: CupertinoColors.secondaryLabel,
+        ).resolveFrom(context),
+      );
+
+  TextStyle get _listViewTextStyle => TextStyle(
+        color: const CupertinoDynamicColor.withBrightness(
+          color: CupertinoColors.black,
+          darkColor: CupertinoColors.white,
+        ).resolveFrom(context),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -65,16 +63,7 @@ class _ConnectionsView extends State<ConnectionsView> {
           child: const Icon(
             CupertinoIcons.add,
           ),
-          onPressed: () async {
-            await Navigator.push(
-              context,
-              CupertinoPageRoute(
-                builder: (BuildContext context) =>
-                    ConnectionConfigurationView(),
-              ),
-            );
-            refreshList();
-          },
+          onPressed: _goToConnectionConfigurationView,
         ),
       ),
       child: SafeArea(
@@ -82,26 +71,12 @@ class _ConnectionsView extends State<ConnectionsView> {
         child: ListView.builder(
           itemCount: configurations.length,
           itemBuilder: (BuildContext context, int index) {
-            ///if (index.isOdd) return const Divider();
-            int i = index; //~/ 2;
-            ConnectionConfiguration configuration = configurations[i];
+            ConnectionConfiguration configuration = configurations[index];
             return Container(
               decoration: BoxDecoration(
                 border: Border(
-                  top: i == 0
-                      ? BorderSide(
-                          color: const CupertinoDynamicColor.withBrightness(
-                            color: CupertinoColors.lightBackgroundGray,
-                            darkColor: CupertinoColors.secondaryLabel,
-                          ).resolveFrom(context),
-                        )
-                      : BorderSide.none,
-                  bottom: BorderSide(
-                    color: const CupertinoDynamicColor.withBrightness(
-                      color: CupertinoColors.lightBackgroundGray,
-                      darkColor: CupertinoColors.secondaryLabel,
-                    ).resolveFrom(context),
-                  ),
+                  top: index == 0 ? _listViewBorderSide : BorderSide.none,
+                  bottom: _listViewBorderSide,
                 ),
               ),
               child: Dismissible(
@@ -125,7 +100,7 @@ class _ConnectionsView extends State<ConnectionsView> {
                         children: [
                           RadioBox(
                             value:
-                                configuration.key != selectedConfigurationKey,
+                                configuration.key == selectedConfigurationKey,
                             onChanged: (state) {
                               setState(() {
                                 configurations
@@ -134,18 +109,13 @@ class _ConnectionsView extends State<ConnectionsView> {
                                     .isDefault = false;
                                 selectedConfigurationKey = configuration.key;
                                 configuration.isDefault = true;
-                                setConfigurations(configurations);
+                                app.connectionConfigurations = configurations;
                               });
                             },
                           ),
                           Text(
-                            configurations[i].description,
-                            style: TextStyle(
-                              color: const CupertinoDynamicColor.withBrightness(
-                                color: CupertinoColors.black,
-                                darkColor: CupertinoColors.white,
-                              ).resolveFrom(context),
-                            ),
+                            configuration.description,
+                            style: _listViewTextStyle,
                           ),
                         ],
                       ),
@@ -155,23 +125,15 @@ class _ConnectionsView extends State<ConnectionsView> {
                         CupertinoIcons.forward,
                         color: Colors.grey.shade500,
                       ),
-                      onPressed: () async {
-                        await Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                            builder: (context) => ConnectionConfigurationView(
-                              configuration: configuration,
-                            ),
-                          ),
-                        );
-                        refreshList();
-                      },
+                      onPressed: () => _goToConnectionConfigurationView(
+                        configuration: configuration,
+                      ),
                     ),
                   ],
                 ),
                 onDismissed: (DismissDirection direction) async {
-                  configurations.removeAt(i);
-                  await setConfigurations(configurations);
+                  configurations.remove(configuration);
+                  app.connectionConfigurations = configurations;
                   if (configurations.isEmpty) {
                     Navigator.popUntil(context, (route) {
                       if (!route.isFirst) {
@@ -186,7 +148,11 @@ class _ConnectionsView extends State<ConnectionsView> {
                       return route.isFirst;
                     });
                   } else {
-                    refreshList();
+                    setState(() {
+                      configurations = app.connectionConfigurations;
+                      selectedConfigurationKey =
+                          app.defaultConnectionConfiguration.key;
+                    });
                   }
                 },
               ),
