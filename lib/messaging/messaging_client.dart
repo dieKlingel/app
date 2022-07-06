@@ -4,8 +4,8 @@ import 'package:mqtt_client/mqtt_server_client.dart';
 import '../event/event_emitter.dart';
 
 class MessagingClient extends EventEmitter {
-  final String hostname;
-  final int port;
+  String hostname;
+  int port;
   MqttClient? _client;
 
   MessagingClient(this.hostname, this.port);
@@ -47,19 +47,17 @@ class MessagingClient extends EventEmitter {
     client.setProtocolV311();
     client.onConnected = () {};
     client.onDisconnected = () {};
-    try {
-      await client.connect();
-      client.updates?.listen((List<MqttReceivedMessage<MqttMessage>>? c) {
-        MqttPublishMessage rec = c![0].payload as MqttPublishMessage;
-        String topic = c[0].topic;
-        String raw =
-            MqttPublishPayload.bytesToStringAsString(rec.payload.message);
-        emit("message", raw);
-        emit("message:$topic", raw);
-      });
-    } catch (exception) {
-      print("could not connect tho the broker $hostname:$port; $exception");
-    }
+
+    await client.connect();
+    client.updates?.listen((List<MqttReceivedMessage<MqttMessage>>? c) {
+      MqttPublishMessage rec = c![0].payload as MqttPublishMessage;
+      String topic = c[0].topic;
+      String raw =
+          MqttPublishPayload.bytesToStringAsString(rec.payload.message);
+      emit("message", raw);
+      emit("message:$topic", raw);
+    });
+
     _client = client;
   }
 
