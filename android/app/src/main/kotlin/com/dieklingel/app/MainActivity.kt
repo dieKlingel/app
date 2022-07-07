@@ -1,4 +1,4 @@
-package com.example.dieklingel_app
+package com.dieklingel.app
 
 import io.flutter.embedding.android.FlutterActivity
 
