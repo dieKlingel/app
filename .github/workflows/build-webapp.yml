@@ -1,0 +1,24 @@
+
+name: build-webapp
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-flutter:
+    runs-on: ubuntu-latest
+    env:
+        REPO: self
+        BRANCH: gh-pages
+        FOLDER: build/web
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        MESSAGE: "Build: ({sha}) {msg}"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '2.18.0'
+          channel: 'master'
+      - run: flutter pub get
+      - run: flutter build web
+      - uses: s0/git-publish-subdir-action@develop
