@@ -31,9 +31,6 @@ class SignalingClient extends EventEmitter {
           "error",
           "could not convert the message into a signaling message;$exception",
         );
-        print(
-          "could not convert the message into a signaling message;$exception",
-        );
       }
     });
   }

@@ -4,6 +4,7 @@ import 'package:dieklingel_app/components/connection_configuration.dart';
 import 'package:dieklingel_app/components/simple_alert_dialog.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import '../rtc/rtc_client.dart';
@@ -45,8 +46,11 @@ class _HomeView extends State<HomeView> {
   void init() async {
     closeCurrentConnections();
     await openConnectionsTo(app.defaultConnectionConfiguration);
-    // TODO: implement push notifications for web
-    // registerFcmPushNotifications();
+    if (kIsWeb) {
+      // TODO: implement push notifications for web
+    } else {
+      registerFcmPushNotifications();
+    }
   }
 
   final Map<String, dynamic> _ice = {
@@ -71,9 +75,20 @@ class _HomeView extends State<HomeView> {
   }
 
   Future<void> openConnectionsTo(ConnectionConfiguration configuration) async {
+    if (null == configuration.uri) {
+      /*await displaySimpleAlertDialog(
+        context,
+        const Text("Error"),
+        const Text("Please set an uri in configuration"),
+      );*/
+      return;
+    }
+    String scheme = configuration.uri!.scheme == "mqtt"
+        ? ""
+        : configuration.uri!.scheme + "://";
     _messagingClient = MessagingClient(
-      configuration.url,
-      9001,
+      "$scheme${configuration.uri!.host}",
+      configuration.uri!.port,
     );
     try {
       await _messagingClient?.connect();
@@ -92,7 +107,7 @@ class _HomeView extends State<HomeView> {
     _signalingClient = SignalingClient.fromMessagingClient(
       _messagingClient!,
       "${channelPrefix}rtc/signaling",
-      "app1",
+      randomId(10),
     );
     // --
     _rtcClient = RtcClient(

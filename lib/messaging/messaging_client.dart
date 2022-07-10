@@ -1,5 +1,6 @@
 import 'package:mqtt_client/mqtt_client.dart';
-import 'mqtt_client_factory.dart';
+import 'mqtt_server_client_factory.dart'
+    if (dart.library.js) 'mqtt_browser_client_factory.dart';
 import '../event/event_emitter.dart';
 
 class MessagingClient extends EventEmitter {

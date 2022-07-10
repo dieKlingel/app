@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class ConnectionConfiguration {
   final Key key;
   String description;
-  String url;
+  Uri? uri;
   String? username;
   String? password;
   String? channelPrefix;
@@ -13,7 +13,7 @@ class ConnectionConfiguration {
 
   ConnectionConfiguration({
     this.description = "",
-    this.url = "",
+    this.uri,
     this.channelPrefix,
     this.username,
     this.password,
@@ -23,7 +23,7 @@ class ConnectionConfiguration {
   ConnectionConfiguration.fromJson(Map<String, dynamic> json)
       : key = Key(json['_key']),
         description = json['description'],
-        url = json['url'],
+        uri = null != json['uri'] ? Uri.parse(json['uri']) : null,
         username = json['username'],
         password = json['password'],
         channelPrefix = json['channel_prefix'],
@@ -32,7 +32,7 @@ class ConnectionConfiguration {
   Map<String, dynamic> toJson() => {
         '_key': key.toString(),
         'description': description,
-        'url': url,
+        'uri': uri.toString(),
         'username': username,
         'password': password,
         'channel_prefix': channelPrefix,
