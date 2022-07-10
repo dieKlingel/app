@@ -177,8 +177,11 @@ class _HomeView extends State<HomeView> {
       //"main-door:9873",
       name,
       options: {
+        'offerToReceiveVideo': 1, // this works on web
+        // https://webrtc.github.io/samples/src/content/peerconnection/create-offer/
+        // https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/create-offer/js/main.js
         'mandatory': {
-          'OfferToReceiveVideo': true
+          'OfferToReceiveVideo': true, // this wors on mobile
         } // https://github.com/flutter-webrtc/flutter-webrtc/blob/master/example/lib/src/data_channel_sample.dart
       },
     );
