@@ -12,7 +12,7 @@ class ConnectionConfigurationView extends StatelessWidget {
     this.configuration,
   }) : super(key: key) {
     descriptionController.text = configuration?.description ?? "";
-    serverUrlController.text = configuration?.url ?? "";
+    serverUrlController.text = configuration?.uri.toString() ?? "";
     usernameController.text = configuration?.username ?? "";
     passwordController.text = configuration?.password ?? "";
     channelPrefixController.text = configuration?.channelPrefix ?? "";
@@ -45,7 +45,27 @@ class ConnectionConfigurationView extends StatelessWidget {
     ConnectionConfiguration configuration =
         this.configuration ?? ConnectionConfiguration();
     configuration.description = descriptionController.text;
-    configuration.url = serverUrlController.text;
+    //configuration.url = serverUrlController.text;
+    Uri uri = Uri.parse(serverUrlController.text);
+    if (!uri.hasScheme || !uri.hasPort || uri.host.isEmpty) {
+      await displaySimpleAlertDialog(
+        context,
+        const Text("Error"),
+        const Text(
+          "Please provide a full uri: mqtt://server.dieklingel.com:9001/",
+        ),
+      );
+      return;
+    }
+    if (!uri.hasPort) {
+      await displaySimpleAlertDialog(
+        context,
+        const Text("Error"),
+        const Text("Please add a port :9001/"),
+      );
+      return;
+    }
+    configuration.uri = uri;
     configuration.channelPrefix = channelPrefixController.text.isEmpty
         ? null
         : channelPrefixController.text;

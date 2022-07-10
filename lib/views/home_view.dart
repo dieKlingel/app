@@ -4,8 +4,8 @@ import 'package:dieklingel_app/components/connection_configuration.dart';
 import 'package:dieklingel_app/components/simple_alert_dialog.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../rtc/rtc_client.dart';
 import '../signaling/signaling_client.dart';
@@ -46,7 +46,11 @@ class _HomeView extends State<HomeView> {
   void init() async {
     closeCurrentConnections();
     await openConnectionsTo(app.defaultConnectionConfiguration);
-    registerFcmPushNotifications();
+    if (kIsWeb) {
+      // TODO: implement push notifications for web
+    } else {
+      registerFcmPushNotifications();
+    }
   }
 
   final Map<String, dynamic> _ice = {
@@ -71,9 +75,20 @@ class _HomeView extends State<HomeView> {
   }
 
   Future<void> openConnectionsTo(ConnectionConfiguration configuration) async {
+    if (null == configuration.uri) {
+      /*await displaySimpleAlertDialog(
+        context,
+        const Text("Error"),
+        const Text("Please set an uri in configuration"),
+      );*/
+      return;
+    }
+    String scheme = configuration.uri!.scheme == "mqtt"
+        ? ""
+        : configuration.uri!.scheme + "://";
     _messagingClient = MessagingClient(
-      configuration.url,
-      1883,
+      "$scheme${configuration.uri!.host}",
+      configuration.uri!.port,
     );
     try {
       await _messagingClient?.connect();
@@ -92,7 +107,7 @@ class _HomeView extends State<HomeView> {
     _signalingClient = SignalingClient.fromMessagingClient(
       _messagingClient!,
       "${channelPrefix}rtc/signaling",
-      "app1",
+      randomId(10),
     );
     // --
     _rtcClient = RtcClient(
@@ -101,7 +116,10 @@ class _HomeView extends State<HomeView> {
       _ice,
     );
     _rtcClient?.addEventListener("mediatrack-received", (track) {
-      _remoteVideo.srcObject = track;
+      print((track as MediaStream).getVideoTracks());
+      setState(() {
+        _remoteVideo.srcObject = track;
+      });
     });
     setState(() {
       _mqttIsConnected = true;
@@ -174,8 +192,11 @@ class _HomeView extends State<HomeView> {
       //"main-door:9873",
       name,
       options: {
+        'offerToReceiveVideo': 1, // this works on web
+        // https://webrtc.github.io/samples/src/content/peerconnection/create-offer/
+        // https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/create-offer/js/main.js
         'mandatory': {
-          'OfferToReceiveVideo': true
+          'OfferToReceiveVideo': true, // this wors on mobile
         } // https://github.com/flutter-webrtc/flutter-webrtc/blob/master/example/lib/src/data_channel_sample.dart
       },
     );
