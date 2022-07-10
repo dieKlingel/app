@@ -1,6 +1,5 @@
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:mqtt_client/mqtt_server_client.dart';
-
+import 'mqtt_client_factory.dart';
 import '../event/event_emitter.dart';
 
 class MessagingClient extends EventEmitter {
@@ -41,7 +40,7 @@ class MessagingClient extends EventEmitter {
         "the client has to be disconnected, before in can be connected",
       );
     }
-    MqttServerClient client = MqttServerClient(hostname, "");
+    MqttClient client = MqttClientFactory.create(hostname, "");
     client.port = port;
     client.keepAlivePeriod = 20;
     client.setProtocolV311();

@@ -5,7 +5,6 @@ import 'package:dieklingel_app/components/simple_alert_dialog.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../rtc/rtc_client.dart';
 import '../signaling/signaling_client.dart';
@@ -46,7 +45,8 @@ class _HomeView extends State<HomeView> {
   void init() async {
     closeCurrentConnections();
     await openConnectionsTo(app.defaultConnectionConfiguration);
-    registerFcmPushNotifications();
+    // TODO: implement push notifications for web
+    // registerFcmPushNotifications();
   }
 
   final Map<String, dynamic> _ice = {
@@ -73,7 +73,7 @@ class _HomeView extends State<HomeView> {
   Future<void> openConnectionsTo(ConnectionConfiguration configuration) async {
     _messagingClient = MessagingClient(
       configuration.url,
-      1883,
+      9001,
     );
     try {
       await _messagingClient?.connect();
@@ -101,7 +101,10 @@ class _HomeView extends State<HomeView> {
       _ice,
     );
     _rtcClient?.addEventListener("mediatrack-received", (track) {
-      _remoteVideo.srcObject = track;
+      print((track as MediaStream).getVideoTracks());
+      setState(() {
+        _remoteVideo.srcObject = track;
+      });
     });
     setState(() {
       _mqttIsConnected = true;
