@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:dieklingel_app/components/connection_configuration.dart';
 import 'package:dieklingel_app/components/simple_alert_dialog.dart';
+import 'package:dieklingel_app/views/settings/settings_view.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -55,11 +56,36 @@ class _HomeView extends State<HomeView> {
 
   final Map<String, dynamic> _ice = {
     "iceServers": [
-      {"url": "stun:stun1.l.google.com:19302"},
-      {
+      /*{
+        "url": "stun:stun1.l.google.com:19302",
+      },*/
+      /*{
         'url': 'turn:dieklingel.com:3478',
         'credential': '12345',
         'username': 'guest'
+      },*/
+      {
+        "urls": "stun:openrelay.metered.ca:80",
+      },
+      {
+        'url': 'turn:dieklingel.com:3478',
+        'credential': '12345',
+        'username': 'guest',
+      },
+      {
+        "urls": "turn:openrelay.metered.ca:80",
+        "username": "openrelayproject",
+        "credential": "openrelayproject",
+      },
+      {
+        "url": "turn:openrelay.metered.ca:443",
+        "username": "openrelayproject",
+        "credential": "openrelayproject",
+      },
+      {
+        "url": "turn:openrelay.metered.ca:443?transport=tcp",
+        "username": "openrelayproject",
+        "credential": "openrelayproject",
       },
     ]
   };
@@ -159,7 +185,8 @@ class _HomeView extends State<HomeView> {
     await Navigator.push(
       context,
       CupertinoPageRoute(
-        builder: (BuildContext context) => const ConnectionsView(),
+        builder: (BuildContext context) => SettingsView(),
+        //builder: (BuildContext context) => const ConnectionsView(),
       ),
     );
     openConnectionsTo(app.defaultConnectionConfiguration);
@@ -192,7 +219,7 @@ class _HomeView extends State<HomeView> {
       //"main-door:9873",
       name,
       options: {
-        'offerToReceiveVideo': 1, // this works on web
+        'offerToReceiveVideo': true, // this works on web
         // https://webrtc.github.io/samples/src/content/peerconnection/create-offer/
         // https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/create-offer/js/main.js
         'mandatory': {
