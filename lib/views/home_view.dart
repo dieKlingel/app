@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:dieklingel_app/components/connection_configuration.dart';
 import 'package:dieklingel_app/components/simple_alert_dialog.dart';
-import 'package:dieklingel_app/views/settings/settings_view.dart';
+import 'package:dieklingel_app/views/settings/settings_view_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -11,9 +11,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../rtc/rtc_client.dart';
 import '../signaling/signaling_client.dart';
 import '../media/media_ressource.dart';
-import '../views/settings/connections_view.dart';
 import '../messaging/messaging_client.dart';
-import './settings/connections_view.dart';
 
 import '../globals.dart' as app;
 
@@ -136,10 +134,26 @@ class _HomeView extends State<HomeView> {
       randomId(10),
     );
     // --
+    List<Map<String, dynamic>> iceServers = List.empty(growable: true);
+    app.iceConfigurations.forEach(((element) {
+      Map<String, dynamic> b = element.toJson();
+      b.remove("_key");
+      if (b["username"] != null && b["username"]!.isEmpty) {
+        b.remove("username");
+      }
+      if (b["credential"] != null && b["credential"]!.isEmpty) {
+        b.remove("credential");
+      }
+      iceServers.add(b);
+    }));
+    Map<String, dynamic> ice = {
+      "iceServers": iceServers,
+    };
+    // --
     _rtcClient = RtcClient(
       _signalingClient!,
       _mediaRessource,
-      _ice,
+      ice,
     );
     _rtcClient?.addEventListener("mediatrack-received", (track) {
       print((track as MediaStream).getVideoTracks());
@@ -185,7 +199,7 @@ class _HomeView extends State<HomeView> {
     await Navigator.push(
       context,
       CupertinoPageRoute(
-        builder: (BuildContext context) => SettingsView(),
+        builder: (BuildContext context) => const SettingsViewPage(),
         //builder: (BuildContext context) => const ConnectionsView(),
       ),
     );
