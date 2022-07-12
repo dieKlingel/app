@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:dieklingel_app/components/state_builder.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -53,14 +55,16 @@ class _ConnectionsView extends State<ConnectionsView> {
         ).resolveFrom(context),
       );
 
+  void rebuild(dynamic data) {
+    setState(() {
+      configurations = app.connectionConfigurations;
+      selectedConfigurationKey = app.defaultConnectionConfiguration.key;
+    });
+  }
+
   @override
   void initState() {
-    widget.dataBuilder?.addEventListener("rebuild", (data) {
-      setState(() {
-        configurations = app.connectionConfigurations;
-        selectedConfigurationKey = app.defaultConnectionConfiguration.key;
-      });
-    });
+    widget.dataBuilder?.addEventListener("rebuild", rebuild);
     super.initState();
   }
 
@@ -156,5 +160,11 @@ class _ConnectionsView extends State<ConnectionsView> {
         );
       },
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    widget.dataBuilder?.removeEventListener("rebuild", rebuild);
   }
 }
