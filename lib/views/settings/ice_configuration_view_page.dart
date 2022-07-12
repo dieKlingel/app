@@ -77,11 +77,12 @@ class IceConfigurationViewPage extends StatelessWidget {
               children: [
                 CupertinoTextFormFieldRow(
                   prefix: const Text("Url"),
-                  placeholder: "stun:stun.server.com",
+                  placeholder: "stun:stun.dieklingel.com:3478",
                   controller: urlsController,
                 ),
                 CupertinoTextFormFieldRow(
                   prefix: const Text("Username"),
+                  placeholder: "Max",
                   controller: usernameController,
                 ),
                 CupertinoTextFormFieldRow(
@@ -93,7 +94,7 @@ class IceConfigurationViewPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(20),
               child: CupertinoButton.filled(
-                child: const Text("Speichern"),
+                child: const Text("Save"),
                 onPressed: () {
                   addConfiguration(context);
                 },

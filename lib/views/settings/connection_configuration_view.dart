@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../components/simple_alert_dialog.dart';
@@ -51,7 +52,7 @@ class ConnectionConfigurationView extends StatelessWidget {
         context,
         const Text("Error"),
         const Text(
-          "Please provide a full uri: mqtt://server.dieklingel.com:9001/",
+          "Please provide a full uri: mqtt://server.dieklingel.com:1883/",
         ),
       );
       return;
@@ -60,7 +61,7 @@ class ConnectionConfigurationView extends StatelessWidget {
       await displaySimpleAlertDialog(
         context,
         const Text("Error"),
-        const Text("Please add a port :9001/"),
+        const Text("Please add a port :1883/"),
       );
       return;
     }
@@ -130,7 +131,7 @@ class ConnectionConfigurationView extends StatelessWidget {
               children: [
                 CupertinoTextFormFieldRow(
                   prefix: const Text("Description"),
-                  placeholder: "Description",
+                  placeholder: "My Home",
                   controller: descriptionController,
                 ),
               ],
@@ -140,7 +141,9 @@ class ConnectionConfigurationView extends StatelessWidget {
               children: [
                 CupertinoTextFormFieldRow(
                   prefix: const Text("Server Url"),
-                  placeholder: "mqtt://dieklingel.com/",
+                  placeholder: kIsWeb
+                      ? "wss://dieklingel.com:9002/"
+                      : "mqtt://dieklingel.com:1883/",
                   controller: serverUrlController,
                 ),
                 CupertinoTextFormFieldRow(
@@ -160,7 +163,7 @@ class ConnectionConfigurationView extends StatelessWidget {
               children: [
                 CupertinoTextFormFieldRow(
                   prefix: const Text("Channel Prefix"),
-                  placeholder: "com.dieklingel/main-entry/",
+                  placeholder: "com.dieklingel/name/main/",
                   controller: channelPrefixController,
                 ),
               ],
@@ -168,7 +171,7 @@ class ConnectionConfigurationView extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(20),
               child: CupertinoButton.filled(
-                child: const Text("Speichern"),
+                child: const Text("Save"),
                 onPressed: () {
                   addConfiguration(context);
                 },
