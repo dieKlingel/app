@@ -1,9 +1,10 @@
-import 'package:dieklingel_app/components/ice_configuration.dart';
-import 'package:dieklingel_app/components/state_builder.dart';
-import 'package:dieklingel_app/views/settings/connections_view.dart';
-import 'package:dieklingel_app/views/settings/ice_view.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../components/ice_configuration.dart';
+import '../../components/state_builder.dart';
+import '../../views/settings/connections_view.dart';
+import '../../views/settings/general_view.dart';
+import '../../views/settings/ice_view.dart';
 import '../../components/connection_configuration.dart';
 import 'connection_configuration_view.dart';
 import 'ice_configuration_view_page.dart';
@@ -31,7 +32,7 @@ class _SettingsViewPage extends State<SettingsViewPage> {
     ContentView.iceView: IceView(
       stateBuilder: _iceViewStateBuilder,
     ),
-    ContentView.generalView: const Text("working"),
+    ContentView.generalView: const GeneralView(),
   };
   ContentView _selectedSegment = ContentView.connetionsView;
 

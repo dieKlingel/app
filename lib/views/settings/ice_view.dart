@@ -3,11 +3,7 @@ import 'package:dieklingel_app/views/settings/ice_configuration_view_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../components/connection_configuration.dart';
 import '../../components/ice_configuration.dart';
-import '../../components/radio_box.dart';
-import '../../views/settings/connection_configuration_view.dart';
-
 import '../../globals.dart' as app;
 
 class IceView extends StatefulWidget {
@@ -94,7 +90,7 @@ class _IceView extends State<IceView> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.fromLTRB(30, 10, 10, 10),
                   child: Row(
                     children: [
                       Text(
