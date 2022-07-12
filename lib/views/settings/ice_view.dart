@@ -89,15 +89,14 @@ class _IceView extends State<IceView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(30, 10, 10, 10),
-                  child: Row(
-                    children: [
-                      Text(
-                        configuration.urls,
-                        style: _listViewTextStyle,
-                      ),
-                    ],
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 22, 00, 22),
+                    child: Text(
+                      configuration.urls,
+                      overflow: TextOverflow.ellipsis,
+                      style: _listViewTextStyle,
+                    ),
                   ),
                 ),
                 CupertinoButton(

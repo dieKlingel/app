@@ -97,24 +97,35 @@ class _SettingsViewPage extends State<SettingsViewPage> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: CupertinoSlidingSegmentedControl(
-          groupValue: _selectedSegment,
-          onValueChanged: (ContentView? value) {
-            if (value == null) return;
-            setState(() {
-              _selectedSegment = value;
-            });
-          },
-          children: const <ContentView, Widget>{
-            ContentView.connetionsView: Text("Connections"),
-            ContentView.iceView: Text("ICE"),
-            ContentView.generalView: Text("General"),
-          },
-        ),
+        middle: const Text("dieKlingel"),
         trailing: navBarTrailingButton,
       ),
       child: SafeArea(
-        child: contentViews[_selectedSegment]!,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(15),
+              child: CupertinoSlidingSegmentedControl(
+                groupValue: _selectedSegment,
+                onValueChanged: (ContentView? value) {
+                  if (value == null) return;
+                  setState(() {
+                    _selectedSegment = value;
+                  });
+                },
+                children: const <ContentView, Widget>{
+                  ContentView.connetionsView: Text("Connections"),
+                  ContentView.iceView: Text("ICE"),
+                  ContentView.generalView: Text("General"),
+                },
+              ),
+            ),
+            Expanded(
+              child: contentViews[_selectedSegment]!,
+            )
+          ],
+        ),
       ),
     );
   }

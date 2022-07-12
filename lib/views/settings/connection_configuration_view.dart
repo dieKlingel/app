@@ -45,7 +45,6 @@ class ConnectionConfigurationView extends StatelessWidget {
     ConnectionConfiguration configuration =
         this.configuration ?? ConnectionConfiguration();
     configuration.description = descriptionController.text;
-    //configuration.url = serverUrlController.text;
     Uri uri = Uri.parse(serverUrlController.text);
     if (!uri.hasScheme || !uri.hasPort || uri.host.isEmpty) {
       await displaySimpleAlertDialog(

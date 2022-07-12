@@ -33,7 +33,7 @@ class ConnectionsViewPage extends StatelessWidget {
           onPressed: () => _goToConnectionConfigurationView(context),
         ),
       ),
-      child: SafeArea(
+      child: const SafeArea(
         bottom: false,
         child: Text("hh"),
       ),
