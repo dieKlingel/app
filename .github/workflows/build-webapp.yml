@@ -21,4 +21,5 @@ jobs:
           channel: 'master'
       - run: flutter pub get
       - run: flutter build web
+      - run: echo "app.dieklingel.de" > build/web/CNAME
       - uses: s0/git-publish-subdir-action@develop
