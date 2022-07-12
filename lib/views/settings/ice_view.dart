@@ -1,41 +1,37 @@
 import 'package:dieklingel_app/components/state_builder.dart';
+import 'package:dieklingel_app/views/settings/ice_configuration_view_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../components/connection_configuration.dart';
-import '../../components/radio_box.dart';
-import '../../views/settings/connection_configuration_view.dart';
-
+import '../../components/ice_configuration.dart';
 import '../../globals.dart' as app;
 
-class ConnectionsView extends StatefulWidget {
-  const ConnectionsView({this.dataBuilder, Key? key}) : super(key: key);
-  final StateBuilder? dataBuilder;
+class IceView extends StatefulWidget {
+  const IceView({this.stateBuilder, Key? key}) : super(key: key);
+  final StateBuilder? stateBuilder;
 
   @override
-  _ConnectionsView createState() => _ConnectionsView();
+  _IceView createState() => _IceView();
 }
 
-class _ConnectionsView extends State<ConnectionsView> {
-  _ConnectionsView() : super();
+class _IceView extends State<IceView> {
+  _IceView() : super();
 
-  Key selectedConfigurationKey = app.defaultConnectionConfiguration.key;
-  List<ConnectionConfiguration> configurations = app.connectionConfigurations;
+  List<IceConfiguration> configurations = app.iceConfigurations;
 
-  Future<void> _goToConnectionConfigurationView({
-    ConnectionConfiguration? configuration,
+  Future<void> _goToIceConfigurationViewPage({
+    IceConfiguration? configuration,
   }) async {
     await Navigator.push(
       context,
       CupertinoPageRoute(
-        builder: (BuildContext context) => ConnectionConfigurationView(
+        builder: (BuildContext context) => IceConfigurationViewPage(
           configuration: configuration,
         ),
       ),
     );
     setState(() {
-      configurations = app.connectionConfigurations;
-      selectedConfigurationKey = app.defaultConnectionConfiguration.key;
+      configurations = app.iceConfigurations;
     });
   }
 
@@ -55,14 +51,13 @@ class _ConnectionsView extends State<ConnectionsView> {
 
   void rebuild(dynamic data) {
     setState(() {
-      configurations = app.connectionConfigurations;
-      selectedConfigurationKey = app.defaultConnectionConfiguration.key;
+      configurations = app.iceConfigurations;
     });
   }
 
   @override
   void initState() {
-    widget.dataBuilder?.addEventListener("rebuild", rebuild);
+    widget.stateBuilder?.addEventListener("rebuild", rebuild);
     super.initState();
   }
 
@@ -71,7 +66,7 @@ class _ConnectionsView extends State<ConnectionsView> {
     return ListView.builder(
       itemCount: configurations.length,
       itemBuilder: (BuildContext context, int index) {
-        ConnectionConfiguration configuration = configurations[index];
+        IceConfiguration configuration = configurations[index];
         return Container(
           decoration: BoxDecoration(
             border: Border(
@@ -94,29 +89,14 @@ class _ConnectionsView extends State<ConnectionsView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      RadioBox(
-                        value: configuration.key == selectedConfigurationKey,
-                        onChanged: (state) {
-                          setState(() {
-                            configurations
-                                .firstWhere((element) =>
-                                    element.key == selectedConfigurationKey)
-                                .isDefault = false;
-                            selectedConfigurationKey = configuration.key;
-                            configuration.isDefault = true;
-                            app.connectionConfigurations = configurations;
-                          });
-                        },
-                      ),
-                      Text(
-                        configuration.description,
-                        style: _listViewTextStyle,
-                      ),
-                    ],
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 22, 00, 22),
+                    child: Text(
+                      configuration.urls,
+                      overflow: TextOverflow.ellipsis,
+                      style: _listViewTextStyle,
+                    ),
                   ),
                 ),
                 CupertinoButton(
@@ -124,17 +104,18 @@ class _ConnectionsView extends State<ConnectionsView> {
                     CupertinoIcons.forward,
                     color: Colors.grey.shade500,
                   ),
-                  onPressed: () => _goToConnectionConfigurationView(
+                  onPressed: () => _goToIceConfigurationViewPage(
                     configuration: configuration,
                   ),
                 ),
               ],
             ),
+            confirmDismiss: (direction) async => configurations.length > 1,
             onDismissed: (DismissDirection direction) async {
               configurations.remove(configuration);
-              app.connectionConfigurations = configurations;
-              if (configurations.isNotEmpty) {
-                Navigator.popUntil(context, (route) {
+              app.iceConfigurations = configurations;
+              //if (configurations.isEmpty) {
+              /*Navigator.popUntil(context, (route) {
                   if (!route.isFirst) {
                     Navigator.replaceRouteBelow(
                       context,
@@ -145,14 +126,12 @@ class _ConnectionsView extends State<ConnectionsView> {
                     );
                   }
                   return route.isFirst;
-                });
-              } else {
-                setState(() {
-                  configurations = app.connectionConfigurations;
-                  selectedConfigurationKey =
-                      app.defaultConnectionConfiguration.key;
-                });
-              }
+                });*/
+              //} else {
+              setState(() {
+                configurations = app.iceConfigurations;
+              });
+              //}
             },
           ),
         );
@@ -163,6 +142,6 @@ class _ConnectionsView extends State<ConnectionsView> {
   @override
   void dispose() {
     super.dispose();
-    widget.dataBuilder?.removeEventListener("rebuild", rebuild);
+    widget.stateBuilder?.removeEventListener("rebuild", rebuild);
   }
 }

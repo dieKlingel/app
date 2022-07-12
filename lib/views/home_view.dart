@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:dieklingel_app/components/connection_configuration.dart';
-import 'package:dieklingel_app/components/simple_alert_dialog.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -10,10 +8,10 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../rtc/rtc_client.dart';
 import '../signaling/signaling_client.dart';
 import '../media/media_ressource.dart';
-import '../views/settings/connections_view.dart';
 import '../messaging/messaging_client.dart';
-import './settings/connections_view.dart';
-
+import '../components/connection_configuration.dart';
+import '../components/simple_alert_dialog.dart';
+import 'settings/settings_view_page.dart';
 import '../globals.dart' as app;
 
 class HomeView extends StatefulWidget {
@@ -53,17 +51,6 @@ class _HomeView extends State<HomeView> {
     }
   }
 
-  final Map<String, dynamic> _ice = {
-    "iceServers": [
-      {"url": "stun:stun1.l.google.com:19302"},
-      {
-        'url': 'turn:dieklingel.com:3478',
-        'credential': '12345',
-        'username': 'guest'
-      },
-    ]
-  };
-
   void closeCurrentConnections() {
     _messagingClient?.disconnect();
     _messagingClient = null;
@@ -75,14 +62,7 @@ class _HomeView extends State<HomeView> {
   }
 
   Future<void> openConnectionsTo(ConnectionConfiguration configuration) async {
-    if (null == configuration.uri) {
-      /*await displaySimpleAlertDialog(
-        context,
-        const Text("Error"),
-        const Text("Please set an uri in configuration"),
-      );*/
-      return;
-    }
+    if (null == configuration.uri) return;
     String scheme = configuration.uri!.scheme == "mqtt"
         ? ""
         : configuration.uri!.scheme + "://";
@@ -110,10 +90,26 @@ class _HomeView extends State<HomeView> {
       randomId(10),
     );
     // --
+    List<Map<String, dynamic>> iceServers = List.empty(growable: true);
+    app.iceConfigurations.forEach(((element) {
+      Map<String, dynamic> b = element.toJson();
+      b.remove("_key");
+      if (b["username"] != null && b["username"]!.isEmpty) {
+        b.remove("username");
+      }
+      if (b["credential"] != null && b["credential"]!.isEmpty) {
+        b.remove("credential");
+      }
+      iceServers.add(b);
+    }));
+    Map<String, dynamic> ice = {
+      "iceServers": iceServers,
+    };
+    // --
     _rtcClient = RtcClient(
       _signalingClient!,
       _mediaRessource,
-      _ice,
+      ice,
     );
     _rtcClient?.addEventListener("mediatrack-received", (track) {
       print((track as MediaStream).getVideoTracks());
@@ -159,7 +155,8 @@ class _HomeView extends State<HomeView> {
     await Navigator.push(
       context,
       CupertinoPageRoute(
-        builder: (BuildContext context) => const ConnectionsView(),
+        builder: (BuildContext context) => const SettingsViewPage(),
+        //builder: (BuildContext context) => const ConnectionsView(),
       ),
     );
     openConnectionsTo(app.defaultConnectionConfiguration);
@@ -192,7 +189,7 @@ class _HomeView extends State<HomeView> {
       //"main-door:9873",
       name,
       options: {
-        'offerToReceiveVideo': 1, // this works on web
+        'offerToReceiveVideo': true, // this works on web
         // https://webrtc.github.io/samples/src/content/peerconnection/create-offer/
         // https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/create-offer/js/main.js
         'mandatory': {
