@@ -2,7 +2,7 @@ name: build-ipa
 on:
   push:
     branches: 
-      - ios-deploy
+      - ios-deploy1
 jobs:
   build-ipa:
     runs-on: macos-latest
