@@ -7,6 +7,8 @@
 	<key>teamID</key>
 	<string>3QLZPMLJ3W</string>
 	<key>provisioningProfiles</key>
+	<key>signingStyle</key>
+	<string>manual</string>
 	<dict>
 		<key>com.dieklingel.app</key>
 		<string>build_pp</string>
