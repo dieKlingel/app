@@ -9,7 +9,7 @@
 	<key>provisioningProfiles</key>
 	<dict>
 		<key>com.dieklingel.app</key>
-		<string>build_pp.mobileprovision</string>
+		<string>build_pp</string>
 	</dict>
 </dict>
 </plist>
