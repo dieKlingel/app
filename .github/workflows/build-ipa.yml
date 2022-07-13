@@ -7,12 +7,11 @@ jobs:
   build-ipa:
     runs-on: macos-latest
     steps: 
-      - name: prepare environment
-        uses: actions/checkout@v3
-        uses: subosito/flutter-action@v2
-          with:
-            flutter-version: '2.18.0'
-            channel: 'master'
-        run: flutter pub get
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '2.18.0'
+          channel: 'master'
+      - run: flutter pub get
       - name: build ios app
         run: flutter build ipa
