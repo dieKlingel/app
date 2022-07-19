@@ -56,8 +56,29 @@ class RtcClient extends EventEmitter {
       });
     }
     connection.onIceCandidate = _onNewIceCandidateFound;
+    connection.onIceConnectionState = (RTCIceConnectionState state) {
+      print("IceConnectionStateChanged: ${state.name}");
+      switch (state) {
+        case RTCIceConnectionState.RTCIceConnectionStateDisconnected:
+        case RTCIceConnectionState.RTCIceConnectionStateFailed:
+          connection.restartIce();
+          break;
+        default:
+          break;
+      }
+    };
     connection.onConnectionState = _onConnectionStateChanged;
     connection.onTrack = _onTrackReceived;
+    // unified-plan has to set explicit
+    // TODO: let the user decide to receive audio and video
+    await connection.addTransceiver(
+      kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+      init: RTCRtpTransceiverInit(direction: TransceiverDirection.SendRecv),
+    );
+    await connection.addTransceiver(
+      kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+      init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly),
+    );
     return connection;
   }
 
@@ -73,6 +94,7 @@ class RtcClient extends EventEmitter {
 
   void _onConnectionStateChanged(RTCPeerConnectionState state) {
     emit("state-changed", state.toString());
+    print("RtcConnectionStateChanged: ${state.name}");
     switch (state) {
       case RTCPeerConnectionState.RTCPeerConnectionStateDisconnected:
         hangup();
