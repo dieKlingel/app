@@ -29,6 +29,7 @@ class RtcClient extends EventEmitter {
           );
           break;
         case SignalingMessageType.candidate:
+          // TODO: save early candidates
           _rtcPeerConnection?.addCandidate(
             RTCIceCandidate(
               message.data['candidate'],
