@@ -104,6 +104,7 @@ class _HomeView extends State<HomeView> {
     }));
     Map<String, dynamic> ice = {
       "iceServers": iceServers,
+      "sdpSemantics": "unified-plan"
     };
     // --
     _rtcClient = RtcClient(
@@ -168,6 +169,7 @@ class _HomeView extends State<HomeView> {
       setState(() {
         callIsActive = false;
         micIsEnabled = false;
+        _remoteVideo.srcObject = null;
       });
       return;
     }
@@ -185,18 +187,7 @@ class _HomeView extends State<HomeView> {
       return;
     }
 
-    await _rtcClient?.invite(
-      //"main-door:9873",
-      name,
-      options: {
-        'offerToReceiveVideo': true, // this works on web
-        // https://webrtc.github.io/samples/src/content/peerconnection/create-offer/
-        // https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/create-offer/js/main.js
-        'mandatory': {
-          'OfferToReceiveVideo': true, // this wors on mobile
-        } // https://github.com/flutter-webrtc/flutter-webrtc/blob/master/example/lib/src/data_channel_sample.dart
-      },
-    );
+    await _rtcClient?.invite(name);
     setState(() {
       callIsActive = true;
       _mediaRessource.stream?.getAudioTracks()[0].enabled =

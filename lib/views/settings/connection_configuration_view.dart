@@ -52,8 +52,7 @@ class ConnectionConfigurationView extends StatelessWidget {
         context,
         const Text("Error"),
         const Text(
-          "Please provide a full uri: mqtt://server.dieklingel.com:1883/",
-        ),
+            "Please provide a full Uri ${kIsWeb ? "wss://dieklingel.com:9002/" : "mqtt://dieklingel.com:1883/"}"),
       );
       return;
     }
@@ -61,7 +60,7 @@ class ConnectionConfigurationView extends StatelessWidget {
       await displaySimpleAlertDialog(
         context,
         const Text("Error"),
-        const Text("Please add a port :1883/"),
+        const Text("Please add a port ${kIsWeb ? ":9002" : ":1883"}"),
       );
       return;
     }
