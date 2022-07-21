@@ -1,0 +1,20 @@
+name: build-webapp
+on:
+  push:
+    branches:
+      - main
+      - feature/rtc
+jobs:
+  build-flutter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: | 
+        VERSION_TAG=v$(cat pubspec.yaml | grep -Po '(?<=version:\s)(.*)')
+        TAG_FOUND=$(git tag -l | grep $VERSION_TAG)
+        if [ -n "$TAG_FOUND" ]; then
+          exit 1
+        fi
+        
+        
+
