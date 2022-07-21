@@ -104,7 +104,7 @@ class _HomeView extends State<HomeView> {
     }));
     Map<String, dynamic> ice = {
       "iceServers": iceServers,
-      "sdpSemantics": "unified-plan"
+      "sdpSemantics": "unified-plan" // important to work
     };
     // --
     _rtcClient = RtcClient(
@@ -187,7 +187,16 @@ class _HomeView extends State<HomeView> {
       return;
     }
 
-    await _rtcClient?.invite(name);
+    await _rtcClient?.invite(name, transceivers: [
+      RtcTransceiver(
+        kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+        direction: TransceiverDirection.SendRecv,
+      ),
+      RtcTransceiver(
+        kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+        direction: TransceiverDirection.RecvOnly,
+      ),
+    ]);
     setState(() {
       callIsActive = true;
       _mediaRessource.stream?.getAudioTracks()[0].enabled =
