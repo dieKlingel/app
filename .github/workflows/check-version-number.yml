@@ -21,7 +21,7 @@ jobs:
       - name: compare tags
         run: |
             echo "${{ steps.tag.outputs.exists }}"
-            if [ "${{ steps.tag.outputs.exists }}" -eq "true" ]; then
+            if [ "${{ steps.tag.outputs.exists }}" == "true" ]; then
               echo "tag already exists"
               exit 1
             fi
