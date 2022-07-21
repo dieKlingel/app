@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: check version numbert
         run: |
-            cat pubspec.yaml
+            echo $(grep --version)
             VERSION_TAG=v$(cat pubspec.yaml | grep -Po '(?<=version:\s)(.*)')
             TAG_FOUND=$(git tag -l | grep $VERSION_TAG)
             if [ -n "$TAG_FOUND" ]; then
