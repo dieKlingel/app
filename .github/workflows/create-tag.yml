@@ -1,4 +1,4 @@
-name: check-version-number
+name: create-tag
 on:
   push:
     branches:
