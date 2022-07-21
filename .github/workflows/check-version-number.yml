@@ -13,8 +13,8 @@ jobs:
             VERSION_TAG=v$(cat pubspec.yaml | grep -Po '(?<=version:\s)(.*)')
             TAG_FOUND=$(git tag -l | grep $VERSION_TAG)
             if [ -n "$TAG_FOUND" ]; then
-              exit 0
+              echo "Version number already exists"
+              exit 1
             fi
-            echo "Please change your build number"
-            exit 1
+            exit 0
         
