@@ -8,15 +8,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: check version numbert
+      - name: check current version
         run: |
             VERSION_TAG=v$(cat pubspec.yaml | grep -Po '(?<=version:\s)(.*)')
-            echo $VERSION_TAG
-            echo $(git tag -l)
-            TAG_FOUND=$(git tag -l | grep -c $VERSION_TAG || true)
-            if [ "$TAG_FOUND" -eq "0" ]; then
-              echo $TAG_FOUND
-              exit 0
+            echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+      - uses: mukunku/tag-exists-action@v1.0.0
+        id: tag
+        with: 
+          tag: ${{ env.VERSION_TAG }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: compare tags
+        run: |
+            echo "${{ steps.tag.outputs.exists }}"
+            if [ "${{ steps.tag.outputs.exists }}" -eq "true" ]; then
+              echo "tag already exists"
+              exit 1
             fi
-            echo "Version number already exists"
-            exit 1
