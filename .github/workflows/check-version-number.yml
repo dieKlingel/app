@@ -20,7 +20,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: compare tags
         run: |
-            echo "${{ steps.tag.outputs.exists }}"
             if [ "${{ steps.tag.outputs.exists }}" == "true" ]; then
               echo "tag already exists"
               exit 1
