@@ -1,9 +1,8 @@
 name: check-version-number
 on:
-  push:
+  pull_request:
     branches:
       - main
-      - feature/rtc
 jobs:
   check-version:
     runs-on: ubuntu-latest
@@ -14,6 +13,7 @@ jobs:
             VERSION_TAG=v$(cat pubspec.yaml | grep -Po '(?<=version:\s)(.*)')
             TAG_FOUND=$(git tag -l | grep $VERSION_TAG)
             if [ -n "$TAG_FOUND" ]; then
+              echo "Please your build number"
               exit 1
             fi
         
