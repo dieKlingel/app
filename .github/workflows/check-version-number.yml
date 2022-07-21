@@ -1,19 +1,19 @@
-name: build-webapp
+name: check-version-number
 on:
   push:
     branches:
       - main
       - feature/rtc
 jobs:
-  build-flutter:
+  check-version:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: check version number
-        run: | 
-          VERSION_TAG=v$(cat pubspec.yaml | grep -Po '(?<=version:\s)(.*)')
-          TAG_FOUND=$(git tag -l | grep $VERSION_TAG)
-          if [ -n "$TAG_FOUND" ]; then
-            exit 1
-          fi
+      - name: check version numbert
+        run: |
+            VERSION_TAG=v$(cat pubspec.yaml | grep -Po '(?<=version:\s)(.*)')
+            TAG_FOUND=$(git tag -l | grep $VERSION_TAG)
+            if [ -n "$TAG_FOUND" ]; then
+              exit 1
+            fi
         
