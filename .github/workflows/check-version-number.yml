@@ -11,6 +11,8 @@ jobs:
       - name: check version numbert
         run: |
             VERSION_TAG=v$(cat pubspec.yaml | grep -Po '(?<=version:\s)(.*)')
+            echo $VERSION_TAG
+            echo $(git tag -l)
             TAG_FOUND=$(git tag -l | grep -c $VERSION_TAG || true)
             if [ "$TAG_FOUND" -eq "0" ]; then
               echo $TAG_FOUND
