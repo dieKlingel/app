@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:dieklingel_app/components/numpad.dart';
+import 'package:dieklingel_app/components/passcode_dots.dart';
+import 'package:dieklingel_app/crypto/sha2562.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -225,6 +228,58 @@ class _HomeView extends State<HomeView> {
     );
   }
 
+  void _unlock(String passcode) {
+    ConnectionConfiguration configuration = app.defaultConnectionConfiguration;
+    String channelPrefix = configuration.channelPrefix ?? "";
+    String hash = sha2562.convert(utf8.encode(passcode)).toString();
+    _messagingClient?.send("${channelPrefix}io/action/unlock/passcode", hash);
+  }
+
+  void _showPasscodeDialog(BuildContext context) {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) {
+        String passcode = "";
+        int passcodeLength = 6;
+        return StatefulBuilder(builder: (context, setState) {
+          return CupertinoAlertDialog(
+            title: const Text("Passcode ?"),
+            content: Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: PasscodeDots(
+                    amount: passcodeLength,
+                    count: passcode.length,
+                  ),
+                ),
+                Numpad(
+                  onInput: (input) {
+                    setState(() {
+                      passcode += input;
+                    });
+                    if (passcode.length == passcodeLength) {
+                      _unlock(passcode);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                )
+              ],
+            ),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text("Cancel"),
+                onPressed: (() {
+                  Navigator.of(context).pop();
+                }),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -279,12 +334,14 @@ class _HomeView extends State<HomeView> {
                       ),
                       onPressed: null,
                     ),
-                    const CupertinoButton(
-                      child: Icon(
+                    CupertinoButton(
+                      child: const Icon(
                         CupertinoIcons.lock,
                         size: 40,
                       ),
-                      onPressed: null,
+                      onPressed: _mqttIsConnected
+                          ? () => _showPasscodeDialog(context)
+                          : null,
                     )
                   ],
                 ),
