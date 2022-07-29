@@ -24,7 +24,7 @@ class HomeView extends StatefulWidget {
   _HomeView createState() => _HomeView();
 }
 
-class _HomeView extends State<HomeView> {
+class _HomeView extends State<HomeView> with WidgetsBindingObserver {
   final MediaRessource _mediaRessource = MediaRessource();
   final RTCVideoRenderer _remoteVideo = RTCVideoRenderer();
 
@@ -44,7 +44,22 @@ class _HomeView extends State<HomeView> {
     super.initState();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        openConnectionsTo(app.defaultConnectionConfiguration);
+        break;
+      case AppLifecycleState.inactive:
+        closeCurrentConnections();
+        break;
+      default:
+        break;
+    }
+  }
+
   void init() async {
+    WidgetsBinding.instance.addObserver(this);
     closeCurrentConnections();
     await openConnectionsTo(app.defaultConnectionConfiguration);
     if (kIsWeb) {
@@ -355,6 +370,7 @@ class _HomeView extends State<HomeView> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _remoteVideo.dispose();
     super.dispose();
   }
