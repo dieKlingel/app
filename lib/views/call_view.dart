@@ -60,6 +60,7 @@ class _CallView extends State<CallView> {
       return;
     }
     if (!mounted) return;
+    // TODO: change uid to random string
     context.read<SignalingClient>().uid = "app";
     List<Map<String, dynamic>> iceServers = [];
     context.read<AppSettings>().iceConfigurations.forEach(((element) {
