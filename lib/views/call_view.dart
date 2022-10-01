@@ -30,10 +30,10 @@ class _CallView extends State<CallView> {
   }
 
   ConnectionConfiguration getDefaultConnectionConfiguration() {
-    return context.read<AppSettings>().connectionConfigurations.list.firstWhere(
+    return context.read<AppSettings>().connectionConfigurations.firstWhere(
           (element) => element.isDefault,
           orElse: () =>
-              context.read<AppSettings>().connectionConfigurations.list.first,
+              context.read<AppSettings>().connectionConfigurations.first,
         );
   }
 
@@ -62,7 +62,7 @@ class _CallView extends State<CallView> {
     if (!mounted) return;
     context.read<SignalingClient>().uid = "app";
     List<Map<String, dynamic>> iceServers = [];
-    context.read<AppSettings>().iceConfigurations.list.forEach(((element) {
+    context.read<AppSettings>().iceConfigurations.forEach(((element) {
       Map<String, dynamic> b = element.toJson();
       b.remove("_key");
       if (b["username"] != null && b["username"]!.isEmpty) {

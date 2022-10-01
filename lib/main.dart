@@ -52,15 +52,12 @@ class _App extends State<App> {
   }
 
   ConnectionConfiguration? getDefaultConnectionConfiguration() {
-    return context.read<AppSettings>().connectionConfigurations.list.isEmpty
+    return context.read<AppSettings>().connectionConfigurations.isEmpty
         ? null
-        : context.read<AppSettings>().connectionConfigurations.list.firstWhere(
+        : context.read<AppSettings>().connectionConfigurations.firstWhere(
               (element) => element.isDefault,
-              orElse: () => context
-                  .read<AppSettings>()
-                  .connectionConfigurations
-                  .list
-                  .first,
+              orElse: () =>
+                  context.read<AppSettings>().connectionConfigurations.first,
             );
   }
 
@@ -137,19 +134,19 @@ class _App extends State<App> {
     context
         .read<AppSettings>()
         .iceConfigurations
-        .replaceList(app.iceConfigurations);
+        .replace(app.iceConfigurations);
     context.read<AppSettings>().iceConfigurations.addListener(() {
       app.iceConfigurations =
-          context.read<AppSettings>().iceConfigurations.list;
+          context.read<AppSettings>().iceConfigurations.asList();
     });
 
     context
         .read<AppSettings>()
         .connectionConfigurations
-        .replaceList(app.connectionConfigurations);
+        .replace(app.connectionConfigurations);
     context.read<AppSettings>().connectionConfigurations.addListener(() {
       app.connectionConfigurations =
-          context.read<AppSettings>().connectionConfigurations.list;
+          context.read<AppSettings>().connectionConfigurations.asList();
     });
   }
 

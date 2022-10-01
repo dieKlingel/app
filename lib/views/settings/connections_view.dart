@@ -20,11 +20,10 @@ class _ConnectionsView extends State<ConnectionsView> {
   late Key selectedConfigurationKey = context
       .read<AppSettings>()
       .connectionConfigurations
-      .list
       .firstWhere(
         (element) => element.isDefault,
         orElse: () =>
-            context.read<AppSettings>().connectionConfigurations.list.first,
+            context.read<AppSettings>().connectionConfigurations.first,
       )
       .key;
 
@@ -62,11 +61,10 @@ class _ConnectionsView extends State<ConnectionsView> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount:
-          context.watch<AppSettings>().connectionConfigurations.list.length,
+      itemCount: context.watch<AppSettings>().connectionConfigurations.length,
       itemBuilder: (BuildContext context, int index) {
         ConnectionConfiguration configuration =
-            context.watch<AppSettings>().connectionConfigurations.list[index];
+            context.watch<AppSettings>().connectionConfigurations[index];
         return Container(
           decoration: BoxDecoration(
             border: Border(
@@ -100,7 +98,7 @@ class _ConnectionsView extends State<ConnectionsView> {
                             context
                                 .read<AppSettings>()
                                 .connectionConfigurations
-                                .list,
+                                .asList(),
                           );
                           configs
                               .firstWhere((element) =>
@@ -111,7 +109,7 @@ class _ConnectionsView extends State<ConnectionsView> {
                           context
                               .read<AppSettings>()
                               .connectionConfigurations
-                              .replaceList(configs);
+                              .replace(configs);
                         },
                       ),
                       Text(
@@ -141,7 +139,6 @@ class _ConnectionsView extends State<ConnectionsView> {
               if (context
                   .read<AppSettings>()
                   .connectionConfigurations
-                  .list
                   .isEmpty) {
                 Navigator.popUntil(context, (route) {
                   if (!route.isFirst) {
@@ -159,13 +156,11 @@ class _ConnectionsView extends State<ConnectionsView> {
                 selectedConfigurationKey = context
                     .read<AppSettings>()
                     .connectionConfigurations
-                    .list
                     .firstWhere(
                       (element) => element.isDefault,
                       orElse: () => context
                           .read<AppSettings>()
                           .connectionConfigurations
-                          .list
                           .first,
                     )
                     .key;

@@ -76,7 +76,7 @@ class ConnectionConfigurationView extends StatelessWidget {
         passwordController.text.isEmpty ? null : passwordController.text;
 
     List<ConnectionConfiguration> configurations =
-        List.from(context.read<AppSettings>().connectionConfigurations.list);
+        context.read<AppSettings>().connectionConfigurations.asList();
 
     if (configurations.contains(configuration)) {
       int index = configurations.indexOf(configuration);
@@ -88,7 +88,7 @@ class ConnectionConfigurationView extends StatelessWidget {
     context
         .read<AppSettings>()
         .connectionConfigurations
-        .replaceList(configurations);
+        .replace(configurations);
 
     if (Navigator.canPop(context)) {
       Navigator.pop(context);

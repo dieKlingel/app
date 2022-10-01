@@ -47,10 +47,10 @@ class _IceView extends State<IceView> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: context.watch<AppSettings>().iceConfigurations.list.length,
+      itemCount: context.watch<AppSettings>().iceConfigurations.length,
       itemBuilder: (BuildContext context, int index) {
         IceConfiguration configuration =
-            context.watch<AppSettings>().iceConfigurations.list[index];
+            context.watch<AppSettings>().iceConfigurations[index];
         return Container(
           decoration: BoxDecoration(
             border: Border(
@@ -95,7 +95,7 @@ class _IceView extends State<IceView> {
               ],
             ),
             confirmDismiss: (direction) async =>
-                context.read<AppSettings>().iceConfigurations.list.length > 1,
+                context.read<AppSettings>().iceConfigurations.length > 1,
             onDismissed: (DismissDirection direction) async {
               context
                   .read<AppSettings>()

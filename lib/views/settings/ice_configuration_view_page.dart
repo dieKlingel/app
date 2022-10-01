@@ -40,7 +40,7 @@ class IceConfigurationViewPage extends StatelessWidget {
     configuration.credential = credentialController.text;
 
     List<IceConfiguration> configurations =
-        List.from(context.read<AppSettings>().iceConfigurations.list);
+        context.read<AppSettings>().iceConfigurations.asList();
     if (configurations.contains(configuration)) {
       int index = configurations.indexOf(configuration);
       configurations.remove(configuration);
@@ -48,7 +48,7 @@ class IceConfigurationViewPage extends StatelessWidget {
     } else {
       configurations.add(configuration);
     }
-    context.read<AppSettings>().iceConfigurations.replaceList(configurations);
+    context.read<AppSettings>().iceConfigurations.replace(configurations);
 
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
