@@ -126,7 +126,10 @@ class _App extends State<App> {
             );
         if (!mounted) return;
         publishFirebaseToken();
-        context.read<MessagingClient>().listen("rtc/signaling");
+        context
+            .read<MessagingClient>()
+            .listen("rtc/signaling")
+            .listen("io/camera/snapshot");
         context.read<SignalingClient>().signalingTopic = "rtc/signaling";
       },
     );
