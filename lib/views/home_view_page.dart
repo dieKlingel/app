@@ -1,5 +1,5 @@
-import 'package:dieklingel_app/views/call_view_page.dart';
-import 'package:dieklingel_app/views/preview_view_page.dart';
+import 'call_view_page.dart';
+import 'preview_view_page.dart';
 import 'package:flutter/cupertino.dart';
 
 enum TabBarPages {

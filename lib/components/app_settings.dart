@@ -1,4 +1,4 @@
-import 'package:dieklingel_app/components/notifyable_value.dart';
+import '../components/notifyable_value.dart';
 import 'package:flutter/material.dart';
 
 import '../components/connection_configuration.dart';

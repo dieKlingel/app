@@ -1,8 +1,8 @@
-import 'package:dieklingel_app/components/app_settings.dart';
-import 'package:dieklingel_app/components/connection_configuration.dart';
-import 'package:dieklingel_app/messaging/messaging_client.dart';
-import 'package:dieklingel_app/rtc/rtc_client.dart';
-import 'package:dieklingel_app/signaling/signaling_client.dart';
+import '../components/app_settings.dart';
+import '../components/connection_configuration.dart';
+import '../messaging/messaging_client.dart';
+import '../rtc/rtc_client.dart';
+import '../signaling/signaling_client.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';

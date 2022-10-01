@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:dieklingel_app/components/app_settings.dart';
-import 'package:dieklingel_app/messaging/messaging_client.dart';
-import 'package:dieklingel_app/signaling/signaling_client.dart';
-import 'package:dieklingel_app/views/home_view_page.dart';
+import 'components/app_settings.dart';
+import 'messaging/messaging_client.dart';
+import 'signaling/signaling_client.dart';
+import 'views/home_view_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 

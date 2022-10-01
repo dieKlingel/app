@@ -1,5 +1,5 @@
-import 'package:dieklingel_app/components/app_settings.dart';
-import 'package:dieklingel_app/views/home_view_page.dart';
+import '../../components/app_settings.dart';
+import '../home_view_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 

@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:dieklingel_app/messaging/messaging_client.dart';
-import 'package:dieklingel_app/touch_scroll_behavior.dart';
-import 'package:dieklingel_app/views/components/sub_headline.dart';
+import '../messaging/messaging_client.dart';
+import '../touch_scroll_behavior.dart';
+import 'components/sub_headline.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';

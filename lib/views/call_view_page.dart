@@ -1,5 +1,5 @@
-import 'package:dieklingel_app/views/call_view.dart';
-import 'package:dieklingel_app/views/settings/settings_view_page.dart';
+import 'call_view.dart';
+import 'settings/settings_view_page.dart';
 import 'package:flutter/cupertino.dart';
 
 class CallViewPage extends StatelessWidget {
