@@ -1,3 +1,4 @@
+import 'package:dieklingel_app/views/home_view_page.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -27,7 +28,8 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      home: isInitialzied ? const HomeView() : ConnectionConfigurationView(),
+      home:
+          isInitialzied ? const HomeViewPage() : ConnectionConfigurationView(),
     );
   }
 }
