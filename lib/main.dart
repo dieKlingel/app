@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:dieklingel_app/components/app_settings.dart';
 import 'package:dieklingel_app/messaging/messaging_client.dart';
 import 'package:dieklingel_app/signaling/signaling_client.dart';
 import 'package:dieklingel_app/views/home_view_page.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'components/connection_configuration.dart';
 import 'firebase_options.dart';
@@ -65,7 +69,49 @@ class _App extends State<App> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) => initialize());
   }
 
+  void registerFcmPushNotifications() async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+    print('User granted permission: ${settings.authorizationStatus}');
+    String? token = await FirebaseMessaging.instance.getToken();
+    if (null == token) return;
+    print("Token: $token");
+    if (!mounted) return;
+    context.read<AppSettings>().firebaseToken.addListener(publishFirebaseToken);
+    context.read<AppSettings>().firebaseToken.value = token;
+  }
+
+  void publishFirebaseToken() {
+    String? firebaseToken = context.read<AppSettings>().firebaseToken.value;
+    if (!context.read<MessagingClient>().isConnected() ||
+        null == firebaseToken) {
+      return;
+    }
+    Map<String, dynamic> message = {
+      "hash": "#default",
+      "token": firebaseToken,
+    };
+    print("publish");
+    context.read<MessagingClient>().send(
+          "firebase/notification/token/add",
+          jsonEncode(message),
+        );
+  }
+
   void initialize() {
+    if (kIsWeb) {
+      // TODO: implement push notifications for web
+    } else {
+      registerFcmPushNotifications();
+    }
     context.read<AppSettings>().connectionConfigurations.addListener(
       () async {
         ConnectionConfiguration? defaultConfig =
@@ -81,6 +127,7 @@ class _App extends State<App> {
               password: defaultConfig.password,
             );
         if (!mounted) return;
+        publishFirebaseToken();
         context.read<MessagingClient>().listen("rtc/signaling");
         context.read<SignalingClient>().signalingTopic = "rtc/signaling";
       },

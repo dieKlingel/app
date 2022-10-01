@@ -64,7 +64,7 @@ class MessagingClient extends ChangeNotifier {
       throw Exception("The hostname cannot be null");
     }
     MqttClient client = MqttClientFactory.create(hostname, "");
-    client.port = port;
+    client.port = port ?? 1883;
     client.keepAlivePeriod = 20;
     client.disconnectOnNoResponsePeriod = 60;
     client.setProtocolV311();
