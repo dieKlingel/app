@@ -1,23 +1,21 @@
-import 'package:dieklingel_app/components/state_builder.dart';
-import 'package:dieklingel_app/views/settings/ice_configuration_view_page.dart';
+import '../../components/app_settings.dart';
+import 'package:provider/provider.dart';
+
+import '../settings/ice_configuration_view_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../components/ice_configuration.dart';
-import '../../globals.dart' as app;
 
 class IceView extends StatefulWidget {
-  const IceView({this.stateBuilder, Key? key}) : super(key: key);
-  final StateBuilder? stateBuilder;
+  const IceView({Key? key}) : super(key: key);
 
   @override
-  _IceView createState() => _IceView();
+  State<IceView> createState() => _IceView();
 }
 
 class _IceView extends State<IceView> {
   _IceView() : super();
-
-  List<IceConfiguration> configurations = app.iceConfigurations;
 
   Future<void> _goToIceConfigurationViewPage({
     IceConfiguration? configuration,
@@ -30,9 +28,6 @@ class _IceView extends State<IceView> {
         ),
       ),
     );
-    setState(() {
-      configurations = app.iceConfigurations;
-    });
   }
 
   BorderSide get _listViewBorderSide => BorderSide(
@@ -49,24 +44,13 @@ class _IceView extends State<IceView> {
         ).resolveFrom(context),
       );
 
-  void rebuild(dynamic data) {
-    setState(() {
-      configurations = app.iceConfigurations;
-    });
-  }
-
-  @override
-  void initState() {
-    widget.stateBuilder?.addEventListener("rebuild", rebuild);
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: configurations.length,
+      itemCount: context.watch<AppSettings>().iceConfigurations.list.length,
       itemBuilder: (BuildContext context, int index) {
-        IceConfiguration configuration = configurations[index];
+        IceConfiguration configuration =
+            context.watch<AppSettings>().iceConfigurations.list[index];
         return Container(
           decoration: BoxDecoration(
             border: Border(
@@ -110,38 +94,17 @@ class _IceView extends State<IceView> {
                 ),
               ],
             ),
-            confirmDismiss: (direction) async => configurations.length > 1,
+            confirmDismiss: (direction) async =>
+                context.read<AppSettings>().iceConfigurations.list.length > 1,
             onDismissed: (DismissDirection direction) async {
-              configurations.remove(configuration);
-              app.iceConfigurations = configurations;
-              //if (configurations.isEmpty) {
-              /*Navigator.popUntil(context, (route) {
-                  if (!route.isFirst) {
-                    Navigator.replaceRouteBelow(
-                      context,
-                      anchorRoute: route,
-                      newRoute: CupertinoPageRoute(
-                        builder: (context) => ConnectionConfigurationView(),
-                      ),
-                    );
-                  }
-                  return route.isFirst;
-                });*/
-              //} else {
-              setState(() {
-                configurations = app.iceConfigurations;
-              });
-              //}
+              context
+                  .read<AppSettings>()
+                  .iceConfigurations
+                  .remove(configuration);
             },
           ),
         );
       },
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    widget.stateBuilder?.removeEventListener("rebuild", rebuild);
   }
 }

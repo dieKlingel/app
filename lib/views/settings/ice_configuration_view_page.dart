@@ -1,10 +1,10 @@
+import 'package:dieklingel_app/components/app_settings.dart';
+import 'package:dieklingel_app/views/home_view_page.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 
 import '../../components/ice_configuration.dart';
 import '../../components/simple_alert_dialog.dart';
-import '../../views/home_view.dart';
-
-import '../../globals.dart' as app;
 
 class IceConfigurationViewPage extends StatelessWidget {
   IceConfigurationViewPage({
@@ -39,7 +39,8 @@ class IceConfigurationViewPage extends StatelessWidget {
     configuration.username = usernameController.text;
     configuration.credential = credentialController.text;
 
-    List<IceConfiguration> configurations = app.iceConfigurations;
+    List<IceConfiguration> configurations =
+        List.from(context.read<AppSettings>().iceConfigurations.list);
     if (configurations.contains(configuration)) {
       int index = configurations.indexOf(configuration);
       configurations.remove(configuration);
@@ -47,7 +48,7 @@ class IceConfigurationViewPage extends StatelessWidget {
     } else {
       configurations.add(configuration);
     }
-    app.iceConfigurations = configurations;
+    context.read<AppSettings>().iceConfigurations.replaceList(configurations);
 
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
@@ -55,7 +56,7 @@ class IceConfigurationViewPage extends StatelessWidget {
       Navigator.pushReplacement(
         context,
         CupertinoPageRoute(
-          builder: (context) => const HomeView(),
+          builder: (context) => const HomeViewPage(),
         ),
       );
     }

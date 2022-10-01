@@ -20,30 +20,28 @@ class HomeViewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      child: CupertinoTabScaffold(
-        tabBar: CupertinoTabBar(
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(
-                CupertinoIcons.home,
-                size: 24,
-              ),
-              label: "Home",
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(
+              CupertinoIcons.home,
+              size: 24,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                CupertinoIcons.captions_bubble,
-                size: 24,
-              ),
-              label: "Preview",
-            )
-          ],
-        ),
-        tabBuilder: (context, index) {
-          return TabBarPages.values[index].page;
-        },
+            label: "Home",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              CupertinoIcons.captions_bubble,
+              size: 24,
+            ),
+            label: "Preview",
+          )
+        ],
       ),
+      tabBuilder: (context, index) {
+        return TabBarPages.values[index].page;
+      },
     );
   }
 }
