@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>562207652524-2vt2o57m45889r68jd0862bed5uu8v82.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.562207652524-2vt2o57m45889r68jd0862bed5uu8v82</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAdMKFOz_DrOHohCUWjFejjlqpyiiTwAV0</string>
+	<key>GCM_SENDER_ID</key>
+	<string>562207652524</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.dieklingel.app</string>
+	<key>PROJECT_ID</key>
+	<string>dieklingel</string>
+	<key>STORAGE_BUCKET</key>
+	<string>dieklingel.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:562207652524:ios:573c77c806f853a008fd09</string>
+</dict>
+</plist>

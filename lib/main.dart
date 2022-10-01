@@ -7,21 +7,22 @@ import 'package:dieklingel_app/views/home_view_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'components/connection_configuration.dart';
-import 'firebase_options.dart';
 
 import './views/settings/connection_configuration_view.dart';
 import 'globals.dart' as app;
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await app.init();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await app.init();
   MessagingClient messagingClient = MessagingClient();
   SignalingClient signalingClient =
       SignalingClient.fromMessagingClient(messagingClient);
