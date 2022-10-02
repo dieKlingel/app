@@ -1,0 +1,22 @@
+
+name: check-build
+on:
+  pull_request:
+    branches:
+      - main
+      - development
+jobs:
+  build-flutter:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.3.3'
+          channel: 'stable'
+      - run: |
+        flutter pub get
+        flutter test
+        flutter build web
+        flutter build apk
+        flutter build ios --no-codesign
