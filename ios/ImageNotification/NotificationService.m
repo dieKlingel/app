@@ -1,8 +1,8 @@
 //
 //  NotificationService.m
-//  Notification
+//  ImageNotification
 //
-//  Created by Kai Mayer on 24.04.22.
+//  Created by Kai Mayer on 02.10.22.
 //
 
 #import "NotificationService.h"
@@ -22,9 +22,9 @@
     self.bestAttemptContent = [request.content mutableCopy];
     
     // Modify the notification content here...
-    //self.bestAttemptContent.title = [NSString stringWithFormat:@"%@ [modified]", self.bestAttemptContent.title];
-    //self.contentHandler(self.bestAttemptContent);
-    
+    // self.bestAttemptContent.title = [NSString stringWithFormat:@"%@ [modified]", self.bestAttemptContent.title];
+    //
+    // self.contentHandler(self.bestAttemptContent);
     [[FIRMessaging extensionHelper] populateNotificationContent:self.bestAttemptContent withContentHandler:contentHandler];
 }
 

@@ -40,7 +40,7 @@ post_install do |installer|
   end
 end
 
-target 'Notification' do
+target 'ImageNotification' do
   use_frameworks!
   pod 'Firebase/Messaging'
 end

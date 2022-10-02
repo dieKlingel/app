@@ -1,8 +1,8 @@
 //
 //  NotificationService.h
-//  Notification
+//  ImageNotification
 //
-//  Created by Kai Mayer on 24.04.22.
+//  Created by Kai Mayer on 02.10.22.
 //
 
 #import <UserNotifications/UserNotifications.h>
