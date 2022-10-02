@@ -18,9 +18,8 @@ jobs:
         with:
           flutter-version: '3.3.3'
           channel: 'stable'
-      - run: |
-            flutter pub get
-            flutter test
-            flutter build web
-            flutter build apk
-            flutter build ios --no-codesign
+      - run: flutter pub get
+      - run: flutter test
+      - run: flutter build web
+      - run: flutter build apk
+      - run: flutter build ipa --no-codesign
