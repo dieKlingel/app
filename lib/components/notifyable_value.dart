@@ -15,7 +15,7 @@ class NotifyableValue<T> extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setValueAndForceNotify(T newValue) {
+  void force(T newValue) {
     _value = newValue;
     notifyListeners();
   }
