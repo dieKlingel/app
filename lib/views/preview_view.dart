@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:dieklingel_app/views/call_view_fullscreen.dart';
+import 'package:flutter/material.dart';
+
 import '../messaging/messaging_client.dart';
 import '../touch_scroll_behavior.dart';
-import 'components/sub_headline.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +17,6 @@ class PreviewView extends StatefulWidget {
 }
 
 class _PreviewView extends State<PreviewView> {
-  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _bodyController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _sendButtonIsEnabled = false;
@@ -63,68 +64,135 @@ class _PreviewView extends State<PreviewView> {
   }
 
   void _onUserNotificationSendPressed() {
-    Map<String, dynamic> message = {
-      "title": _titleController.text,
-      "body": _bodyController.text,
-    };
     context.read<MessagingClient>().send(
           "io/user/notification",
-          jsonEncode(message),
+          _bodyController.text,
         );
-    _titleController.clear();
     _bodyController.clear();
+    FocusScope.of(context).requestFocus(FocusNode());
+  }
+
+  Widget smallTextFieldIcon({
+    required IconData icon,
+    void Function()? onPressed,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 2, right: 2),
+      child: SizedBox(
+        width: 34,
+        height: 34,
+        child: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: onPressed,
+          child: Icon(
+            icon,
+            size: 35,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      scrollBehavior: TouchScrollBehavior(),
-      physics: const AlwaysScrollableScrollPhysics(),
-      controller: _scrollController,
-      slivers: [
-        CupertinoSliverRefreshControl(
-          onRefresh: _onRefresh,
+    return Stack(
+      children: [
+        CustomScrollView(
+          scrollBehavior: TouchScrollBehavior(),
+          physics: const AlwaysScrollableScrollPhysics(),
+          controller: _scrollController,
+          slivers: [
+            CupertinoSliverRefreshControl(
+              onRefresh: _onRefresh,
+            ),
+            SliverList(
+              delegate: SliverChildListDelegate(
+                [
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: _image ??
+                          Padding(
+                            padding: const EdgeInsets.all(35.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Text(
+                                  "swipe down to refresh",
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                Icon(
+                                  CupertinoIcons.down_arrow,
+                                  color: Colors.grey,
+                                ),
+                              ],
+                            ),
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        SliverList(
-          delegate: SliverChildListDelegate(
-            [
-              const SubHeadline(
-                child: Text("Snapshot"),
-              ),
-              //_image ?? Container(),
-              //Image.network("https://picsum.photos/250?image=9"),
-              Container(
-                child: _image,
-              ),
-              const SubHeadline(
-                child: Text("User Notification"),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: CupertinoTextField(
-                  controller: _titleController,
-                  placeholder: "Title",
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 5.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                smallTextFieldIcon(
+                  icon: CupertinoIcons.phone_circle,
+                  onPressed: () async {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => const CallViewFullScreen(),
+                      ),
+                    );
+                  },
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: CupertinoTextField(
-                  controller: _bodyController,
-                  placeholder: "Message",
-                  maxLines: 3,
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 2, right: 2),
+                    child: CupertinoTextField(
+                      placeholder: "Message",
+                      controller: _bodyController,
+                      padding: const EdgeInsets.fromLTRB(10, 5, 10, 7),
+                      decoration: BoxDecoration(
+                        color: const CupertinoDynamicColor.withBrightness(
+                            color: Colors.white, darkColor: Colors.black),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: CupertinoDynamicColor.withBrightness(
+                                color: Colors.grey.shade300,
+                                darkColor: Colors.grey.shade800)),
+                      ),
+                      minLines: 1,
+                      maxLines: 5,
+                    ),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: CupertinoButton.filled(
+                smallTextFieldIcon(
+                  icon: CupertinoIcons.arrow_up_circle,
                   onPressed: context.watch<MessagingClient>().isConnected() &&
                           _sendButtonIsEnabled
                       ? _onUserNotificationSendPressed
                       : null,
-                  child: const Text("Send"),
                 ),
-              ),
-            ],
+                smallTextFieldIcon(
+                  icon: CupertinoIcons.lock_circle,
+                  onPressed: () {
+                    setState(() {
+                      _image = null;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ],

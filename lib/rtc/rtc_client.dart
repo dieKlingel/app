@@ -259,5 +259,7 @@ class RtcClient extends ChangeNotifier {
     _mediaRessource.close();
     _rtcPeerConnection = null;
     recipient = "";
+    rtcConnectionState = RtcConnectionState.disconnected;
+    notifyListeners();
   }
 }

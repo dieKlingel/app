@@ -1,3 +1,5 @@
+import 'package:dieklingel_app/rtc/rtc_connection_state.dart';
+
 import '../components/app_settings.dart';
 import '../components/connection_configuration.dart';
 import '../messaging/messaging_client.dart';
@@ -11,7 +13,9 @@ import '../components/simple_alert_dialog.dart';
 import '../media/media_ressource.dart';
 
 class CallView extends StatefulWidget {
-  const CallView({Key? key}) : super(key: key);
+  final void Function(RtcConnectionState state)? onCallStateChanged;
+
+  const CallView({Key? key, this.onCallStateChanged}) : super(key: key);
 
   @override
   State<CallView> createState() => _CallView();
@@ -89,6 +93,9 @@ class _CallView extends State<CallView> {
             _remoteVideo.srcObject = mediaStream;
           },
         );
+      },
+      onStateChanged: (state, client) {
+        widget.onCallStateChanged?.call(state);
       },
     );
     await client.invite(name, transceivers: [
