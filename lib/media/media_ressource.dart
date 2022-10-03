@@ -8,10 +8,7 @@ class MediaRessource {
   }
 
   Future<MediaStream?> open(bool audio, bool video) async {
-    if (null != _stream) {
-      print("use existing stream");
-      return _stream;
-    }
+    if (null != _stream) return _stream;
     Map<String, bool> constraints = {
       'audio': audio,
       'video': video,

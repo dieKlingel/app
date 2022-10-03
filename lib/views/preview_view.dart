@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -44,9 +45,6 @@ class _PreviewView extends State<PreviewView> {
   void initState() {
     super.initState();
     _rtcVideoRenderer.initialize();
-    _rtcVideoRenderer.onFirstFrameRendered = () {
-      print("on first  fram");
-    };
     _rtcVideoRenderer.onResize = () {
       setState(() {
         aspectRatio = _rtcVideoRenderer.videoWidth.toDouble() /
@@ -66,7 +64,15 @@ class _PreviewView extends State<PreviewView> {
     });
   }
 
-  void initialize() {
+  void initialize() async {
+    /* TODO: Hotfix: AudioSession
+    Do this, so the mic starts the first time we use navigator.mediaDevices
+    caues by this issue: https://github.com/flutter-webrtc/flutter-webrtc/issues/1094
+    */
+    AudioSession.instance.then((session) {
+      session.configure(const AudioSessionConfiguration.speech());
+    });
+
     context.read<MessagingClient>().messageController.stream.listen((event) {
       switch (event.topic) {
         case "io/camera/snapshot":
@@ -169,9 +175,8 @@ class _PreviewView extends State<PreviewView> {
     if (!mounted) return;
     context.read<NotifyableValue<RtcClient?>>().value = client;
     /* setState(() {
-      _mediaRessource.stream?.getAudioTracks()[0].enabled =
-          _micIsEnabled = false;
-    });*/
+      _mediaRessource.stream?.getAudioTracks()[0].enabled = false;
+    }); */
   }
 
   Widget smallTextFieldIcon({
@@ -226,7 +231,7 @@ class _PreviewView extends State<PreviewView> {
                             Align(
                               alignment: Alignment.topRight,
                               child: Container(
-                                margin: EdgeInsets.all(10),
+                                margin: const EdgeInsets.all(10),
                                 width: 10,
                                 height: 10,
                                 decoration: BoxDecoration(
@@ -257,7 +262,7 @@ class _PreviewView extends State<PreviewView> {
                       ),
                     )
                   : CupertinoContextMenu(
-                      actions: [
+                      actions: const [
                         CupertinoContextMenuAction(child: Text("Copy"))
                       ],
                       child: Padding(
@@ -321,11 +326,6 @@ class _PreviewView extends State<PreviewView> {
           smallTextFieldIcon(
             icon: CupertinoIcons.lock_circle,
             onPressed: () async {
-              MediaStream? stream = await _mediaRessource.open(true, false);
-              if (stream == null) {
-                print("no stream");
-                return;
-              }
               setState(() {
                 _image = null;
               });
