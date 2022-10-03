@@ -8,17 +8,16 @@ class CallViewFullScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: CupertinoPageScaffold(child: SafeArea(
-        child: CallView(
-          onCallStateChanged: (RtcConnectionState state) {
-            if (state == RtcConnectionState.disconnected) {
-              Navigator.of(context).pop();
-            }
-          },
-        ),
-      )),
-    );
+    return CupertinoPageScaffold(
+        child: SafeArea(
+      child: CallView(
+        autoStartCall: true,
+        onCallStateChanged: (RtcConnectionState state) {
+          if (state == RtcConnectionState.disconnected) {
+            Navigator.of(context).pop();
+          }
+        },
+      ),
+    ));
   }
 }

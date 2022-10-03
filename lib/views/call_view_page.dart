@@ -25,7 +25,7 @@ class CallViewPage extends StatelessWidget {
           }, //callIsActive ? null : ,
         ),
       ),
-      child: const SafeArea(
+      child: SafeArea(
         child: CallView(),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:dieklingel_app/components/notifyable_value.dart';
 import 'package:dieklingel_app/rtc/rtc_connection_state.dart';
 
 import '../components/app_settings.dart';
@@ -13,24 +14,37 @@ import '../components/simple_alert_dialog.dart';
 import '../media/media_ressource.dart';
 
 class CallView extends StatefulWidget {
+  final MediaRessource mediaRessource;
+  final RTCVideoRenderer rtcVideoRenderer;
   final void Function(RtcConnectionState state)? onCallStateChanged;
+  final bool autoStartCall;
 
-  const CallView({Key? key, this.onCallStateChanged}) : super(key: key);
+  CallView({
+    Key? key,
+    this.onCallStateChanged,
+    MediaRessource? mediaRessource,
+    RTCVideoRenderer? rtcVideoRenderer,
+    this.autoStartCall = false,
+  })  : rtcVideoRenderer = rtcVideoRenderer ?? RTCVideoRenderer(),
+        mediaRessource = mediaRessource ?? MediaRessource(),
+        super(key: key);
 
   @override
   State<CallView> createState() => _CallView();
 }
 
 class _CallView extends State<CallView> {
-  final MediaRessource _mediaRessource = MediaRessource();
-  final RTCVideoRenderer _remoteVideo = RTCVideoRenderer();
-  RtcClient? _rtcClient;
   bool _micIsEnabled = false;
 
   @override
   void initState() {
     super.initState();
-    _remoteVideo.initialize();
+    widget.rtcVideoRenderer.initialize();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (widget.autoStartCall) {
+        _onCallButtonPressed();
+      }
+    });
   }
 
   ConnectionConfiguration getDefaultConnectionConfiguration() {
@@ -42,15 +56,13 @@ class _CallView extends State<CallView> {
   }
 
   void _onCallButtonPressed() async {
-    if (_rtcClient != null) {
-      _rtcClient?.hangup();
-      _remoteVideo.srcObject = null;
-      setState(() {
-        _rtcClient = null;
-      });
+    if (context.read<NotifyableValue<RtcClient?>>().value != null) {
+      context.read<NotifyableValue<RtcClient?>>().value?.hangup();
+      widget.rtcVideoRenderer.srcObject = null;
+      context.read<NotifyableValue<RtcClient?>>().value = null;
       return;
     }
-    await _mediaRessource.open(true, false);
+    await widget.mediaRessource.open(true, false);
     String? name = getDefaultConnectionConfiguration().channelPrefix;
     if (null == name) {
       if (!mounted) return;
@@ -85,12 +97,12 @@ class _CallView extends State<CallView> {
 
     RtcClient client = RtcClient(
       context.read<SignalingClient>(),
-      _mediaRessource,
+      widget.mediaRessource,
       ice,
       onMediatrackReceived: (mediaStream) {
         setState(
           () {
-            _remoteVideo.srcObject = mediaStream;
+            widget.rtcVideoRenderer.srcObject = mediaStream;
           },
         );
       },
@@ -109,15 +121,16 @@ class _CallView extends State<CallView> {
       ),
     ]);
 
+    if (!mounted) return;
+    context.read<NotifyableValue<RtcClient?>>().value = client;
     setState(() {
-      _rtcClient = client;
-      _mediaRessource.stream?.getAudioTracks()[0].enabled =
+      widget.mediaRessource.stream?.getAudioTracks()[0].enabled =
           _micIsEnabled = false;
     });
   }
 
   void _onMicButtonPressed() {
-    _mediaRessource.stream?.getAudioTracks()[0].enabled = !_micIsEnabled;
+    widget.mediaRessource.stream?.getAudioTracks()[0].enabled = !_micIsEnabled;
     setState(() {
       _micIsEnabled = !_micIsEnabled;
     });
@@ -130,7 +143,7 @@ class _CallView extends State<CallView> {
         Align(
           alignment: Alignment.topLeft,
           child: InteractiveViewer(
-            child: RTCVideoView(_remoteVideo),
+            child: RTCVideoView(widget.rtcVideoRenderer),
           ),
         ),
         Align(
@@ -145,14 +158,17 @@ class _CallView extends State<CallView> {
                       ? _onCallButtonPressed
                       : null,
                   child: Icon(
-                    _rtcClient == null
+                    context.watch<NotifyableValue<RtcClient?>>().value == null
                         ? CupertinoIcons.phone
                         : CupertinoIcons.phone_arrow_down_left,
                     size: 40,
                   ),
                 ),
                 CupertinoButton(
-                  onPressed: _rtcClient == null ? null : _onMicButtonPressed,
+                  onPressed:
+                      context.watch<NotifyableValue<RtcClient?>>().value == null
+                          ? null
+                          : _onMicButtonPressed,
                   child: Icon(
                     _micIsEnabled
                         ? CupertinoIcons.mic
@@ -184,7 +200,7 @@ class _CallView extends State<CallView> {
 
   @override
   void dispose() {
-    _remoteVideo.dispose();
+    widget.rtcVideoRenderer.dispose();
     super.dispose();
   }
 }

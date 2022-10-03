@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:dieklingel_app/components/notifyable_value.dart';
+import 'package:dieklingel_app/rtc/rtc_client.dart';
+
 import 'components/app_settings.dart';
 import 'messaging/messaging_client.dart';
 import 'signaling/signaling_client.dart';
@@ -27,12 +30,14 @@ void main() async {
   SignalingClient signalingClient =
       SignalingClient.fromMessagingClient(messagingClient);
   AppSettings appSettings = AppSettings();
+  NotifyableValue<RtcClient?> rtcClient = NotifyableValue(value: null);
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => messagingClient),
         ChangeNotifierProvider(create: (context) => signalingClient),
         ChangeNotifierProvider(create: (context) => appSettings),
+        ChangeNotifierProvider(create: (context) => rtcClient),
       ],
       child: const App(),
     ),
@@ -115,7 +120,8 @@ class _App extends State<App> {
         ConnectionConfiguration? defaultConfig =
             getDefaultConnectionConfiguration();
         if (defaultConfig == null) return;
-        context.read<MessagingClient>().hostname = defaultConfig.uri?.host;
+        context.read<MessagingClient>().hostname =
+            "${kIsWeb ? "${defaultConfig.uri?.scheme}://" : ""}${defaultConfig.uri?.host}";
         context.read<MessagingClient>().port = defaultConfig.uri?.port;
         context.read<MessagingClient>().prefix =
             defaultConfig.channelPrefix ?? "";
