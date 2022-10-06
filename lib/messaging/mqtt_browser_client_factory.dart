@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:mqtt_client/mqtt_client.dart';
-import 'package:mqtt_client/mqtt_browser_client.dart';
+import 'package:mqtt5_client/mqtt5_browser_client.dart';
+import 'package:mqtt5_client/mqtt5_client.dart';
 
 class MqttClientFactory {
   static MqttClient create(
@@ -14,8 +14,9 @@ class MqttClientFactory {
       maxConnectionAttempts: maxConnectionAttempts,
     );
     if (kIsWeb) {
+      // TODO: check if working on web
       //cant connect without next line
-      client.websocketProtocols = MqttClientConstants.protocolsSingleDefault;
+      // client.websocketProtocols = MqttClientConstants.protocolsSingleDefault;
     }
     return client;
   }
