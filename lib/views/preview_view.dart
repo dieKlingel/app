@@ -3,18 +3,18 @@ import 'dart:convert';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 
 import '../components/app_settings.dart';
 import '../components/connection_configuration.dart';
 import '../components/notifyable_value.dart';
 import '../components/simple_alert_dialog.dart';
 import '../media/media_ressource.dart';
-import '../messaging/messaging_client.dart';
+import '../messaging/mclient.dart';
 import '../rtc/rtc_client.dart';
 import '../signaling/signaling_client.dart';
 import '../touch_scroll_behavior.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
 class PreviewView extends StatefulWidget {
@@ -73,7 +73,8 @@ class _PreviewView extends State<PreviewView> {
       session.configure(const AudioSessionConfiguration.speech());
     });
 
-    context.read<MessagingClient>().messageController.stream.listen((event) {
+    // TODO: implement camera
+    /* context.read<MessagingClient>().messageController.stream.listen((event) {
       switch (event.topic) {
         case "io/camera/snapshot":
           if (event.message.isEmpty) {
@@ -89,19 +90,19 @@ class _PreviewView extends State<PreviewView> {
           });
           break;
       }
-    });
+    }); */
   }
 
   Future<void> _onRefresh() async {
-    if (!context.read<MessagingClient>().isConnected()) return;
-    context.read<MessagingClient>().send("io/camera/trigger", "latest");
+    /* if (!context.read<MessagingClient>().isConnected()) return;
+    context.read<MessagingClient>().send("io/camera/trigger", "latest"); */
   }
 
   void _onUserNotificationSendPressed() {
-    context.read<MessagingClient>().send(
+    /* context.read<MessagingClient>().send(
           "io/user/notification",
           _bodyController.text,
-        );
+        ); */
     _bodyController.clear();
     FocusScope.of(context).requestFocus(FocusNode());
   }
@@ -318,7 +319,8 @@ class _PreviewView extends State<PreviewView> {
           ),
           smallTextFieldIcon(
             icon: CupertinoIcons.arrow_up_circle,
-            onPressed: context.watch<MessagingClient>().isConnected() &&
+            onPressed: context.watch<MClient>().connectionState ==
+                        MqttConnectionState.connected &&
                     _sendButtonIsEnabled
                 ? _onUserNotificationSendPressed
                 : null,

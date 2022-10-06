@@ -1,4 +1,4 @@
-import 'package:dieklingel_app/rtc/rtc_connection_state.dart';
+import '../rtc/rtc_connection_state.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'call_view.dart';

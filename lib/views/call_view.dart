@@ -1,9 +1,10 @@
-import 'package:dieklingel_app/components/notifyable_value.dart';
-import 'package:dieklingel_app/rtc/rtc_connection_state.dart';
+import '../components/notifyable_value.dart';
+import '../rtc/rtc_connection_state.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 
 import '../components/app_settings.dart';
 import '../components/connection_configuration.dart';
-import '../messaging/messaging_client.dart';
+import '../messaging/mclient.dart';
 import '../rtc/rtc_client.dart';
 import '../signaling/signaling_client.dart';
 import 'package:flutter/cupertino.dart';
@@ -154,7 +155,8 @@ class _CallView extends State<CallView> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 CupertinoButton(
-                  onPressed: context.watch<MessagingClient>().isConnected()
+                  onPressed: context.watch<MClient>().connectionState ==
+                          MqttConnectionState.connected
                       ? _onCallButtonPressed
                       : null,
                   child: Icon(

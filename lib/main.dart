@@ -1,18 +1,19 @@
 import 'dart:convert';
 
-import 'package:dieklingel_app/components/notifyable_value.dart';
-import 'package:dieklingel_app/rtc/rtc_client.dart';
-
+import 'components/notifyable_value.dart';
+import 'messaging/mclient_topic_message.dart';
+import 'rtc/rtc_client.dart';
 import 'components/app_settings.dart';
-import 'messaging/messaging_client.dart';
+import 'messaging/mclient.dart';
 import 'signaling/signaling_client.dart';
 import 'views/home_view_page.dart';
+import 'components/connection_configuration.dart';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
-
 import 'package:flutter/foundation.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
-import 'components/connection_configuration.dart';
 
 import './views/settings/connection_configuration_view.dart';
 import 'globals.dart' as app;
@@ -26,15 +27,18 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await app.init();
-  MessagingClient messagingClient = MessagingClient();
-  SignalingClient signalingClient =
-      SignalingClient.fromMessagingClient(messagingClient);
+  MClient mClient = MClient();
+  mClient.prefix = "com.dieklingel/mayer/kai/";
+  SignalingClient signalingClient = SignalingClient.fromMessagingClient(
+    mClient,
+    signalingTopic: "rtc/signaling",
+  );
   AppSettings appSettings = AppSettings();
   NotifyableValue<RtcClient?> rtcClient = NotifyableValue(value: null);
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => messagingClient),
+        ChangeNotifierProvider(create: (context) => mClient),
         ChangeNotifierProvider(create: (context) => signalingClient),
         ChangeNotifierProvider(create: (context) => appSettings),
         ChangeNotifierProvider(create: (context) => rtcClient),
@@ -94,7 +98,8 @@ class _App extends State<App> {
 
   void publishFirebaseToken() {
     String? firebaseToken = context.read<AppSettings>().firebaseToken.value;
-    if (!context.read<MessagingClient>().isConnected() ||
+    if (context.read<MClient>().connectionState !=
+            MqttConnectionState.connected ||
         null == firebaseToken) {
       return;
     }
@@ -103,9 +108,11 @@ class _App extends State<App> {
       "token": firebaseToken,
     };
     print("publish");
-    context.read<MessagingClient>().send(
-          "firebase/notification/token/add",
-          jsonEncode(message),
+    context.read<MClient>().publish(
+          MClientTopicMessage(
+            topic: "firebase/notification/token/add",
+            message: jsonEncode(message),
+          ),
         );
   }
 
@@ -120,23 +127,21 @@ class _App extends State<App> {
         ConnectionConfiguration? defaultConfig =
             getDefaultConnectionConfiguration();
         if (defaultConfig == null) return;
-        context.read<MessagingClient>().hostname =
+        context.read<MClient>().host =
             "${kIsWeb ? "${defaultConfig.uri?.scheme}://" : ""}${defaultConfig.uri?.host}";
-        context.read<MessagingClient>().port = defaultConfig.uri?.port;
-        context.read<MessagingClient>().prefix =
-            defaultConfig.channelPrefix ?? "";
-        context.read<MessagingClient>().disconnect();
-        await context.read<MessagingClient>().connect(
+        context.read<MClient>().port = defaultConfig.uri?.port;
+        context.read<MClient>().prefix = defaultConfig.channelPrefix ?? "";
+        context.read<MClient>().disconnect();
+        await context.read<MClient>().connect(
               username: defaultConfig.username,
               password: defaultConfig.password,
             );
         if (!mounted) return;
         publishFirebaseToken();
-        context
-            .read<MessagingClient>()
+        /* context
+            .read<MClient>()
             .listen("rtc/signaling")
-            .listen("io/camera/snapshot");
-        context.read<SignalingClient>().signalingTopic = "rtc/signaling";
+            .listen("io/camera/snapshot");*/
       },
     );
 
