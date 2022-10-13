@@ -14,9 +14,8 @@ class MqttClientFactory {
       maxConnectionAttempts: maxConnectionAttempts,
     );
     if (kIsWeb) {
-      // TODO: check if working on web
       //cant connect without next line
-      // client.websocketProtocols = MqttClientConstants.protocolsSingleDefault;
+      client.websocketProtocols = MqttClientConstants.protocolsSingleDefault;
     }
     return client;
   }
