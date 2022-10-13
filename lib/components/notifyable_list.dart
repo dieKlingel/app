@@ -140,8 +140,7 @@ class NotifyableList<T> extends ChangeNotifier implements List<T> {
 
   @override
   Iterable<E> expand<E>(Iterable<E> Function(T element) toElements) {
-    // TODO: implement expand
-    throw UnimplementedError();
+    return _list.expand(toElements);
   }
 
   @override
@@ -157,19 +156,18 @@ class NotifyableList<T> extends ChangeNotifier implements List<T> {
 
   @override
   E fold<E>(E initialValue, E Function(E previousValue, T element) combine) {
-    // TODO: implement fold
-    throw UnimplementedError();
+    return _list.fold(initialValue, combine);
   }
 
   @override
   Iterable<T> followedBy(Iterable<T> other) {
-    // TODO: implement followedBy
-    throw UnimplementedError();
+    return _list.followedBy(other);
   }
 
   @override
   void forEach(void Function(T element) action) {
     _list.forEach(action);
+    notifyListeners();
   }
 
   @override
@@ -184,71 +182,65 @@ class NotifyableList<T> extends ChangeNotifier implements List<T> {
 
   @override
   int indexWhere(bool Function(T element) test, [int start = 0]) {
-    // TODO: implement indexWhere
-    throw UnimplementedError();
+    return _list.indexWhere(test, start);
   }
 
   @override
   void insert(int index, T element) {
-    // TODO: implement insert
+    _list.insert(index, element);
+    notifyListeners();
   }
 
   @override
   void insertAll(int index, Iterable<T> iterable) {
-    // TODO: implement insertAll
+    _list.insertAll(index, iterable);
+    notifyListeners();
   }
 
   @override
   bool get isEmpty => _list.isEmpty;
 
   @override
-  // TODO: implement isNotEmpty
-  bool get isNotEmpty => throw UnimplementedError();
+  bool get isNotEmpty => _list.isNotEmpty;
 
   @override
-  // TODO: implement iterator
-  Iterator<T> get iterator => throw UnimplementedError();
+  Iterator<T> get iterator => _list.iterator;
 
   @override
   String join([String separator = ""]) {
-    // TODO: implement join
-    throw UnimplementedError();
+    return _list.join(separator);
   }
 
   @override
   int lastIndexOf(T element, [int? start]) {
-    // TODO: implement lastIndexOf
-    throw UnimplementedError();
+    return _list.lastIndexOf(element, start);
   }
 
   @override
   int lastIndexWhere(bool Function(T element) test, [int? start]) {
-    // TODO: implement lastIndexWhere
-    throw UnimplementedError();
+    return _list.lastIndexWhere(test, start);
   }
 
   @override
   T lastWhere(bool Function(T element) test, {T Function()? orElse}) {
-    // TODO: implement lastWhere
-    throw UnimplementedError();
+    return _list.lastWhere(test, orElse: orElse);
   }
 
   @override
   Iterable<E> map<E>(E Function(T e) toElement) {
-    // TODO: implement map
-    throw UnimplementedError();
+    return _list.map<E>(toElement);
   }
 
   @override
   T reduce(T Function(T value, T element) combine) {
-    // TODO: implement reduce
-    throw UnimplementedError();
+    return _list.reduce(combine);
   }
 
   @override
   T removeLast() {
-    // TODO: implement removeLast
-    throw UnimplementedError();
+    T last = _list.removeLast();
+    notifyListeners();
+    return last;
   }
 
   @override
@@ -264,8 +256,7 @@ class NotifyableList<T> extends ChangeNotifier implements List<T> {
   }
 
   @override
-  // TODO: implement reversed
-  Iterable<T> get reversed => throw UnimplementedError();
+  Iterable<T> get reversed => _list.reversed;
 
   @override
   void setAll(int index, Iterable<T> iterable) {
@@ -286,25 +277,21 @@ class NotifyableList<T> extends ChangeNotifier implements List<T> {
   }
 
   @override
-  // TODO: implement single
-  T get single => throw UnimplementedError();
+  T get single => _list.single;
 
   @override
   T singleWhere(bool Function(T element) test, {T Function()? orElse}) {
-    // TODO: implement singleWhere
-    throw UnimplementedError();
+    return _list.singleWhere(test, orElse: orElse);
   }
 
   @override
   Iterable<T> skip(int count) {
-    // TODO: implement skip
-    throw UnimplementedError();
+    return _list.skip(count);
   }
 
   @override
   Iterable<T> skipWhile(bool Function(T value) test) {
-    // TODO: implement skipWhile
-    throw UnimplementedError();
+    return _list.skipWhile(test);
   }
 
   @override
@@ -315,43 +302,36 @@ class NotifyableList<T> extends ChangeNotifier implements List<T> {
 
   @override
   List<T> sublist(int start, [int? end]) {
-    // TODO: implement sublist
-    throw UnimplementedError();
+    return _list.sublist(start, end);
   }
 
   @override
   Iterable<T> take(int count) {
-    // TODO: implement take
-    throw UnimplementedError();
+    return _list.take(count);
   }
 
   @override
   Iterable<T> takeWhile(bool Function(T value) test) {
-    // TODO: implement takeWhile
-    throw UnimplementedError();
+    return _list.takeWhile(test);
   }
 
   @override
   List<T> toList({bool growable = true}) {
-    // TODO: implement toList
-    throw UnimplementedError();
+    return _list.toList(growable: growable);
   }
 
   @override
   Set<T> toSet() {
-    // TODO: implement toSet
-    throw UnimplementedError();
+    return _list.toSet();
   }
 
   @override
   Iterable<T> where(bool Function(T element) test) {
-    // TODO: implement where
-    throw UnimplementedError();
+    return _list.where(test);
   }
 
   @override
-  Iterable<T> whereType<T>() {
-    // TODO: implement whereType
-    throw UnimplementedError();
+  Iterable<E> whereType<E>() {
+    return _list.whereType<E>();
   }
 }
