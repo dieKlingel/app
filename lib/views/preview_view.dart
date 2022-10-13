@@ -1,7 +1,7 @@
 import 'package:audio_session/audio_session.dart';
 import 'package:dismissible_page/dismissible_page.dart';
+import 'package:uuid/uuid.dart';
 import '../messaging/mclient_topic_message.dart';
-import '../rtc/rtc_connection_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt_client/mqtt_client.dart';
@@ -75,30 +75,10 @@ class _PreviewView extends State<PreviewView> {
     AudioSession.instance.then((session) {
       session.configure(const AudioSessionConfiguration.speech());
     });
-
-    // TODO: implement camera
-    /* context.read<MessagingClient>().messageController.stream.listen((event) {
-      switch (event.topic) {
-        case "io/camera/snapshot":
-          if (event.message.isEmpty) {
-            context.read<MessagingClient>().send("io/camera/trigger", "now");
-            break;
-          }
-          String base64 = event.message.startsWith("data:")
-              ? event.message.split(";").last
-              : event.message;
-          Uint8List bytes = base64Decode(base64);
-          setState(() {
-            _image = Image.memory(bytes);
-          });
-          break;
-      }
-    }); */
   }
 
   Future<void> _onRefresh() async {
-    /* if (!context.read<MessagingClient>().isConnected()) return;
-    context.read<MessagingClient>().send("io/camera/trigger", "latest"); */
+    // TODO: refresh list view
   }
 
   void _onUserNotificationSendPressed() {
@@ -136,8 +116,7 @@ class _PreviewView extends State<PreviewView> {
       return;
     }
     if (!mounted) return;
-    // TODO: change uid to random string
-    context.read<SignalingClient>().uid = "app";
+    context.read<SignalingClient>().uid = const Uuid().v4();
     List<Map<String, dynamic>> iceServers = [];
     context.read<AppSettings>().iceConfigurations.forEach(((element) {
       Map<String, dynamic> b = element.toJson();
@@ -295,14 +274,6 @@ class _PreviewView extends State<PreviewView> {
         ),
       ],
     );
-  }
-
-  bool get _callIsConnected {
-    return context
-            .read<NotifyableValue<RtcClient?>>()
-            .value
-            ?.rtcConnectionState ==
-        RtcConnectionState.connected;
   }
 
   Widget _bottomMessageBar(BuildContext context) {
