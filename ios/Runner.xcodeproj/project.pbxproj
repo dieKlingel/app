@@ -58,6 +58,8 @@
 		0DA52254CBFF63FBFEF44E18 /* Pods-ImageNotification.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageNotification.profile.xcconfig"; path = "Target Support Files/Pods-ImageNotification/Pods-ImageNotification.profile.xcconfig"; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
+		2AE6BDC628F8936D007B553C /* DebugNotification.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = DebugNotification.xcconfig; path = Flutter/DebugNotification.xcconfig; sourceTree = "<group>"; };
+		2AE6BDC828F89805007B553C /* ReleaseNotification.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = ReleaseNotification.xcconfig; path = Flutter/ReleaseNotification.xcconfig; sourceTree = "<group>"; };
 		2AF2AD8028E9AF1C005F2388 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		2AF2AD8528E9AF78005F2388 /* ImageNotification.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ImageNotification.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2AF2AD8728E9AF78005F2388 /* NotificationService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NotificationService.h; sourceTree = "<group>"; };
@@ -121,6 +123,8 @@
 				9740EEB21CF90195004384FC /* Debug.xcconfig */,
 				7AFA3C8E1D35360C0083082E /* Release.xcconfig */,
 				9740EEB31CF90195004384FC /* Generated.xcconfig */,
+				2AE6BDC628F8936D007B553C /* DebugNotification.xcconfig */,
+				2AE6BDC828F89805007B553C /* ReleaseNotification.xcconfig */,
 			);
 			name = Flutter;
 			sourceTree = "<group>";
@@ -301,7 +305,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\n";
 		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -315,7 +319,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
 		};
 		B7AF8F24ADB690AF8D7A5EBD /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -504,7 +508,7 @@
 		};
 		2AF2AD8F28E9AF78005F2388 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 70B22E9F95E6B7E6F982B3E9 /* Pods-ImageNotification.debug.xcconfig */;
+			baseConfigurationReference = 2AE6BDC628F8936D007B553C /* DebugNotification.xcconfig */;
 			buildSettings = {
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
