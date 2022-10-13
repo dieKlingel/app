@@ -61,7 +61,6 @@ class MClient extends ChangeNotifier {
       _mqttClient!.subscribe("$prefix${sub.topic}", MqttQos.exactlyOnce);
     }
     _mqttClient!.updates!.listen((List<MqttReceivedMessage<MqttMessage>>? c) {
-      print("message received");
       MqttPublishMessage rec = c![0].payload as MqttPublishMessage;
       String topic = c[0].topic;
       if (null != prefix && topic.startsWith(prefix!)) {
