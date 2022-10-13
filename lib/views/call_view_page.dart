@@ -1,6 +1,5 @@
 import 'package:dieklingel_app/media/media_ressource.dart';
 import 'package:dismissible_page/dismissible_page.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -58,6 +57,7 @@ class _CallViewPage extends State<CallViewPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       CupertinoButton(
+                          onPressed: _onMicButtonPressed,
                           child: Icon(
                             widget.mediaRessource.stream
                                         ?.getAudioTracks()
@@ -67,14 +67,13 @@ class _CallViewPage extends State<CallViewPage> {
                                 ? CupertinoIcons.mic
                                 : CupertinoIcons.mic_off,
                             size: 40,
-                          ),
-                          onPressed: _onMicButtonPressed),
-                      CupertinoButton(
+                          )),
+                      const CupertinoButton(
+                        onPressed: null,
                         child: Icon(
                           CupertinoIcons.speaker_2,
                           size: 40,
                         ),
-                        onPressed: null,
                       ),
                     ],
                   ),
