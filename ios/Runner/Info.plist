@@ -29,7 +29,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Microphone Usage!</string>
+	<string>We use the Microphone to communicate with your doorbell.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We use the Camera to send and Image to your doorbell.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
