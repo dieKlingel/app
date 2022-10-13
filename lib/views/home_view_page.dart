@@ -1,13 +1,14 @@
-import 'call_view_page.dart';
+import 'settings/settings_view_page.dart';
+
 import 'preview_view_page.dart';
 import 'package:flutter/cupertino.dart';
 
 enum TabBarPages {
-  call(
-    CallViewPage(),
-  ),
   preview(
     PreviewViewPage(),
+  ),
+  settings(
+    SettingsViewPage(),
   );
 
   final Widget page;
@@ -32,10 +33,10 @@ class HomeViewPage extends StatelessWidget {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              CupertinoIcons.captions_bubble,
+              CupertinoIcons.settings,
               size: 24,
             ),
-            label: "Preview",
+            label: "Settings",
           )
         ],
       ),

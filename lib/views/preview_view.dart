@@ -1,6 +1,6 @@
-import 'dart:convert';
-
 import 'package:audio_session/audio_session.dart';
+import '../messaging/mclient_topic_message.dart';
+import '../rtc/rtc_connection_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt_client/mqtt_client.dart';
@@ -99,10 +99,12 @@ class _PreviewView extends State<PreviewView> {
   }
 
   void _onUserNotificationSendPressed() {
-    /* context.read<MessagingClient>().send(
-          "io/user/notification",
-          _bodyController.text,
-        ); */
+    context.read<MClient>().publish(
+          MClientTopicMessage(
+            topic: "io/user/notification",
+            message: _bodyController.text,
+          ),
+        );
     _bodyController.clear();
     FocusScope.of(context).requestFocus(FocusNode());
   }
@@ -175,9 +177,9 @@ class _PreviewView extends State<PreviewView> {
 
     if (!mounted) return;
     context.read<NotifyableValue<RtcClient?>>().value = client;
-    /* setState(() {
+    setState(() {
       _mediaRessource.stream?.getAudioTracks()[0].enabled = false;
-    }); */
+    });
   }
 
   Widget smallTextFieldIcon({
@@ -281,6 +283,14 @@ class _PreviewView extends State<PreviewView> {
     );
   }
 
+  bool get _callIsConnected {
+    return context
+            .read<NotifyableValue<RtcClient?>>()
+            .value
+            ?.rtcConnectionState ==
+        RtcConnectionState.connected;
+  }
+
   Widget _bottomMessageBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 5.0),
@@ -289,8 +299,13 @@ class _PreviewView extends State<PreviewView> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           smallTextFieldIcon(
-            icon: CupertinoIcons.phone_circle,
-            onPressed: _onCallButtonPressed,
+            icon: context.watch<NotifyableValue<RtcClient?>>().value == null
+                ? CupertinoIcons.phone_circle
+                : CupertinoIcons.phone_down_circle,
+            onPressed: context.watch<MClient>().connectionState ==
+                    MqttConnectionState.connected
+                ? _onCallButtonPressed
+                : null,
           ),
           Expanded(
             child: Padding(
@@ -327,11 +342,7 @@ class _PreviewView extends State<PreviewView> {
           ),
           smallTextFieldIcon(
             icon: CupertinoIcons.lock_circle,
-            onPressed: () async {
-              setState(() {
-                _image = null;
-              });
-            },
+            onPressed: null,
           ),
         ],
       ),
