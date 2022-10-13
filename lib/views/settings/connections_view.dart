@@ -1,26 +1,31 @@
-import 'package:dieklingel_app/components/state_builder.dart';
+import '../../components/app_settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../components/connection_configuration.dart';
 import '../../components/radio_box.dart';
 import '../../views/settings/connection_configuration_view.dart';
 
-import '../../globals.dart' as app;
-
 class ConnectionsView extends StatefulWidget {
-  const ConnectionsView({this.dataBuilder, Key? key}) : super(key: key);
-  final StateBuilder? dataBuilder;
+  const ConnectionsView({Key? key}) : super(key: key);
 
   @override
-  _ConnectionsView createState() => _ConnectionsView();
+  State<ConnectionsView> createState() => _ConnectionsView();
 }
 
 class _ConnectionsView extends State<ConnectionsView> {
   _ConnectionsView() : super();
 
-  Key selectedConfigurationKey = app.defaultConnectionConfiguration.key;
-  List<ConnectionConfiguration> configurations = app.connectionConfigurations;
+  late Key selectedConfigurationKey = context
+      .read<AppSettings>()
+      .connectionConfigurations
+      .firstWhere(
+        (element) => element.isDefault,
+        orElse: () =>
+            context.read<AppSettings>().connectionConfigurations.first,
+      )
+      .key;
 
   Future<void> _goToConnectionConfigurationView({
     ConnectionConfiguration? configuration,
@@ -33,10 +38,10 @@ class _ConnectionsView extends State<ConnectionsView> {
         ),
       ),
     );
-    setState(() {
+    /*setState(() {
       configurations = app.connectionConfigurations;
       selectedConfigurationKey = app.defaultConnectionConfiguration.key;
-    });
+    }); */
   }
 
   BorderSide get _listViewBorderSide => BorderSide(
@@ -53,25 +58,13 @@ class _ConnectionsView extends State<ConnectionsView> {
         ).resolveFrom(context),
       );
 
-  void rebuild(dynamic data) {
-    setState(() {
-      configurations = app.connectionConfigurations;
-      selectedConfigurationKey = app.defaultConnectionConfiguration.key;
-    });
-  }
-
-  @override
-  void initState() {
-    widget.dataBuilder?.addEventListener("rebuild", rebuild);
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: configurations.length,
+      itemCount: context.watch<AppSettings>().connectionConfigurations.length,
       itemBuilder: (BuildContext context, int index) {
-        ConnectionConfiguration configuration = configurations[index];
+        ConnectionConfiguration configuration =
+            context.watch<AppSettings>().connectionConfigurations[index];
         return Container(
           decoration: BoxDecoration(
             border: Border(
@@ -101,15 +94,22 @@ class _ConnectionsView extends State<ConnectionsView> {
                       RadioBox(
                         value: configuration.key == selectedConfigurationKey,
                         onChanged: (state) {
-                          setState(() {
-                            configurations
-                                .firstWhere((element) =>
-                                    element.key == selectedConfigurationKey)
-                                .isDefault = false;
-                            selectedConfigurationKey = configuration.key;
-                            configuration.isDefault = true;
-                            app.connectionConfigurations = configurations;
-                          });
+                          List<ConnectionConfiguration> configs = List.from(
+                            context
+                                .read<AppSettings>()
+                                .connectionConfigurations
+                                .asList(),
+                          );
+                          configs
+                              .firstWhere((element) =>
+                                  element.key == selectedConfigurationKey)
+                              .isDefault = false;
+                          selectedConfigurationKey = configuration.key;
+                          configuration.isDefault = true;
+                          context
+                              .read<AppSettings>()
+                              .connectionConfigurations
+                              .replace(configs);
                         },
                       ),
                       Text(
@@ -131,9 +131,15 @@ class _ConnectionsView extends State<ConnectionsView> {
               ],
             ),
             onDismissed: (DismissDirection direction) async {
-              configurations.remove(configuration);
-              app.connectionConfigurations = configurations;
-              if (configurations.isNotEmpty) {
+              context
+                  .read<AppSettings>()
+                  .connectionConfigurations
+                  .remove(configuration);
+
+              if (context
+                  .read<AppSettings>()
+                  .connectionConfigurations
+                  .isEmpty) {
                 Navigator.popUntil(context, (route) {
                   if (!route.isFirst) {
                     Navigator.replaceRouteBelow(
@@ -147,22 +153,22 @@ class _ConnectionsView extends State<ConnectionsView> {
                   return route.isFirst;
                 });
               } else {
-                setState(() {
-                  configurations = app.connectionConfigurations;
-                  selectedConfigurationKey =
-                      app.defaultConnectionConfiguration.key;
-                });
+                selectedConfigurationKey = context
+                    .read<AppSettings>()
+                    .connectionConfigurations
+                    .firstWhere(
+                      (element) => element.isDefault,
+                      orElse: () => context
+                          .read<AppSettings>()
+                          .connectionConfigurations
+                          .first,
+                    )
+                    .key;
               }
             },
           ),
         );
       },
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    widget.dataBuilder?.removeEventListener("rebuild", rebuild);
   }
 }

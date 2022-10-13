@@ -20,14 +20,14 @@ class RadioBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoButton(
       padding: EdgeInsets.zero,
-      child: Icon(
-        value ? CupertinoIcons.check_mark_circled : CupertinoIcons.circle,
-      ),
       onPressed: (onChanged == null)
           ? null
           : () {
               onChanged?.call(!value);
             },
+      child: Icon(
+        value ? CupertinoIcons.check_mark_circled : CupertinoIcons.circle,
+      ),
     );
   }
 }

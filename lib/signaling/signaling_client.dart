@@ -1,34 +1,38 @@
+import 'dart:async';
 import 'dart:convert';
 
-import '../event/event_emitter.dart';
-import '../messaging/messaging_client.dart';
-import '../signaling/signaling_message.dart';
+import '../messaging/mclient_topic_message.dart';
+import 'package:flutter/material.dart';
 
-class SignalingClient extends EventEmitter {
-  final MessagingClient _messagingClient;
-  final String _signalingTopic;
-  final String _uid;
+import '../messaging/mclient.dart';
+import 'signaling_message.dart';
 
-  String get uid {
-    return _uid;
-  }
+class SignalingClient extends ChangeNotifier {
+  final MClient _messagingClient;
+  String signalingTopic;
+  String uid;
+  final StreamController<SignalingMessage> broadcastController =
+      StreamController<SignalingMessage>.broadcast();
+  final StreamController<SignalingMessage> messageController =
+      StreamController<SignalingMessage>.broadcast();
 
   SignalingClient.fromMessagingClient(
-    this._messagingClient,
-    this._signalingTopic,
-    this._uid,
-  ) {
-    _messagingClient.addEventListener("message:$_signalingTopic", (raw) {
+    this._messagingClient, {
+    required this.signalingTopic,
+    this.uid = "",
+  }) {
+    _messagingClient.subscribe(signalingTopic, (event) {
+      if (signalingTopic != event.topic) return;
       try {
-        SignalingMessage message = SignalingMessage.fromJson(jsonDecode(raw));
+        SignalingMessage message =
+            SignalingMessage.fromJson(jsonDecode(event.message));
         if ("" == message.recipient) {
-          emit("broadcast", message);
-        } else if (_uid == message.recipient) {
-          emit("message", message);
+          broadcastController.add(message);
+        } else if (uid == message.recipient) {
+          messageController.add(message);
         }
       } catch (exception) {
-        emit(
-          "error",
+        print(
           "could not convert the message into a signaling message;$exception",
         );
       }
@@ -36,7 +40,11 @@ class SignalingClient extends EventEmitter {
   }
 
   void send(SignalingMessage message) {
+    if (signalingTopic == "") {
+      throw Exception("the signaling topic cannot be ''");
+    }
     String raw = jsonEncode(message.toJson());
-    _messagingClient.send(_signalingTopic, raw);
+    _messagingClient
+        .publish(MClientTopicMessage(topic: signalingTopic, message: raw));
   }
 }

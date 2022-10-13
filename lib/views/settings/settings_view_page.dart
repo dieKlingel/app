@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 import '../../components/ice_configuration.dart';
-import '../../components/state_builder.dart';
 import '../../views/settings/connections_view.dart';
-import '../../views/settings/general_view.dart';
 import '../../views/settings/ice_view.dart';
 import '../../components/connection_configuration.dart';
 import 'connection_configuration_view.dart';
@@ -13,26 +11,18 @@ class SettingsViewPage extends StatefulWidget {
   const SettingsViewPage({Key? key}) : super(key: key);
 
   @override
-  _SettingsViewPage createState() => _SettingsViewPage();
+  State<SettingsViewPage> createState() => _SettingsViewPage();
 }
 
 enum ContentView {
   connetionsView,
   iceView,
-  generalView,
 }
 
 class _SettingsViewPage extends State<SettingsViewPage> {
-  final StateBuilder _connectionsViewStateBuilder = StateBuilder();
-  final StateBuilder _iceViewStateBuilder = StateBuilder();
   late final Map<ContentView, Widget> contentViews = {
-    ContentView.connetionsView: ConnectionsView(
-      dataBuilder: _connectionsViewStateBuilder,
-    ),
-    ContentView.iceView: IceView(
-      stateBuilder: _iceViewStateBuilder,
-    ),
-    ContentView.generalView: const GeneralView(),
+    ContentView.connetionsView: const ConnectionsView(),
+    ContentView.iceView: const IceView(),
   };
   ContentView _selectedSegment = ContentView.connetionsView;
 
@@ -48,7 +38,6 @@ class _SettingsViewPage extends State<SettingsViewPage> {
         ),
       ),
     );
-    _connectionsViewStateBuilder.rebuild();
   }
 
   Future<void> _goToIceConfiurationViewPage(
@@ -63,7 +52,6 @@ class _SettingsViewPage extends State<SettingsViewPage> {
         ),
       ),
     );
-    _iceViewStateBuilder.rebuild();
   }
 
   Widget? get navBarTrailingButton {
@@ -117,7 +105,6 @@ class _SettingsViewPage extends State<SettingsViewPage> {
                 children: const <ContentView, Widget>{
                   ContentView.connetionsView: Text("Connections"),
                   ContentView.iceView: Text("ICE"),
-                  ContentView.generalView: Text("General"),
                 },
               ),
             ),

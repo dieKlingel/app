@@ -1,11 +1,13 @@
 import 'dart:convert';
+import '../../components/app_settings.dart';
+import '../home_view_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../components/simple_alert_dialog.dart';
 import '../../components/connection_configuration.dart';
-import '../../views/home_view.dart';
 
 class ConnectionConfigurationView extends StatelessWidget {
   ConnectionConfigurationView({
@@ -73,7 +75,9 @@ class ConnectionConfigurationView extends StatelessWidget {
     configuration.password =
         passwordController.text.isEmpty ? null : passwordController.text;
 
-    List<ConnectionConfiguration> configurations = await getConfigurations();
+    List<ConnectionConfiguration> configurations =
+        context.read<AppSettings>().connectionConfigurations.asList();
+
     if (configurations.contains(configuration)) {
       int index = configurations.indexOf(configuration);
       configurations.remove(configuration);
@@ -81,7 +85,10 @@ class ConnectionConfigurationView extends StatelessWidget {
     } else {
       configurations.add(configuration);
     }
-    await setConfigurations(configurations);
+    context
+        .read<AppSettings>()
+        .connectionConfigurations
+        .replace(configurations);
 
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
@@ -89,7 +96,7 @@ class ConnectionConfigurationView extends StatelessWidget {
       Navigator.pushReplacement(
         context,
         CupertinoPageRoute(
-          builder: (context) => const HomeView(),
+          builder: (context) => const HomeViewPage(),
         ),
       );
     }
