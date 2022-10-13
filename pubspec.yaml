@@ -45,6 +45,7 @@ dependencies:
   crypto: ^3.0.2
   audio_session: ^0.1.10
   uuid: ^3.0.6
+  dismissible_page: ^0.7.3
 
 dev_dependencies:
   flutter_test:

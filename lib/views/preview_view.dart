@@ -1,4 +1,5 @@
 import 'package:audio_session/audio_session.dart';
+import 'package:dismissible_page/dismissible_page.dart';
 import '../messaging/mclient_topic_message.dart';
 import '../rtc/rtc_connection_state.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ import '../signaling/signaling_client.dart';
 import '../touch_scroll_behavior.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+
+import 'call_view_page.dart';
 
 class PreviewView extends StatefulWidget {
   const PreviewView({Key? key}) : super(key: key);
@@ -219,31 +222,42 @@ class _PreviewView extends State<PreviewView> {
                   ? Container()
                   : Padding(
                       padding: const EdgeInsets.all(10),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Stack(
-                          children: [
-                            AspectRatio(
-                              aspectRatio:
-                                  _rtcVideoRenderer.videoWidth.toDouble() /
+                      child: Hero(
+                        tag: const Key("call_view_page"),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: GestureDetector(
+                            onTap: () async {
+                              context.pushTransparentRoute(CallViewPage(
+                                mediaRessource: _mediaRessource,
+                                rtcVideoRenderer: _rtcVideoRenderer,
+                              ));
+                            },
+                            child: Stack(
+                              children: [
+                                AspectRatio(
+                                  aspectRatio: _rtcVideoRenderer.videoWidth
+                                          .toDouble() /
                                       _rtcVideoRenderer.videoHeight.toDouble(),
-                              child: RTCVideoView(
-                                _rtcVideoRenderer,
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.topRight,
-                              child: Container(
-                                margin: const EdgeInsets.all(10),
-                                width: 10,
-                                height: 10,
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(5),
+                                  child: RTCVideoView(
+                                    _rtcVideoRenderer,
+                                  ),
                                 ),
-                              ),
-                            )
-                          ],
+                                Align(
+                                  alignment: Alignment.topRight,
+                                  child: Container(
+                                    margin: const EdgeInsets.all(10),
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),

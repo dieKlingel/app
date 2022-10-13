@@ -1,32 +1,88 @@
-import 'call_view.dart';
-import 'settings/settings_view_page.dart';
+import 'package:dieklingel_app/media/media_ressource.dart';
+import 'package:dismissible_page/dismissible_page.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
+
 import 'package:flutter/cupertino.dart';
 
-class CallViewPage extends StatelessWidget {
-  const CallViewPage({Key? key}) : super(key: key);
+class CallViewPage extends StatefulWidget {
+  final MediaRessource mediaRessource;
+  final RTCVideoRenderer rtcVideoRenderer;
+
+  const CallViewPage({
+    super.key,
+    required this.mediaRessource,
+    required this.rtcVideoRenderer,
+  });
+
+  @override
+  State<CallViewPage> createState() => _CallViewPage();
+}
+
+class _CallViewPage extends State<CallViewPage> {
+  void _onMicButtonPressed() {
+    MediaStreamTrack? audioTrack =
+        widget.mediaRessource.stream?.getAudioTracks().first;
+    if (null == audioTrack) return;
+    setState(() {
+      audioTrack.enabled = !audioTrack.enabled;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: const Text("dieKlingel"),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          child: const Icon(
-            CupertinoIcons.text_badge_plus,
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              CupertinoPageRoute(
-                builder: (context) => const SettingsViewPage(),
+    return DismissiblePage(
+      onDismissed: () {
+        Navigator.of(context).pop();
+      },
+      child: CupertinoPageScaffold(
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: InteractiveViewer(
+                child: Hero(
+                  tag: const Key("call_view_page"),
+                  child: RTCVideoView(
+                    widget.rtcVideoRenderer,
+                  ),
+                ),
               ),
-            );
-          }, //callIsActive ? null : ,
+            ),
+            SafeArea(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  margin: const EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      CupertinoButton(
+                          child: Icon(
+                            widget.mediaRessource.stream
+                                        ?.getAudioTracks()
+                                        .first
+                                        .enabled ??
+                                    false
+                                ? CupertinoIcons.mic
+                                : CupertinoIcons.mic_off,
+                            size: 40,
+                          ),
+                          onPressed: _onMicButtonPressed),
+                      CupertinoButton(
+                        child: Icon(
+                          CupertinoIcons.speaker_2,
+                          size: 40,
+                        ),
+                        onPressed: null,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
-      child: SafeArea(
-        child: CallView(),
       ),
     );
   }
