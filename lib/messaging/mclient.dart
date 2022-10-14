@@ -25,6 +25,14 @@ class MClient extends ChangeNotifier {
         MqttConnectionState.disconnected;
   }
 
+  bool isConnected() {
+    return connectionState == MqttConnectionState.connected;
+  }
+
+  bool isNotConnected() {
+    return !isConnected();
+  }
+
   Future<MqttClientConnectionStatus?> connect({
     String? username,
     String? password,
@@ -104,6 +112,7 @@ class MClient extends ChangeNotifier {
     MClientSubscribtion subscribtion =
         MClientSubscribtion(topic, listener: listener, regExp: regExp);
     _subscribtions.add(subscribtion);
+    if (isNotConnected()) return subscribtion;
     _mqttClient?.subscribe("$prefix$topic", MqttQos.exactlyOnce);
     return subscribtion;
   }

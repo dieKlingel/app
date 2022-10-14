@@ -1,10 +1,16 @@
+import 'dart:collection';
+import 'dart:convert';
+
 import 'package:audio_session/audio_session.dart';
-import 'package:dismissible_page/dismissible_page.dart';
+import 'package:dieklingel_app/event/system_event.dart';
+import 'package:dieklingel_app/views/preview/camera_live_view.dart';
+import 'package:dieklingel_app/views/preview/message_bar.dart';
+import 'package:dieklingel_app/views/preview/system_event_list_tile.dart';
+import '../extensions/get_mclient.dart';
 import 'package:uuid/uuid.dart';
 import '../messaging/mclient_topic_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mqtt_client/mqtt_client.dart';
 
 import '../components/app_settings.dart';
 import '../components/connection_configuration.dart';
@@ -18,8 +24,6 @@ import '../touch_scroll_behavior.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
-import 'call_view_page.dart';
-
 class PreviewView extends StatefulWidget {
   const PreviewView({Key? key}) : super(key: key);
 
@@ -31,10 +35,11 @@ class _PreviewView extends State<PreviewView> {
   final MediaRessource _mediaRessource = MediaRessource();
   final RTCVideoRenderer _rtcVideoRenderer = RTCVideoRenderer();
   final TextEditingController _bodyController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  final Queue<SystemEvent> _events = Queue<SystemEvent>();
   bool _sendButtonIsEnabled = false;
-  Image? _image;
   double? aspectRatio;
+
+  final ScrollController _controller = ScrollController();
 
   ConnectionConfiguration getDefaultConnectionConfiguration() {
     return context.read<AppSettings>().connectionConfigurations.firstWhere(
@@ -55,13 +60,14 @@ class _PreviewView extends State<PreviewView> {
       });
     };
     _bodyController.addListener(() {
+      if (_sendButtonIsEnabled == _bodyController.text.isNotEmpty) return;
       setState(() {
         _sendButtonIsEnabled = _bodyController.text.isNotEmpty;
       });
     });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) => initialize());
-    _scrollController.addListener(() {
-      if (_scrollController.offset == 0) {
+    _controller.addListener(() {
+      if (_controller.offset == 0) {
         FocusScope.of(context).requestFocus(FocusNode());
       }
     });
@@ -75,10 +81,32 @@ class _PreviewView extends State<PreviewView> {
     AudioSession.instance.then((session) {
       session.configure(const AudioSessionConfiguration.speech());
     });
+    MClient mClient = context.read<MClient>();
+    mClient.subscribe("system/event", (message) {
+      SystemEvent event = SystemEvent.fromJson(jsonDecode(message.message));
+      setState(() {
+        _events.addFirst(event);
+      });
+    });
   }
 
   Future<void> _onRefresh() async {
-    // TODO: refresh list view
+    MClient mClient = context.read<MClient>();
+    String? response = await mClient.get("request/events", "events");
+
+    if (null == response) return;
+
+    Iterable iterable = jsonDecode(response);
+    List<SystemEvent> events = List<SystemEvent>.from(
+      iterable.map(
+        (e) => SystemEvent.fromJson(e),
+      ),
+    );
+    events.sort(((a, b) => b.timestamp.compareTo(a.timestamp)));
+    setState(() {
+      _events.clear();
+      _events.addAll(events);
+    });
   }
 
   void _onUserNotificationSendPressed() {
@@ -164,178 +192,77 @@ class _PreviewView extends State<PreviewView> {
     });
   }
 
-  Widget smallTextFieldIcon({
-    required IconData icon,
-    void Function()? onPressed,
-  }) {
+  Widget _refreshIndicator(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 2, right: 2),
-      child: SizedBox(
-        width: 34,
-        height: 34,
-        child: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: onPressed,
-          child: Icon(
-            icon,
-            size: 35,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _scrollView(BuildContext context) {
-    return CustomScrollView(
-      scrollBehavior: TouchScrollBehavior(),
-      physics: const AlwaysScrollableScrollPhysics(),
-      controller: _scrollController,
-      slivers: [
-        CupertinoSliverRefreshControl(
-          onRefresh: _onRefresh,
-        ),
-        SliverList(
-          delegate: SliverChildListDelegate(
-            [
-              aspectRatio == null
-                  ? Container()
-                  : Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Hero(
-                        tag: const Key("call_view_page"),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: GestureDetector(
-                            onTap: () async {
-                              context.pushTransparentRoute(CallViewPage(
-                                mediaRessource: _mediaRessource,
-                                rtcVideoRenderer: _rtcVideoRenderer,
-                              ));
-                            },
-                            child: Stack(
-                              children: [
-                                AspectRatio(
-                                  aspectRatio: _rtcVideoRenderer.videoWidth
-                                          .toDouble() /
-                                      _rtcVideoRenderer.videoHeight.toDouble(),
-                                  child: RTCVideoView(
-                                    _rtcVideoRenderer,
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.topRight,
-                                  child: Container(
-                                    margin: const EdgeInsets.all(10),
-                                    width: 10,
-                                    height: 10,
-                                    decoration: BoxDecoration(
-                                      color: Colors.green,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-              _image == null
-                  ? Padding(
-                      padding: const EdgeInsets.all(35.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Text(
-                            "swipe down to refresh",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          Icon(
-                            CupertinoIcons.down_arrow,
-                            color: Colors.grey,
-                          ),
-                        ],
-                      ),
-                    )
-                  : CupertinoContextMenu(
-                      actions: const [
-                        CupertinoContextMenuAction(child: Text("Copy"))
-                      ],
-                      child: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: _image!,
-                        ),
-                      ),
-                    ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _bottomMessageBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 5.0),
+      padding: const EdgeInsets.all(35.0),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          smallTextFieldIcon(
-            icon: context.watch<NotifyableValue<RtcClient?>>().value == null
-                ? CupertinoIcons.phone_circle
-                : CupertinoIcons.phone_down_circle,
-            onPressed: context.watch<MClient>().connectionState ==
-                    MqttConnectionState.connected
-                ? _onCallButtonPressed
-                : null,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Text(
+            "swipe down to refresh",
+            style: TextStyle(color: Colors.grey),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 2, right: 2),
-              child: CupertinoTextField(
-                placeholder: "Message",
-                controller: _bodyController,
-                padding: const EdgeInsets.fromLTRB(10, 5, 10, 7),
-                decoration: BoxDecoration(
-                  color: const CupertinoDynamicColor.withBrightness(
-                    color: Colors.white,
-                    darkColor: Colors.black,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: CupertinoDynamicColor.withBrightness(
-                      color: Colors.grey.shade300,
-                      darkColor: Colors.grey.shade800,
-                    ),
-                  ),
-                ),
-                minLines: 1,
-                maxLines: 5,
-              ),
-            ),
-          ),
-          smallTextFieldIcon(
-            icon: CupertinoIcons.arrow_up_circle,
-            onPressed: context.watch<MClient>().connectionState ==
-                        MqttConnectionState.connected &&
-                    _sendButtonIsEnabled
-                ? _onUserNotificationSendPressed
-                : null,
-          ),
-          smallTextFieldIcon(
-            icon: CupertinoIcons.lock_circle,
-            onPressed: null,
+          Icon(
+            CupertinoIcons.down_arrow,
+            color: Colors.grey,
           ),
         ],
       ),
     );
   }
 
+  Widget _scrollView(BuildContext context) {
+    bool listIsVisible = _events.isNotEmpty || aspectRatio != null;
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
+      child: CupertinoScrollbar(
+        controller: _controller,
+        child: CustomScrollView(
+          scrollBehavior: TouchScrollBehavior(),
+          physics: const AlwaysScrollableScrollPhysics(),
+          controller: _controller,
+          slivers: [
+            CupertinoSliverRefreshControl(
+              onRefresh: _onRefresh,
+            ),
+            SliverList(
+              delegate: listIsVisible
+                  ? SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (index == 0) {
+                          return aspectRatio == null
+                              ? Container()
+                              : CameraLiveView(
+                                  mediaRessource: _mediaRessource,
+                                  rtcVideoRenderer: _rtcVideoRenderer,
+                                );
+                        }
+                        if (index < _events.length + 1) {
+                          return SystemEventListTile(
+                            event: _events.elementAt(index - 1),
+                          );
+                        }
+                        return null;
+                      },
+                      childCount: (_events.length + 1),
+                    )
+                  : SliverChildListDelegate(
+                      [
+                        _refreshIndicator(context),
+                      ],
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    MClient mClient = context.read<MClient>();
     return Stack(
       children: [
         _scrollView(context),
@@ -344,10 +271,16 @@ class _PreviewView extends State<PreviewView> {
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _bottomMessageBar(context),
+            MessageBar(
+              controller: _bodyController,
+              onCallPressed:
+                  mClient.isConnected() ? _onCallButtonPressed : null,
+              onSendPressed: mClient.isConnected() && _sendButtonIsEnabled
+                  ? _onUserNotificationSendPressed
+                  : null,
+            ),
           ],
         ),
-        //scrollView(context),
       ],
     );
   }
