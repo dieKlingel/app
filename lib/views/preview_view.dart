@@ -65,11 +65,6 @@ class _PreviewView extends State<PreviewView> {
       });
     });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) => initialize());
-    _controller.addListener(() {
-      if (_controller.offset == 0) {
-        // FocusScope.of(context).requestFocus(FocusNode());
-      }
-    });
   }
 
   void initialize() async {
@@ -231,11 +226,8 @@ class _PreviewView extends State<PreviewView> {
         controller: _controller,
         child: CustomScrollView(
           scrollBehavior: TouchScrollBehavior(),
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
+          physics: const AlwaysScrollableScrollPhysics(),
           controller: _controller,
-          reverse: false,
           clipBehavior: Clip.none,
           slivers: [
             CupertinoSliverRefreshControl(

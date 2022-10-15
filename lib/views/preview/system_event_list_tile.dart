@@ -26,47 +26,92 @@ class _SystemEventListTile extends State<SystemEventListTile>
     return const TextStyle(color: Colors.white);
   }
 
-  Widget _payload(BuildContext context) {
-    switch (widget.event.type) {
-      case SystemEventType.image:
-        if (null != chached) return chached!;
-        String b64 = widget.event.payload.startsWith("data:")
-            ? widget.event.payload.split(";").last
-            : widget.event.payload;
-        Uint8List bytes = base64Decode(b64);
-        chached = Image.memory(
-          bytes,
-          frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-            if (wasSynchronouslyLoaded) return child;
-            return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: frame != null
-                  ? child
-                  : const SizedBox(
-                      height: 60,
-                      width: 60,
-                      child: CircularProgressIndicator(strokeWidth: 6),
-                    ),
-            );
-          },
-        );
-        return chached!;
-      case SystemEventType.text:
-        return Padding(
+  Widget _notification(BuildContext context) {
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              width: double.infinity,
+              color: CupertinoDynamicColor.withBrightness(
+                color: Colors.blue.shade400,
+                darkColor: Colors.blue.shade200,
+              ).withOpacity(0.9),
+              child: Padding(
+                padding: const EdgeInsets.all(9),
+                child: Text(
+                  widget.event.payload,
+                  style: textStyle(),
+                ),
+              ),
+            ),
+          ),
+        ),
+        Align(
+          alignment: Alignment.topRight,
+          child: Icon(
+            CupertinoIcons.chat_bubble_text_fill,
+            color: Colors.grey.shade800,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _text(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        color: CupertinoDynamicColor.withBrightness(
+          color: Colors.blue.shade400,
+          darkColor: Colors.blue.shade200,
+        ).withOpacity(0.9),
+        child: Padding(
           padding: const EdgeInsets.all(9),
           child: Text(
             widget.event.payload,
             style: textStyle(),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _payload(BuildContext context) {
+    switch (widget.event.type) {
+      case SystemEventType.image:
+        if (null == chached) {
+          String b64 = widget.event.payload.startsWith("data:")
+              ? widget.event.payload.split(";").last
+              : widget.event.payload;
+          Uint8List bytes = base64Decode(b64);
+          chached = Image.memory(
+            bytes,
+            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+              if (wasSynchronouslyLoaded) return child;
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: frame != null
+                    ? child
+                    : const SizedBox(
+                        height: 60,
+                        width: 60,
+                        child: CircularProgressIndicator(strokeWidth: 6),
+                      ),
+              );
+            },
+          );
+        }
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: chached!,
         );
+      case SystemEventType.text:
+        return _text(context);
       case SystemEventType.notification:
-        return Padding(
-          padding: const EdgeInsets.all(9),
-          child: Text(
-            "User Notification:\r\n${widget.event.payload}",
-            style: textStyle(),
-          ),
-        );
+        return _notification(context);
       default:
         return const Text("unsupported type");
     }
@@ -101,16 +146,7 @@ class _SystemEventListTile extends State<SystemEventListTile>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              color: CupertinoDynamicColor.withBrightness(
-                color: Colors.blue.shade400,
-                darkColor: Colors.blue.shade200,
-              ).withOpacity(0.9),
-              child: _payload(context),
-            ),
-          ),
+          _payload(context),
           Align(
             alignment: Alignment.centerRight,
             child: _timestamp(context),
