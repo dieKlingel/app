@@ -1,6 +1,5 @@
 import 'dart:collection';
 import 'dart:convert';
-
 import 'package:audio_session/audio_session.dart';
 import 'package:dieklingel_app/event/system_event.dart';
 import 'package:dieklingel_app/views/preview/camera_live_view.dart';
@@ -35,7 +34,7 @@ class _PreviewView extends State<PreviewView> {
   final MediaRessource _mediaRessource = MediaRessource();
   final RTCVideoRenderer _rtcVideoRenderer = RTCVideoRenderer();
   final TextEditingController _bodyController = TextEditingController();
-  final Queue<SystemEvent> _events = Queue<SystemEvent>();
+  final Queue<SystemEventListTile> _events = Queue<SystemEventListTile>();
   bool _sendButtonIsEnabled = false;
   double? aspectRatio;
 
@@ -68,7 +67,7 @@ class _PreviewView extends State<PreviewView> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) => initialize());
     _controller.addListener(() {
       if (_controller.offset == 0) {
-        FocusScope.of(context).requestFocus(FocusNode());
+        // FocusScope.of(context).requestFocus(FocusNode());
       }
     });
   }
@@ -84,8 +83,12 @@ class _PreviewView extends State<PreviewView> {
     MClient mClient = context.read<MClient>();
     mClient.subscribe("system/event", (message) {
       SystemEvent event = SystemEvent.fromJson(jsonDecode(message.message));
+      SystemEventListTile tile = SystemEventListTile(
+        key: Key(event.timestamp.toIso8601String()),
+        event: event,
+      );
       setState(() {
-        _events.addFirst(event);
+        _events.addFirst(tile);
       });
     });
   }
@@ -97,12 +100,19 @@ class _PreviewView extends State<PreviewView> {
     if (null == response) return;
 
     Iterable iterable = jsonDecode(response);
-    List<SystemEvent> events = List<SystemEvent>.from(
+    List<SystemEventListTile> events = List<SystemEventListTile>.from(
       iterable.map(
-        (e) => SystemEvent.fromJson(e),
+        (e) {
+          SystemEvent event = SystemEvent.fromJson(e);
+          SystemEventListTile tile = SystemEventListTile(
+            key: Key(event.timestamp.toIso8601String()),
+            event: event,
+          );
+          return tile;
+        },
       ),
     );
-    events.sort(((a, b) => b.timestamp.compareTo(a.timestamp)));
+    events.sort(((a, b) => b.event.timestamp.compareTo(a.event.timestamp)));
     setState(() {
       _events.clear();
       _events.addAll(events);
@@ -117,7 +127,7 @@ class _PreviewView extends State<PreviewView> {
           ),
         );
     _bodyController.clear();
-    FocusScope.of(context).requestFocus(FocusNode());
+    //FocusScope.of(context).requestFocus(FocusNode());
   }
 
   void _onCallButtonPressed() async {
@@ -217,52 +227,45 @@ class _PreviewView extends State<PreviewView> {
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
       },
-      child: CupertinoScrollbar(
+      child: CustomScrollView(
+        scrollBehavior: TouchScrollBehavior(),
+        physics: const AlwaysScrollableScrollPhysics(),
         controller: _controller,
-        child: CustomScrollView(
-          scrollBehavior: TouchScrollBehavior(),
-          physics: const AlwaysScrollableScrollPhysics(),
-          controller: _controller,
-          slivers: [
-            CupertinoSliverRefreshControl(
-              onRefresh: _onRefresh,
+        reverse: false,
+        slivers: [
+          CupertinoSliverRefreshControl(
+            onRefresh: _onRefresh,
+          ),
+          SliverToBoxAdapter(
+            child: null != aspectRatio
+                ? CameraLiveView(
+                    mediaRessource: _mediaRessource,
+                    rtcVideoRenderer: _rtcVideoRenderer,
+                  )
+                : Container(),
+          ),
+          SliverList(
+            delegate: listIsVisible
+                ? SliverChildListDelegate(_events.toList())
+                : SliverChildListDelegate(
+                    [
+                      _refreshIndicator(context),
+                    ],
+                  ),
+          ),
+          const SliverToBoxAdapter(
+            child: SizedBox(
+              height: 40,
             ),
-            SliverList(
-              delegate: listIsVisible
-                  ? SliverChildBuilderDelegate(
-                      (context, index) {
-                        if (index == 0) {
-                          return aspectRatio == null
-                              ? Container()
-                              : CameraLiveView(
-                                  mediaRessource: _mediaRessource,
-                                  rtcVideoRenderer: _rtcVideoRenderer,
-                                );
-                        }
-                        if (index < _events.length + 1) {
-                          return SystemEventListTile(
-                            event: _events.elementAt(index - 1),
-                          );
-                        }
-                        return null;
-                      },
-                      childCount: (_events.length + 1),
-                    )
-                  : SliverChildListDelegate(
-                      [
-                        _refreshIndicator(context),
-                      ],
-                    ),
-            ),
-          ],
-        ),
+          )
+        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    MClient mClient = context.read<MClient>();
+    MClient mClient = context.watch<MClient>();
     return Stack(
       children: [
         _scrollView(context),
