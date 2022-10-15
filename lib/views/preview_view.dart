@@ -227,38 +227,39 @@ class _PreviewView extends State<PreviewView> {
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
       },
-      child: CustomScrollView(
-        scrollBehavior: TouchScrollBehavior(),
-        physics: const AlwaysScrollableScrollPhysics(),
+      child: CupertinoScrollbar(
         controller: _controller,
-        reverse: false,
-        slivers: [
-          CupertinoSliverRefreshControl(
-            onRefresh: _onRefresh,
+        child: CustomScrollView(
+          scrollBehavior: TouchScrollBehavior(),
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
           ),
-          SliverToBoxAdapter(
-            child: null != aspectRatio
-                ? CameraLiveView(
-                    mediaRessource: _mediaRessource,
-                    rtcVideoRenderer: _rtcVideoRenderer,
-                  )
-                : Container(),
-          ),
-          SliverList(
-            delegate: listIsVisible
-                ? SliverChildListDelegate(_events.toList())
-                : SliverChildListDelegate(
-                    [
-                      _refreshIndicator(context),
-                    ],
-                  ),
-          ),
-          const SliverToBoxAdapter(
-            child: SizedBox(
-              height: 40,
+          controller: _controller,
+          reverse: false,
+          clipBehavior: Clip.none,
+          slivers: [
+            CupertinoSliverRefreshControl(
+              onRefresh: _onRefresh,
             ),
-          )
-        ],
+            SliverToBoxAdapter(
+              child: null != aspectRatio
+                  ? CameraLiveView(
+                      mediaRessource: _mediaRessource,
+                      rtcVideoRenderer: _rtcVideoRenderer,
+                    )
+                  : Container(),
+            ),
+            SliverList(
+              delegate: listIsVisible
+                  ? SliverChildListDelegate(_events.toList())
+                  : SliverChildListDelegate(
+                      [
+                        _refreshIndicator(context),
+                      ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -266,13 +267,22 @@ class _PreviewView extends State<PreviewView> {
   @override
   Widget build(BuildContext context) {
     MClient mClient = context.watch<MClient>();
-    return Stack(
+    return Column(
       children: [
-        _scrollView(context),
-        Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        Expanded(
+          child: _scrollView(context),
+        ),
+        MessageBar(
+          controller: _bodyController,
+          onCallPressed: mClient.isConnected() ? _onCallButtonPressed : null,
+          onSendPressed: mClient.isConnected() && _sendButtonIsEnabled
+              ? _onUserNotificationSendPressed
+              : null,
+        ),
+        /*Row(
+          //mainAxisSize: MainAxisSize.max,
+          //mainAxisAlignment: MainAxisAlignment.end,
+          //crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             MessageBar(
               controller: _bodyController,
@@ -283,7 +293,7 @@ class _PreviewView extends State<PreviewView> {
                   : null,
             ),
           ],
-        ),
+        ),*/
       ],
     );
   }
