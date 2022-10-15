@@ -79,34 +79,46 @@ class _SystemEventListTile extends State<SystemEventListTile>
     );
   }
 
+  Widget _image(BuildContext context) {
+    if (null == chached) {
+      String b64 = widget.event.payload.startsWith("data:")
+          ? widget.event.payload.split(";").last
+          : widget.event.payload;
+      Uint8List bytes = base64Decode(b64);
+      chached = Image.memory(
+        bytes,
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          if (wasSynchronouslyLoaded) return child;
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: frame != null
+                ? child
+                : const SizedBox(
+                    height: 60,
+                    width: 60,
+                    child: CircularProgressIndicator(strokeWidth: 6),
+                  ),
+          );
+        },
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: chached!,
+    );
+  }
+
   Widget _payload(BuildContext context) {
     switch (widget.event.type) {
       case SystemEventType.image:
-        if (null == chached) {
-          String b64 = widget.event.payload.startsWith("data:")
-              ? widget.event.payload.split(";").last
-              : widget.event.payload;
-          Uint8List bytes = base64Decode(b64);
-          chached = Image.memory(
-            bytes,
-            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-              if (wasSynchronouslyLoaded) return child;
-              return AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: frame != null
-                    ? child
-                    : const SizedBox(
-                        height: 60,
-                        width: 60,
-                        child: CircularProgressIndicator(strokeWidth: 6),
-                      ),
-              );
-            },
-          );
-        }
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: chached!,
+        return CupertinoContextMenu(
+          actions: const [
+            CupertinoContextMenuAction(
+              child: Text("Copy"),
+              trailingIcon: CupertinoIcons.doc_on_clipboard_fill,
+            ),
+          ],
+          child: _image(context),
         );
       case SystemEventType.text:
         return _text(context);
