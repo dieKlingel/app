@@ -5,6 +5,7 @@ import 'package:dieklingel_app/event/system_event_type.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SystemEventListTile extends StatefulWidget {
   final SystemEvent event;
@@ -111,15 +112,7 @@ class _SystemEventListTile extends State<SystemEventListTile>
   Widget _payload(BuildContext context) {
     switch (widget.event.type) {
       case SystemEventType.image:
-        return CupertinoContextMenu(
-          actions: const [
-            CupertinoContextMenuAction(
-              trailingIcon: CupertinoIcons.doc_on_clipboard_fill,
-              child: Text("Copy"),
-            ),
-          ],
-          child: _image(context),
-        );
+        return _image(context);
       case SystemEventType.text:
         return _text(context);
       case SystemEventType.notification:
