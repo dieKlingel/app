@@ -114,8 +114,8 @@ class _SystemEventListTile extends State<SystemEventListTile>
         return CupertinoContextMenu(
           actions: const [
             CupertinoContextMenuAction(
-              child: Text("Copy"),
               trailingIcon: CupertinoIcons.doc_on_clipboard_fill,
+              child: Text("Copy"),
             ),
           ],
           child: _image(context),

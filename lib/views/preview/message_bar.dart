@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:dieklingel_app/components/notifyable_value.dart';
-import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/rtc/rtc_client.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -74,7 +73,6 @@ class MessageBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    MClient mClient = context.watch<MClient>();
     RtcClient? rtcClient = context.watch<NotifyableValue<RtcClient?>>().value;
 
     return ClipRect(
