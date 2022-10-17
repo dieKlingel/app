@@ -2,26 +2,28 @@ import 'dart:collection';
 import 'dart:convert';
 import 'package:audio_session/audio_session.dart';
 import 'package:dieklingel_app/event/system_event.dart';
+import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/views/preview/camera_live_view.dart';
 import 'package:dieklingel_app/views/preview/message_bar.dart';
 import 'package:dieklingel_app/views/preview/system_event_list_tile.dart';
-import '../extensions/get_mclient.dart';
 import 'package:uuid/uuid.dart';
+import '../extensions/get_mclient.dart';
 import '../messaging/mclient_topic_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import '../components/app_settings.dart';
 import '../components/connection_configuration.dart';
-import '../components/notifyable_value.dart';
-import '../components/simple_alert_dialog.dart';
 import '../media/media_ressource.dart';
 import '../messaging/mclient.dart';
+import '../rtc/mqtt_rtc_client.dart';
+import '../rtc/mqtt_rtc_description.dart';
 import '../rtc/rtc_client.dart';
-import '../signaling/signaling_client.dart';
 import '../touch_scroll_behavior.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+
+typedef JSON = Map<dynamic, dynamic>;
 
 class PreviewView extends StatefulWidget {
   const PreviewView({Key? key}) : super(key: key);
@@ -31,10 +33,9 @@ class PreviewView extends StatefulWidget {
 }
 
 class _PreviewView extends State<PreviewView> {
-  final MediaRessource _mediaRessource = MediaRessource();
-  final RTCVideoRenderer _rtcVideoRenderer = RTCVideoRenderer();
   final TextEditingController _bodyController = TextEditingController();
   final Queue<SystemEventListTile> _events = Queue<SystemEventListTile>();
+  String? callUuid;
   bool _sendButtonIsEnabled = false;
   double? aspectRatio;
 
@@ -51,13 +52,6 @@ class _PreviewView extends State<PreviewView> {
   @override
   void initState() {
     super.initState();
-    _rtcVideoRenderer.initialize();
-    _rtcVideoRenderer.onResize = () {
-      setState(() {
-        aspectRatio = _rtcVideoRenderer.videoWidth.toDouble() /
-            _rtcVideoRenderer.videoWidth.toDouble();
-      });
-    };
     _bodyController.addListener(() {
       if (_sendButtonIsEnabled == _bodyController.text.isNotEmpty) return;
       setState(() {
@@ -122,79 +116,100 @@ class _PreviewView extends State<PreviewView> {
           ),
         );
     _bodyController.clear();
-    //FocusScope.of(context).requestFocus(FocusNode());
   }
 
   void _onCallButtonPressed() async {
-    if (context.read<NotifyableValue<RtcClient?>>().value != null) {
-      context.read<NotifyableValue<RtcClient?>>().value?.hangup();
-      _rtcVideoRenderer.srcObject = null;
-      setState(() {
-        aspectRatio = null;
-      });
-      context.read<NotifyableValue<RtcClient?>>().value = null;
-      return;
-    }
-    await _mediaRessource.open(true, false);
-    String? name = getDefaultConnectionConfiguration().channelPrefix;
-    if (null == name) {
-      if (!mounted) return;
-      await displaySimpleAlertDialog(
-        context,
-        const Text("here we go again"),
-        Text(
-          """please add a channel prefix to the configuration: ${getDefaultConnectionConfiguration().description}""",
-        ),
+    MClient mclient = context.read<MClient>();
+    CallHandler handler = CallHandler.getInstance();
+    String? uuid = callUuid;
+
+    if (null == uuid) {
+      uuid = const Uuid().v4();
+      MqttRtcDescription description = MqttRtcDescription(
+        host: "wss://server.dieklingel.com",
+        port: 9002,
+        channel: "com.dieklingel/mayer/kai/rtc/$uuid",
       );
-      return;
-    }
-    if (!mounted) return;
-    context.read<SignalingClient>().uid = const Uuid().v4();
-    List<Map<String, dynamic>> iceServers = [];
-    context.read<AppSettings>().iceConfigurations.forEach(((element) {
-      Map<String, dynamic> b = element.toJson();
-      b.remove("_key");
-      if (b["username"] != null && b["username"]!.isEmpty) {
-        b.remove("username");
-      }
-      if (b["credential"] != null && b["credential"]!.isEmpty) {
-        b.remove("credential");
-      }
-      iceServers.add(b);
-    }));
-    Map<String, dynamic> ice = {
-      "iceServers": iceServers,
-      "sdpSemantics": "unified-plan" // important to work
-    };
 
-    RtcClient client = RtcClient(
-      context.read<SignalingClient>(),
-      _mediaRessource,
-      ice,
-      onMediatrackReceived: (mediaStream) {
-        setState(
-          () {
-            _rtcVideoRenderer.srcObject = mediaStream;
+      String? result = await mclient.get(
+        "request/rtc/test",
+        description.toString(),
+      );
+      if (null == result) {
+        print("no answer");
+        return;
+      }
+
+      MqttRtcClient mqttRtcClient = MqttRtcClient.invite(
+        MqttRtcDescription(
+          host: "server.dieklingel.com",
+          port: 1883,
+          channel: "com.dieklingel/mayer/kai/rtc/$uuid",
+        ),
+        MediaRessource(),
+      );
+
+      await mqttRtcClient.mediaRessource.open(true, false);
+
+      await mqttRtcClient.init(iceServers: {
+        "iceServers": [
+          {"url": "stun:stun1.l.google.com:19302"},
+          {
+            "urls": "turn:dieklingel.com:3478",
+            "username": "guest",
+            "credential": "12345"
           },
-        );
-      },
-    );
-    await client.invite(name, transceivers: [
-      RtcTransceiver(
-        kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
-        direction: TransceiverDirection.SendRecv,
-      ),
-      RtcTransceiver(
-        kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
-        direction: TransceiverDirection.RecvOnly,
-      ),
-    ]);
+          {"urls": "stun:openrelay.metered.ca:80"},
+          {
+            "urls": "turn:openrelay.metered.ca:80",
+            "username": "openrelayproject",
+            "credential": "openrelayproject"
+          },
+          {
+            "urls": "turn:openrelay.metered.ca:443",
+            "username": "openrelayproject",
+            "credential": "openrelayproject"
+          },
+          {
+            "urls": "turn:openrelay.metered.ca:443?transport=tcp",
+            "username": "openrelayproject",
+            "credential": "openrelayproject"
+          }
+        ],
+        "sdpSemantics": "unified-plan" // important to work
+      }, transceivers: [
+        RtcTransceiver(
+          kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+          direction: TransceiverDirection.SendRecv,
+        ),
+        RtcTransceiver(
+          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+          direction: TransceiverDirection.RecvOnly,
+        ),
+      ]);
+      await mqttRtcClient.open();
 
-    if (!mounted) return;
-    context.read<NotifyableValue<RtcClient?>>().value = client;
-    setState(() {
-      _mediaRessource.stream?.getAudioTracks()[0].enabled = false;
-    });
+      handler.callkeep.startCall(
+        uuid,
+        "0123456780",
+        "Kai",
+        handleType: "generic",
+        hasVideo: false,
+      );
+      handler.calls[uuid] = mqttRtcClient;
+      setState(() {
+        callUuid = uuid;
+      });
+    } else {
+      if (handler.calls.containsKey(uuid)) {
+        await handler.calls[uuid]?.close();
+        handler.calls.remove(uuid);
+        handler.callkeep.endCall(uuid);
+        setState(() {
+          callUuid = null;
+        });
+      }
+    }
   }
 
   Widget _refreshIndicator(BuildContext context) {
@@ -218,6 +233,9 @@ class _PreviewView extends State<PreviewView> {
 
   Widget _scrollView(BuildContext context) {
     bool listIsVisible = _events.isNotEmpty || aspectRatio != null;
+    CallHandler handler = CallHandler.getInstance();
+    MqttRtcClient? client = handler.calls[callUuid];
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
@@ -234,10 +252,10 @@ class _PreviewView extends State<PreviewView> {
               onRefresh: _onRefresh,
             ),
             SliverToBoxAdapter(
-              child: null != aspectRatio
+              child: client != null
                   ? CameraLiveView(
-                      mediaRessource: _mediaRessource,
-                      rtcVideoRenderer: _rtcVideoRenderer,
+                      mediaRessource: client.mediaRessource,
+                      rtcVideoRenderer: client.rtcVideoRenderer,
                     )
                   : Container(),
             ),
@@ -271,21 +289,6 @@ class _PreviewView extends State<PreviewView> {
               ? _onUserNotificationSendPressed
               : null,
         ),
-        /*Row(
-          //mainAxisSize: MainAxisSize.max,
-          //mainAxisAlignment: MainAxisAlignment.end,
-          //crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            MessageBar(
-              controller: _bodyController,
-              onCallPressed:
-                  mClient.isConnected() ? _onCallButtonPressed : null,
-              onSendPressed: mClient.isConnected() && _sendButtonIsEnabled
-                  ? _onUserNotificationSendPressed
-                  : null,
-            ),
-          ],
-        ),*/
       ],
     );
   }
@@ -293,6 +296,5 @@ class _PreviewView extends State<PreviewView> {
   @override
   void dispose() {
     super.dispose();
-    _rtcVideoRenderer.dispose();
   }
 }

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:dieklingel_app/handlers/notification_handler.dart';
+
 import 'components/notifyable_value.dart';
 import 'messaging/mclient_topic_message.dart';
 import 'rtc/rtc_client.dart';
@@ -22,6 +24,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 void main() async {
+  NotificationHandler.init();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

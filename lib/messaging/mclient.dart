@@ -9,7 +9,7 @@ import 'mqtt_server_client_factory.dart'
 
 class MClient extends ChangeNotifier {
   final List<MClientSubscribtion> _subscribtions = [];
-  String? prefix;
+  String prefix;
   String? host;
   int? port;
   MqttClient? _mqttClient;
@@ -17,7 +17,7 @@ class MClient extends ChangeNotifier {
   MClient({
     this.host,
     this.port,
-    this.prefix,
+    this.prefix = "",
   });
 
   MqttConnectionState get connectionState {

@@ -45,6 +45,9 @@ dependencies:
   audio_session: ^0.1.10
   uuid: ^3.0.6
   dismissible_page: ^0.7.3
+  callkeep: ^0.3.2
+  objectdb: ^1.2.1+1
+  path_provider: ^2.0.11
 
 dev_dependencies:
   flutter_test:

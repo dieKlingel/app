@@ -2,6 +2,7 @@ import 'package:dieklingel_app/media/media_ressource.dart';
 import 'package:dismissible_page/dismissible_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:provider/provider.dart';
 
 import '../call_view_page.dart';
 
@@ -32,33 +33,47 @@ class CameraLiveView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Hero(
-        tag: const Key("call_view_page"),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: GestureDetector(
-            onTap: () async {
-              context.pushTransparentRoute(CallViewPage(
-                mediaRessource: mediaRessource,
-                rtcVideoRenderer: rtcVideoRenderer,
-              ));
-            },
-            child: Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: rtcVideoRenderer.videoWidth.toDouble() /
-                      rtcVideoRenderer.videoHeight.toDouble(),
-                  child: RTCVideoView(
-                    rtcVideoRenderer,
+    double aspectRatio = rtcVideoRenderer.videoWidth.toDouble() /
+        rtcVideoRenderer.videoHeight.toDouble();
+    if (aspectRatio <= 0.0) {
+      aspectRatio = 1;
+    }
+
+    return ChangeNotifierProvider(
+      create: ((context) => rtcVideoRenderer),
+      child: Consumer<RTCVideoRenderer>(
+        builder: (context, value, child) {
+          return value.videoHeight <= 0 || value.videoWidth <= 0
+              ? Container()
+              : Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Hero(
+                    tag: const Key("call_view_page"),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: GestureDetector(
+                          onTap: () async {
+                            context.pushTransparentRoute(CallViewPage(
+                              mediaRessource: mediaRessource,
+                              rtcVideoRenderer: rtcVideoRenderer,
+                            ));
+                          },
+                          child: Stack(
+                            children: [
+                              AspectRatio(
+                                aspectRatio:
+                                    value.videoWidth / value.videoHeight,
+                                child: RTCVideoView(
+                                  rtcVideoRenderer,
+                                ),
+                              ),
+                              _livedot(context),
+                            ],
+                          )),
+                    ),
                   ),
-                ),
-                _livedot(context),
-              ],
-            ),
-          ),
-        ),
+                );
+        },
       ),
     );
   }
