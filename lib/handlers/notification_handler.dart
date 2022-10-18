@@ -32,7 +32,11 @@ Future<void> onBackgroundNotificationReceived(RemoteMessage message) async {
 
   CallHandler handler = CallHandler.getInstance();
   String uuid = const Uuid().v4();
-  MClient mClient = MClient(host: "server.dieklingel.com", port: 1883);
+  MClient mClient = MClient(
+      mqttRtcDescription: MqttRtcDescription(
+    host: "server.dieklingel.com",
+    port: 1883,
+  ));
 
   await mClient.connect();
   String? result = await mClient.get(

@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/rtc/mqtt_rtc_client.dart';
 import 'package:callkeep/callkeep.dart';

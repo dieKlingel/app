@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dieklingel_app/handlers/notification_handler.dart';
+import 'package:dieklingel_app/rtc/mqtt_rtc_description.dart';
 
 import 'components/notifyable_value.dart';
 import 'messaging/mclient_topic_message.dart';
@@ -31,7 +32,7 @@ void main() async {
   );
   await app.init();
   MClient mClient = MClient();
-  mClient.prefix = "com.dieklingel/mayer/kai/";
+  //mClient.prefix = "com.dieklingel/mayer/kai/";
   SignalingClient signalingClient = SignalingClient.fromMessagingClient(
     mClient,
     signalingTopic: "rtc/signaling",
@@ -130,10 +131,14 @@ class _App extends State<App> {
         ConnectionConfiguration? defaultConfig =
             getDefaultConnectionConfiguration();
         if (defaultConfig == null) return;
-        context.read<MClient>().host =
-            "${kIsWeb ? "${defaultConfig.uri?.scheme}://" : ""}${defaultConfig.uri?.host}";
-        context.read<MClient>().port = defaultConfig.uri?.port;
-        context.read<MClient>().prefix = defaultConfig.channelPrefix ?? "";
+        context.read<MClient>().mqttRtcDescription = MqttRtcDescription(
+          host: defaultConfig.uri!.host,
+          port: defaultConfig.uri!.port,
+          channel: "com.dieklingel/mayer/kai",
+          websocket: kIsWeb,
+          ssl: defaultConfig.uri!.scheme == "mqtts" ||
+              defaultConfig.uri!.scheme == "wss",
+        );
         context.read<MClient>().disconnect();
         await context.read<MClient>().connect(
               username: defaultConfig.username,

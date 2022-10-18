@@ -42,13 +42,10 @@ class MqttRtcClient extends ChangeNotifier {
     this.password = "",
   }) {
     rtcVideoRenderer.initialize();
-    mclient = MClient(
-      host: mqttRtcDescription.host,
-      port: mqttRtcDescription.port,
-    );
+    mclient = MClient(mqttRtcDescription: mqttRtcDescription);
 
-    topic = "${mqttRtcDescription.channel}/invite";
-    sub = mclient.subscribe("${mqttRtcDescription.channel}/answer", _onMessage);
+    topic = "invite";
+    sub = mclient.subscribe("answer", _onMessage);
   }
 
   MqttRtcClient.answer(
@@ -58,13 +55,10 @@ class MqttRtcClient extends ChangeNotifier {
     this.password = "",
   }) {
     rtcVideoRenderer.initialize();
-    mclient = MClient(
-      host: mqttRtcDescription.host,
-      port: mqttRtcDescription.port,
-    );
+    mclient = MClient(mqttRtcDescription: mqttRtcDescription);
 
-    topic = "${mqttRtcDescription.channel}/answer";
-    sub = mclient.subscribe("${mqttRtcDescription.channel}/invite", _onMessage);
+    topic = "answer";
+    sub = mclient.subscribe("invite", _onMessage);
   }
 
   /// make sure to open the media ressource before calling init

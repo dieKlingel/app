@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:dieklingel_app/rtc/mqtt_rtc_description.dart';
+
 import 'mclient_subscribtion.dart';
 import 'mclient_topic_message.dart';
 import 'package:flutter/material.dart';
@@ -9,16 +11,18 @@ import 'mqtt_server_client_factory.dart'
 
 class MClient extends ChangeNotifier {
   final List<MClientSubscribtion> _subscribtions = [];
-  String prefix;
-  String? host;
-  int? port;
+  MqttRtcDescription? mqttRtcDescription;
   MqttClient? _mqttClient;
 
-  MClient({
-    this.host,
-    this.port,
-    this.prefix = "",
-  });
+  MClient({this.mqttRtcDescription});
+
+  String get _prefix {
+    MqttRtcDescription? description = mqttRtcDescription;
+    if (null == description) {
+      return "";
+    }
+    return "${description.channel}/";
+  }
 
   MqttConnectionState get connectionState {
     return _mqttClient?.connectionStatus?.state ??
@@ -37,12 +41,18 @@ class MClient extends ChangeNotifier {
     String? username,
     String? password,
   }) async {
-    if (null == host) throw "cannot connect mclient without host";
-    if (null == port) throw "cannot connect mclient without port";
+    MqttRtcDescription? description = mqttRtcDescription;
+    if (description == null) {
+      throw "cannot connect mclient without mqtt-rtc-descitpion";
+    }
     _mqttClient?.disconnect();
 
-    _mqttClient = MqttClientFactory.create(host!, "");
-    _mqttClient!.port = port!;
+    String scheme = "";
+    if (description.websocket) {
+      scheme = description.ssl ? "wss://" : "ws";
+    }
+    _mqttClient = MqttClientFactory.create("$scheme${description.host}", "");
+    _mqttClient!.port = description.port;
     _mqttClient!.keepAlivePeriod = 20;
     _mqttClient!.setProtocolV311();
     _mqttClient!.autoReconnect = true;
@@ -66,13 +76,14 @@ class MClient extends ChangeNotifier {
     }
 
     for (MClientSubscribtion sub in _subscribtions) {
-      _mqttClient!.subscribe("$prefix${sub.topic}", MqttQos.exactlyOnce);
+      String prefix = description.channel;
+      _mqttClient!.subscribe("$prefix/${sub.topic}", MqttQos.exactlyOnce);
     }
     _mqttClient!.updates!.listen((List<MqttReceivedMessage<MqttMessage>>? c) {
       MqttPublishMessage rec = c![0].payload as MqttPublishMessage;
       String topic = c[0].topic;
-      if (null != prefix && topic.startsWith(prefix!)) {
-        topic = topic.replaceFirst(prefix!, "");
+      if (topic.startsWith(_prefix)) {
+        topic = topic.replaceFirst(_prefix, "");
       }
       List<int> messageAsBytes = rec.payload.message;
       String raw = utf8.decode(messageAsBytes);
@@ -97,7 +108,7 @@ class MClient extends ChangeNotifier {
     MqttClientPayloadBuilder builder = MqttClientPayloadBuilder();
     builder.addUTF8String(message.message);
     _mqttClient!.publishMessage(
-      "$prefix${message.topic}",
+      "$_prefix${message.topic}",
       MqttQos.exactlyOnce,
       builder.payload!,
     );
@@ -113,7 +124,7 @@ class MClient extends ChangeNotifier {
         MClientSubscribtion(topic, listener: listener, regExp: regExp);
     _subscribtions.add(subscribtion);
     if (isNotConnected()) return subscribtion;
-    _mqttClient?.subscribe("$prefix$topic", MqttQos.exactlyOnce);
+    _mqttClient?.subscribe("$_prefix$topic", MqttQos.exactlyOnce);
     return subscribtion;
   }
 
