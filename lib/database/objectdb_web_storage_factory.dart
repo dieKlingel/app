@@ -10,4 +10,8 @@ class ObjectDBStorageFactory {
   static Future<String> getDefaultDatabse() async {
     return "dieklingel_default_web_database";
   }
+
+  static Future<String> getDatabseDirectory() async {
+    return "";
+  }
 }

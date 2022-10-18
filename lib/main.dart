@@ -153,14 +153,14 @@ class _App extends State<App> {
       },
     );
 
-    context
+    /* context
         .read<AppSettings>()
         .iceConfigurations
-        .replace(app.iceConfigurations);
-    context.read<AppSettings>().iceConfigurations.addListener(() {
+        .replace(app.iceConfigurations); */
+    /*context.read<AppSettings>().iceConfigurations.addListener(() {
       app.iceConfigurations =
-          context.read<AppSettings>().iceConfigurations.asList();
-    });
+          context.read<AppSettings>().iceConfigurations.asList(); 
+    });*/
 
     context
         .read<AppSettings>()

@@ -6,6 +6,12 @@ import 'objectdb_mobile_storage_factory.dart'
 typedef JSON = Map<dynamic, dynamic>;
 
 class ObjectDBFactory {
+  static Future<ObjectDB> named(String name) async {
+    String path = await ObjectDBStorageFactory.getDatabseDirectory();
+    String db = "$path/$name";
+    return ObjectDB(ObjectDBStorageFactory.get(db));
+  }
+
   static Future<ObjectDB> get({String? path}) async {
     path ??= await ObjectDBStorageFactory.getDefaultDatabase();
     return ObjectDB(ObjectDBStorageFactory.get(path));

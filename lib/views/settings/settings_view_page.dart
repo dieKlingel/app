@@ -1,11 +1,15 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:async';
 
-import '../../components/ice_configuration.dart';
-import '../../views/settings/connections_view.dart';
-import '../../views/settings/ice_view.dart';
+import 'package:dieklingel_app/database/objectdb_factory.dart';
+import 'package:dieklingel_app/views/settings/connections_view.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:objectdb/objectdb.dart';
+
+import '../../components/ice_server.dart';
+import 'ice_servers_view.dart';
 import '../../components/connection_configuration.dart';
 import 'connection_configuration_view.dart';
-import 'ice_configuration_view_page.dart';
+import 'ice_server_config_view_page.dart';
 
 class SettingsViewPage extends StatefulWidget {
   const SettingsViewPage({Key? key}) : super(key: key);
@@ -20,10 +24,9 @@ enum ContentView {
 }
 
 class _SettingsViewPage extends State<SettingsViewPage> {
-  late final Map<ContentView, Widget> contentViews = {
-    ContentView.connetionsView: const ConnectionsView(),
-    ContentView.iceView: const IceView(),
-  };
+  final StreamController<IceServer> _iceServers =
+      StreamController<IceServer>.broadcast();
+
   ContentView _selectedSegment = ContentView.connetionsView;
 
   Future<void> _goToConnectionConfigurationView(
@@ -42,12 +45,12 @@ class _SettingsViewPage extends State<SettingsViewPage> {
 
   Future<void> _goToIceConfiurationViewPage(
     BuildContext context, {
-    IceConfiguration? configuration,
+    IceServer? configuration,
   }) async {
     await Navigator.push(
       context,
       CupertinoPageRoute(
-        builder: (BuildContext context) => IceConfigurationViewPage(
+        builder: (BuildContext context) => IceServerConfigViewPage(
           configuration: configuration,
         ),
       ),
@@ -72,13 +75,34 @@ class _SettingsViewPage extends State<SettingsViewPage> {
           child: const Icon(
             CupertinoIcons.add,
           ),
-          onPressed: () => _goToIceConfiurationViewPage(context),
+          onPressed: () async {
+            IceServer? server = await Navigator.push(
+              context,
+              CupertinoPageRoute(
+                builder: (BuildContext context) =>
+                    const IceServerConfigViewPage(),
+              ),
+            );
+            if (null == server) return;
+            _iceServers.add(server);
+          },
         );
         break;
       default:
         break;
     }
     return button;
+  }
+
+  Widget _content() {
+    switch (_selectedSegment) {
+      case ContentView.connetionsView:
+        return const ConnectionsView();
+      case ContentView.iceView:
+        return IceServersView(
+          insert: _iceServers.stream,
+        );
+    }
   }
 
   @override
@@ -108,9 +132,7 @@ class _SettingsViewPage extends State<SettingsViewPage> {
                 },
               ),
             ),
-            Expanded(
-              child: contentViews[_selectedSegment]!,
-            )
+            Expanded(child: _content())
           ],
         ),
       ),

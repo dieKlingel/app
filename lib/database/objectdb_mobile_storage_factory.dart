@@ -15,4 +15,9 @@ class ObjectDBStorageFactory {
     String path = directory.path;
     return "$path/dieklingel_default_mobile_database";
   }
+
+  static Future<String> getDatabseDirectory() async {
+    Directory directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
 }

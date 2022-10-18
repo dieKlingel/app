@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'components/connection_configuration.dart';
-import 'components/ice_configuration.dart';
+import 'components/ice_server.dart';
 
 late SharedPreferences _preferences;
 
@@ -50,7 +50,7 @@ ConnectionConfiguration get defaultConnectionConfiguration {
   return connectionConfiguration;
 }
 
-List<IceConfiguration> get iceConfigurations {
+/* List<IceConfiguration> get iceConfigurations {
   List<String> rawIceConfig =
       preferences.getStringList("ice") ?? List<String>.empty(growable: true);
   List<IceConfiguration> iceConfigurations = rawIceConfig
@@ -79,5 +79,5 @@ set iceConfigurations(
         (config) => config.toString(),
       )
       .toList();
-  preferences.setStringList("ice", rawIceConfigurations);
-}
+  preferences.setStringList("ice", rawIceConfigurations); 
+} */
