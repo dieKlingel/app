@@ -21,7 +21,7 @@ class MClient extends ChangeNotifier {
     if (null == description) {
       return "";
     }
-    return "${description.channel}/";
+    return description.channel;
   }
 
   MqttConnectionState get connectionState {
@@ -69,15 +69,18 @@ class MClient extends ChangeNotifier {
       notifyListeners();
     };
 
-    try {
+    await _mqttClient!.connect(username, password);
+
+    /*try {
       await _mqttClient!.connect(username, password);
     } catch (exception) {
+      print(exception);
       return null;
-    }
+    }*/
 
     for (MClientSubscribtion sub in _subscribtions) {
       String prefix = description.channel;
-      _mqttClient!.subscribe("$prefix/${sub.topic}", MqttQos.exactlyOnce);
+      _mqttClient!.subscribe("$prefix${sub.topic}", MqttQos.exactlyOnce);
     }
     _mqttClient!.updates!.listen((List<MqttReceivedMessage<MqttMessage>>? c) {
       MqttPublishMessage rec = c![0].payload as MqttPublishMessage;

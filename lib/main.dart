@@ -1,13 +1,13 @@
 import 'dart:convert';
 
+import 'package:dieklingel_app/components/preferences.dart';
+import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
+import 'package:objectdb/objectdb.dart';
 
-import 'components/notifyable_value.dart';
 import 'messaging/mclient_topic_message.dart';
-import 'rtc/rtc_client.dart';
 import 'components/app_settings.dart';
 import 'messaging/mclient.dart';
-import 'signaling/signaling_client.dart';
 import 'views/tabbar_page.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -17,7 +17,6 @@ import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
 
 import 'views/settings/home_config_page.dart';
-import 'globals.dart' as app;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -28,22 +27,15 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await app.init();
-  MClient mClient = MClient();
-  //mClient.prefix = "com.dieklingel/mayer/kai/";
-  SignalingClient signalingClient = SignalingClient.fromMessagingClient(
-    mClient,
-    signalingTopic: "rtc/signaling",
-  );
-  AppSettings appSettings = AppSettings();
-  NotifyableValue<RtcClient?> rtcClient = NotifyableValue(value: null);
+
+  MClient mclient = MClient();
+  Preferences preferences = await Preferences.getInstance();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => mClient),
-        ChangeNotifierProvider(create: (context) => signalingClient),
-        ChangeNotifierProvider(create: (context) => appSettings),
-        ChangeNotifierProvider(create: (context) => rtcClient),
+        ChangeNotifierProvider(create: (context) => mclient),
+        ChangeNotifierProvider(create: (context) => preferences),
       ],
       child: const App(),
     ),
@@ -94,8 +86,7 @@ class _App extends State<App> {
     if (null == token) return;
     print("Token: $token");
     if (!mounted) return;
-    context.read<AppSettings>().firebaseToken.addListener(publishFirebaseToken);
-    context.read<AppSettings>().firebaseToken.value = token;
+    context.read<Preferences>().setString("firebase_token", token);
   }
 
   void publishFirebaseToken() {
@@ -170,11 +161,24 @@ class _App extends State<App> {
     }); */
   }
 
+  Future<bool> isInitialized() async {
+    ObjectDB db = await ObjectDBFactory.named("homes");
+    List<Map<dynamic, dynamic>> result = await db.find({});
+    return result.isNotEmpty;
+  }
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      home: isInitialzied ? const TabbarPage() : const HomeConfigPage(),
+      home: FutureBuilder<bool>(
+        future: isInitialized(),
+        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+          return (snapshot.data ?? false)
+              ? const TabbarPage()
+              : const HomeConfigPage();
+        },
+      ),
     );
   }
 }

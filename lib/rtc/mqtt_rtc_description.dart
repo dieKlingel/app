@@ -62,7 +62,16 @@ class MqttRtcDescription {
   }
 
   @override
+  bool operator ==(Object other) {
+    if (other is! MqttRtcDescription) return false;
+    return hashCode == other.hashCode;
+  }
+
+  @override
   String toString() {
     return jsonEncode(toJson());
   }
+
+  @override
+  int get hashCode => toUri().hashCode;
 }

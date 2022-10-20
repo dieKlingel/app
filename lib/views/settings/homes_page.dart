@@ -1,10 +1,13 @@
 import 'package:dieklingel_app/components/home.dart';
+import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/components/radio_box.dart';
+import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/views/settings/home_config_page.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:objectdb/objectdb.dart';
+import 'package:provider/provider.dart';
 
 import '../../database/objectdb_factory.dart';
 
@@ -26,7 +29,7 @@ class _HomesPage extends State<HomesPage> {
   }
 
   void _init() async {
-    _database = await ObjectDBFactory.named("mqtt_configurations");
+    _database = await ObjectDBFactory.named("homes");
     List<Map<dynamic, dynamic>> result = await _database!.find({});
     Map<String, Home> homes = {};
     for (Map<dynamic, dynamic> document in result) {
@@ -34,6 +37,7 @@ class _HomesPage extends State<HomesPage> {
       Home home = Home.fromJson(document.cast<String, dynamic>());
       homes[id] = home;
     }
+
     setState(() {
       _homes = homes;
     });
@@ -75,6 +79,8 @@ class _HomesPage extends State<HomesPage> {
   }
 
   void _onListTilePressed(String id, Home home) async {
+    Preferences preferences = context.read<Preferences>();
+
     Home? result = await Navigator.push(
       context,
       CupertinoPageRoute(
@@ -82,19 +88,24 @@ class _HomesPage extends State<HomesPage> {
       ),
     );
     if (null == result) return;
+
     await _update(id, result);
+    preferences.setString("default_home_id", id);
   }
 
-  String _selected = "";
-
   void _onSelectionChanged(String id) {
-    setState(() {
-      _selected = id;
-    });
+    Preferences preferences = context.read<Preferences>();
+    preferences.setString("default_home_id", id);
   }
 
   Widget _listview() {
     List<MapEntry<String, Home>> entries = _homes.entries.toList();
+    Preferences preferences = context.watch<Preferences>();
+    String? home = preferences.getString("default_home_id");
+    if ((null == home || !_homes.containsKey(home)) && _homes.isNotEmpty) {
+      home = _homes.keys.first;
+      preferences.setString("default_home_id", home);
+    }
 
     return SingleChildScrollView(
       clipBehavior: Clip.none,
@@ -107,6 +118,7 @@ class _HomesPage extends State<HomesPage> {
                   entries.length,
                   (index) {
                     MapEntry<String, Home> entry = entries[index];
+                    bool isDefault = entry.key == home;
 
                     return Dismissible(
                       background: Container(
@@ -131,7 +143,7 @@ class _HomesPage extends State<HomesPage> {
                           prefix: Row(
                             children: [
                               RadioBox(
-                                value: entry.key == _selected,
+                                value: isDefault,
                                 onChanged: (value) =>
                                     _onSelectionChanged(entry.key),
                               ),

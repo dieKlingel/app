@@ -1,11 +1,18 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 import 'package:audio_session/audio_session.dart';
+import 'package:dieklingel_app/components/home.dart';
+import 'package:dieklingel_app/components/preferences.dart';
+import 'package:dieklingel_app/components/simple_alert_dialog.dart';
+import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:dieklingel_app/event/system_event.dart';
 import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/views/preview/camera_live_view.dart';
 import 'package:dieklingel_app/views/preview/message_bar.dart';
 import 'package:dieklingel_app/views/preview/system_event_list_tile.dart';
+import 'package:mqtt_client/mqtt_client.dart';
+import 'package:objectdb/objectdb.dart';
 import 'package:uuid/uuid.dart';
 import '../extensions/get_mclient.dart';
 import '../messaging/mclient_topic_message.dart';
@@ -56,10 +63,10 @@ class _HomePage extends State<HomePage> {
         _sendButtonIsEnabled = _bodyController.text.isNotEmpty;
       });
     });
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) => initialize());
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) => _init());
   }
 
-  void initialize() async {
+  void _init() async {
     /* TODO: Hotfix: AudioSession
     Do this, so the mic starts the first time we use navigator.mediaDevices
     caues by this issue: https://github.com/flutter-webrtc/flutter-webrtc/issues/1094
@@ -67,8 +74,10 @@ class _HomePage extends State<HomePage> {
     AudioSession.instance.then((session) {
       session.configure(const AudioSessionConfiguration.speech());
     });
-    MClient mClient = context.read<MClient>();
-    mClient.subscribe("system/event", (message) {
+
+    Preferences preferences = context.read<Preferences>();
+    MClient mclient = context.read<MClient>();
+    mclient.subscribe("system/event", (message) {
       SystemEvent event = SystemEvent.fromJson(jsonDecode(message.message));
       SystemEventListTile tile = SystemEventListTile(
         key: Key(event.timestamp.toIso8601String()),
@@ -78,11 +87,58 @@ class _HomePage extends State<HomePage> {
         _events.addFirst(tile);
       });
     });
+    _reconnect();
+    preferences.addListener(_reconnect);
+  }
+
+  void _reconnect() async {
+    MClient mclient = context.read<MClient>();
+    Preferences preferences = context.read<Preferences>();
+    String? id = preferences.getString("default_home_id");
+    if (null == id) return;
+    ObjectDB database = await ObjectDBFactory.named("homes");
+
+    try {
+      Map<dynamic, dynamic> result = (await database.first({"_id": id}));
+      Home home = Home.fromJson(result.cast<String, dynamic>());
+      if (home.description == mclient.mqttRtcDescription) return;
+      mclient.disconnect();
+      mclient.mqttRtcDescription = home.description;
+      MqttClientConnectionStatus? status;
+      status = await mclient.connect(
+        username: home.username,
+        password: home.password,
+      );
+    } on SocketException catch (exception) {
+      mclient.disconnect();
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text("Connection Error"),
+          content: Text(exception.osError?.message ?? exception.message),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Ok"),
+              isDefaultAction: true,
+            ),
+          ],
+        ),
+      );
+    } on Exception catch (exception) {
+      print("exception");
+    }
+    print("a");
+
+    database.close();
   }
 
   Future<void> _onRefresh() async {
-    MClient mClient = context.read<MClient>();
-    String? response = await mClient.get("request/events", "events");
+    MClient mclient = context.read<MClient>();
+    if (mclient.isNotConnected()) return;
+    String? response = await mclient.get("request/events", "events");
 
     if (null == response) return;
 
@@ -120,6 +176,7 @@ class _HomePage extends State<HomePage> {
     MClient mclient = context.read<MClient>();
     CallHandler handler = CallHandler.getInstance();
     String? uuid = callUuid;
+    MqttRtcDescription? des = mclient.mqttRtcDescription;
 
     if (null == uuid) {
       uuid = const Uuid().v4();
@@ -138,12 +195,10 @@ class _HomePage extends State<HomePage> {
         return;
       }
 
+      if (des == null) return;
+
       MqttRtcClient mqttRtcClient = MqttRtcClient.invite(
-        MqttRtcDescription(
-          host: "server.dieklingel.com",
-          port: 1883,
-          channel: "com.dieklingel/mayer/kai/rtc/$uuid",
-        ),
+        des,
         MediaRessource(),
       );
 
@@ -189,8 +244,8 @@ class _HomePage extends State<HomePage> {
 
       handler.callkeep.startCall(
         uuid,
-        "0123456780",
-        "Kai",
+        "dieKlingel",
+        "dieKlingel",
         handleType: "generic",
         hasVideo: false,
       );
@@ -274,10 +329,15 @@ class _HomePage extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    MClient mClient = context.watch<MClient>();
+    MClient mclient = context.watch<MClient>();
+    print(mclient.connectionState);
+
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
+      navigationBar: CupertinoNavigationBar(
         middle: Text("dieKlingel"),
+        trailing: mclient.connectionState == MqttConnectionState.connecting
+            ? CupertinoActivityIndicator()
+            : SizedBox(width: 0),
       ),
       child: SafeArea(
         child: Column(
@@ -288,8 +348,8 @@ class _HomePage extends State<HomePage> {
             MessageBar(
               controller: _bodyController,
               onCallPressed:
-                  mClient.isConnected() ? _onCallButtonPressed : null,
-              onSendPressed: mClient.isConnected() && _sendButtonIsEnabled
+                  mclient.isConnected() ? _onCallButtonPressed : null,
+              onSendPressed: mclient.isConnected() && _sendButtonIsEnabled
                   ? _onUserNotificationSendPressed
                   : null,
             ),

@@ -73,8 +73,6 @@ class MessageBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    RtcClient? rtcClient = context.watch<NotifyableValue<RtcClient?>>().value;
-
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -86,7 +84,7 @@ class MessageBar extends StatelessWidget {
             children: [
               _icon(
                 context,
-                icon: rtcClient == null
+                icon: true
                     ? CupertinoIcons.phone_circle
                     : CupertinoIcons.phone_down_circle,
                 onPressed: onCallPressed,
