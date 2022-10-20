@@ -12,8 +12,6 @@ import '../messaging/mclient_topic_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
-import '../components/app_settings.dart';
-import '../components/connection_configuration.dart';
 import '../media/media_ressource.dart';
 import '../messaging/mclient.dart';
 import '../rtc/mqtt_rtc_client.dart';
@@ -25,14 +23,14 @@ import 'package:provider/provider.dart';
 
 typedef JSON = Map<dynamic, dynamic>;
 
-class PreviewView extends StatefulWidget {
-  const PreviewView({Key? key}) : super(key: key);
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<PreviewView> createState() => _PreviewView();
+  State<HomePage> createState() => _HomePage();
 }
 
-class _PreviewView extends State<PreviewView> {
+class _HomePage extends State<HomePage> {
   final TextEditingController _bodyController = TextEditingController();
   final Queue<SystemEventListTile> _events = Queue<SystemEventListTile>();
   String? callUuid;
@@ -41,13 +39,13 @@ class _PreviewView extends State<PreviewView> {
 
   final ScrollController _controller = ScrollController();
 
-  ConnectionConfiguration getDefaultConnectionConfiguration() {
+  /*ConnectionConfiguration getDefaultConnectionConfiguration() {
     return context.read<AppSettings>().connectionConfigurations.firstWhere(
           (element) => element.isDefault,
           orElse: () =>
               context.read<AppSettings>().connectionConfigurations.first,
         );
-  }
+  }*/
 
   @override
   void initState() {
@@ -277,19 +275,27 @@ class _PreviewView extends State<PreviewView> {
   @override
   Widget build(BuildContext context) {
     MClient mClient = context.watch<MClient>();
-    return Column(
-      children: [
-        Expanded(
-          child: _scrollView(context),
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
+        middle: Text("dieKlingel"),
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: _scrollView(context),
+            ),
+            MessageBar(
+              controller: _bodyController,
+              onCallPressed:
+                  mClient.isConnected() ? _onCallButtonPressed : null,
+              onSendPressed: mClient.isConnected() && _sendButtonIsEnabled
+                  ? _onUserNotificationSendPressed
+                  : null,
+            ),
+          ],
         ),
-        MessageBar(
-          controller: _bodyController,
-          onCallPressed: mClient.isConnected() ? _onCallButtonPressed : null,
-          onSendPressed: mClient.isConnected() && _sendButtonIsEnabled
-              ? _onUserNotificationSendPressed
-              : null,
-        ),
-      ],
+      ),
     );
   }
 

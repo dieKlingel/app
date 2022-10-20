@@ -45,6 +45,22 @@ class MqttRtcDescription {
     };
   }
 
+  Uri toUri() {
+    String scheme = websocket
+        ? ssl
+            ? "wss"
+            : "ws"
+        : ssl
+            ? "mqtts"
+            : "mqtt";
+    return Uri(
+      host: host,
+      port: port,
+      path: channel,
+      scheme: scheme,
+    );
+  }
+
   @override
   String toString() {
     return jsonEncode(toJson());

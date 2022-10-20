@@ -1,11 +1,6 @@
 library dieklingel_app.globals;
 
-import 'dart:convert';
-
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'components/connection_configuration.dart';
-import 'components/ice_server.dart';
 
 late SharedPreferences _preferences;
 
@@ -17,7 +12,7 @@ SharedPreferences get preferences {
   return _preferences;
 }
 
-List<ConnectionConfiguration> get connectionConfigurations {
+/* List<ConnectionConfiguration> get connectionConfigurations {
   List<String> rawConnectionConfig =
       preferences.getStringList("configuration") ??
           List<String>.empty(growable: true);
@@ -48,7 +43,7 @@ ConnectionConfiguration get defaultConnectionConfiguration {
       (config) => config.isDefault,
       orElse: (() => configurations.first));
   return connectionConfiguration;
-}
+} */ 
 
 /* List<IceConfiguration> get iceConfigurations {
   List<String> rawIceConfig =

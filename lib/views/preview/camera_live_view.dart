@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
 
-import '../call_view_page.dart';
+import '../call_page.dart';
 
 class CameraLiveView extends StatelessWidget {
   final MediaRessource mediaRessource;
@@ -53,7 +53,7 @@ class CameraLiveView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       child: GestureDetector(
                           onTap: () async {
-                            context.pushTransparentRoute(CallViewPage(
+                            context.pushTransparentRoute(CallPage(
                               mediaRessource: mediaRessource,
                               rtcVideoRenderer: rtcVideoRenderer,
                             ));

@@ -4,21 +4,21 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import 'package:flutter/cupertino.dart';
 
-class CallViewPage extends StatefulWidget {
+class CallPage extends StatefulWidget {
   final MediaRessource mediaRessource;
   final RTCVideoRenderer rtcVideoRenderer;
 
-  const CallViewPage({
+  const CallPage({
     super.key,
     required this.mediaRessource,
     required this.rtcVideoRenderer,
   });
 
   @override
-  State<CallViewPage> createState() => _CallViewPage();
+  State<CallPage> createState() => _CallPage();
 }
 
-class _CallViewPage extends State<CallViewPage> {
+class _CallPage extends State<CallPage> {
   void _onMicButtonPressed() {
     MediaStreamTrack? audioTrack =
         widget.mediaRessource.stream?.getAudioTracks().first;

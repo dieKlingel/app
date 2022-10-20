@@ -1,14 +1,13 @@
-import 'settings/settings_view_page.dart';
-
-import 'preview_view_page.dart';
+import 'home_page.dart';
+import 'settings_page.dart';
 import 'package:flutter/cupertino.dart';
 
 enum TabBarPages {
   preview(
-    PreviewViewPage(),
+    HomePage(),
   ),
   settings(
-    SettingsViewPage(),
+    SettingsPage(),
   );
 
   final Widget page;
@@ -16,8 +15,8 @@ enum TabBarPages {
   const TabBarPages(this.page);
 }
 
-class HomeViewPage extends StatelessWidget {
-  const HomeViewPage({Key? key}) : super(key: key);
+class TabbarPage extends StatelessWidget {
+  const TabbarPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

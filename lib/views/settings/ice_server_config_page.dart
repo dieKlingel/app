@@ -2,19 +2,19 @@ import 'package:flutter/cupertino.dart';
 
 import '../../components/ice_server.dart';
 
-class IceServerConfigViewPage extends StatefulWidget {
+class IceServerConfigPage extends StatefulWidget {
   final IceServer? configuration;
 
-  const IceServerConfigViewPage({
+  const IceServerConfigPage({
     super.key,
     this.configuration,
   });
 
   @override
-  State<IceServerConfigViewPage> createState() => _IceServerConfigViewPage();
+  State<IceServerConfigPage> createState() => _IceServerConfigViewPage();
 }
 
-class _IceServerConfigViewPage extends State<IceServerConfigViewPage> {
+class _IceServerConfigViewPage extends State<IceServerConfigPage> {
   final TextEditingController urls = TextEditingController();
   final TextEditingController username = TextEditingController();
   final TextEditingController credential = TextEditingController();
@@ -60,7 +60,7 @@ class _IceServerConfigViewPage extends State<IceServerConfigViewPage> {
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGroupedBackground,
       navigationBar: const CupertinoNavigationBar(
-        middle: Text("dieKlingel"),
+        middle: Text("Stun/Turn Server"),
       ),
       child: SafeArea(
         bottom: false,
@@ -89,12 +89,12 @@ class _IceServerConfigViewPage extends State<IceServerConfigViewPage> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: CupertinoButton.filled(
-                child: const Text("Save"),
                 onPressed: _valid
                     ? () {
                         _addConfiguration(context);
                       }
                     : null,
+                child: const Text("Save"),
               ),
             ),
           ],

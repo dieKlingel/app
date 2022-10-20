@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:dieklingel_app/handlers/notification_handler.dart';
-import 'package:dieklingel_app/rtc/mqtt_rtc_description.dart';
 
 import 'components/notifyable_value.dart';
 import 'messaging/mclient_topic_message.dart';
@@ -9,8 +8,7 @@ import 'rtc/rtc_client.dart';
 import 'components/app_settings.dart';
 import 'messaging/mclient.dart';
 import 'signaling/signaling_client.dart';
-import 'views/home_view_page.dart';
-import 'components/connection_configuration.dart';
+import 'views/tabbar_page.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,15 +16,15 @@ import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
 
-import './views/settings/connection_configuration_view.dart';
+import 'views/settings/home_config_page.dart';
 import 'globals.dart' as app;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 void main() async {
-  NotificationHandler.init();
   WidgetsFlutterBinding.ensureInitialized();
+  NotificationHandler.init();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -61,10 +59,10 @@ class App extends StatefulWidget {
 
 class _App extends State<App> {
   bool get isInitialzied {
-    return app.connectionConfigurations.isNotEmpty;
+    return true; // app.connectionConfigurations.isNotEmpty;
   }
 
-  ConnectionConfiguration? getDefaultConnectionConfiguration() {
+  /* ConnectionConfiguration? getDefaultConnectionConfiguration() {
     return context.read<AppSettings>().connectionConfigurations.isEmpty
         ? null
         : context.read<AppSettings>().connectionConfigurations.firstWhere(
@@ -72,7 +70,7 @@ class _App extends State<App> {
               orElse: () =>
                   context.read<AppSettings>().connectionConfigurations.first,
             );
-  }
+  } */
 
   @override
   void initState() {
@@ -126,7 +124,7 @@ class _App extends State<App> {
     } else {
       registerFcmPushNotifications();
     }
-    context.read<AppSettings>().connectionConfigurations.addListener(
+    /* context.read<AppSettings>().connectionConfigurations.addListener(
       () async {
         ConnectionConfiguration? defaultConfig =
             getDefaultConnectionConfiguration();
@@ -151,7 +149,7 @@ class _App extends State<App> {
             .listen("rtc/signaling")
             .listen("io/camera/snapshot");*/
       },
-    );
+    ); */
 
     /* context
         .read<AppSettings>()
@@ -162,22 +160,21 @@ class _App extends State<App> {
           context.read<AppSettings>().iceConfigurations.asList(); 
     });*/
 
-    context
+    /* context
         .read<AppSettings>()
         .connectionConfigurations
         .replace(app.connectionConfigurations);
     context.read<AppSettings>().connectionConfigurations.addListener(() {
       app.connectionConfigurations =
           context.read<AppSettings>().connectionConfigurations.asList();
-    });
+    }); */
   }
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      home:
-          isInitialzied ? const HomeViewPage() : ConnectionConfigurationView(),
+      home: isInitialzied ? const TabbarPage() : const HomeConfigPage(),
     );
   }
 }
