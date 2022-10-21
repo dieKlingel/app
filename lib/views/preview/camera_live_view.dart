@@ -1,5 +1,6 @@
 import 'package:dieklingel_app/media/media_ressource.dart';
 import 'package:dismissible_page/dismissible_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
@@ -44,7 +45,13 @@ class CameraLiveView extends StatelessWidget {
       child: Consumer<RTCVideoRenderer>(
         builder: (context, value, child) {
           return value.videoHeight <= 0 || value.videoWidth <= 0
-              ? Container()
+              ? const Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: CupertinoActivityIndicator(
+                    radius: 14,
+                    color: Colors.green,
+                  ),
+                )
               : Padding(
                   padding: const EdgeInsets.all(10),
                   child: Hero(

@@ -7,6 +7,7 @@ class MessageBar extends StatelessWidget {
   final void Function()? onCallPressed;
   final void Function()? onSendPressed;
   final void Function()? onUnlockPressed;
+  final bool isInCall;
   final TextEditingController? controller;
 
   const MessageBar({
@@ -15,6 +16,7 @@ class MessageBar extends StatelessWidget {
     this.onSendPressed,
     this.onUnlockPressed,
     this.controller,
+    this.isInCall = false,
   });
 
   Widget _icon(
@@ -81,9 +83,9 @@ class MessageBar extends StatelessWidget {
             children: [
               _icon(
                 context,
-                icon: true
-                    ? CupertinoIcons.phone_circle
-                    : CupertinoIcons.phone_down_circle,
+                icon: isInCall
+                    ? CupertinoIcons.phone_down_circle
+                    : CupertinoIcons.phone_circle,
                 onPressed: onCallPressed,
               ),
               _textfield(context),

@@ -46,6 +46,7 @@ class CallHandler extends ChangeNotifier {
         if (!calls.containsKey(uuid)) return;
 
         calls[uuid]!.open();
+        notifyListeners();
       },
     );
     callkeep.on(
@@ -57,6 +58,7 @@ class CallHandler extends ChangeNotifier {
 
         calls[uuid]!.close();
         calls.remove(uuid);
+        notifyListeners();
       },
     );
   }

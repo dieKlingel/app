@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:dieklingel_app/extensions/get_mclient.dart';
 import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/media/media_ressource.dart';
@@ -6,54 +9,86 @@ import 'package:dieklingel_app/rtc/mqtt_rtc_client.dart';
 import 'package:dieklingel_app/rtc/mqtt_rtc_description.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 import 'package:uuid/uuid.dart';
 
 import '../rtc/rtc_client.dart';
 
 Future<void> onBackgroundNotificationReceived(RemoteMessage message) async {
-  String? host = message.data["host"];
-  int port = int.tryParse(message.data["port"].toString()) ?? -1;
-  String? channel = message.data["channel"];
+  String? descriptions = message.data["mqtt-rtc-descriptions"];
+  if (null == descriptions) {
+    print("no descriptions");
+    return;
+  }
+  List<Uri> uris = descriptions
+      .split(";")
+      .map<Uri>(
+        (e) => Uri.parse(e),
+      )
+      .toList();
 
-  if (null == host ||
-      host.isEmpty ||
-      port <= 0 ||
-      null == channel ||
-      channel.isEmpty) {
-    print("message without MqttRtcDescription");
+  Completer<MClient> completer = Completer<MClient>();
+  for (Uri uri in uris) {
+    MClient client = MClient(mqttRtcDescription: MqttRtcDescription.parse(uri));
+
+    client.connect().then(
+      (value) {
+        if (completer.isCompleted) {
+          client.disconnect();
+          return;
+        }
+        completer.complete(client);
+      },
+    ).catchError(
+      (error) {
+        client.disconnect();
+      },
+    );
+  }
+  Future.delayed(const Duration(seconds: 10), () {
+    if (!completer.isCompleted) {
+      completer.completeError(Object());
+    }
+  });
+
+  MClient mclient;
+  try {
+    mclient = await completer.future;
+  } catch (e) {
+    /* timeout */
     return;
   }
 
-  MqttRtcDescription description = MqttRtcDescription(
+  String uuid = const Uuid().v4();
+
+  MqttRtcDescription rtcDescription = MqttRtcDescription(
     host: "wss://server.dieklingel.com",
     port: 9002,
-    channel: "com.dieklingel/mayer/kai/rtc/test",
+    channel: "${mclient.mqttRtcDescription!.channel}rtc/$uuid",
   );
 
   CallHandler handler = CallHandler.getInstance();
-  String uuid = const Uuid().v4();
-  MClient mClient = MClient(
-      mqttRtcDescription: MqttRtcDescription(
-    host: "server.dieklingel.com",
-    port: 1883,
-  ));
 
-  await mClient.connect();
-  String? result = await mClient.get(
-    "com.dieklingel/mayer/kai/request/rtc/test",
-    description.toString(),
+  String? result = await mclient.get(
+    "request/rtc/test/",
+    rtcDescription.toString(),
   );
+
+  mclient.disconnect();
+
   if (null == result) {
     print("no answer");
     return;
   }
 
+  MqttRtcDescription localDescription = MqttRtcDescription(
+    host: mclient.mqttRtcDescription!.host,
+    port: mclient.mqttRtcDescription!.port,
+    channel: rtcDescription.channel,
+  );
+
   MqttRtcClient mqttRtcClient = MqttRtcClient.invite(
-    MqttRtcDescription(
-      host: "server.dieklingel.com",
-      port: 1883,
-      channel: "com.dieklingel/mayer/kai/rtc/test",
-    ),
+    localDescription,
     MediaRessource(),
   );
   await mqttRtcClient.mediaRessource.open(true, false);

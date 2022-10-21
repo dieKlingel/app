@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dieklingel_app/rtc/mqtt_rtc_description.dart';
 
@@ -49,7 +50,7 @@ class MClient extends ChangeNotifier {
 
     String scheme = "";
     if (description.websocket) {
-      scheme = description.ssl ? "wss://" : "ws";
+      scheme = description.ssl ? "wss://" : "ws://";
     }
     _mqttClient = MqttClientFactory.create("$scheme${description.host}", "");
     _mqttClient!.port = description.port;
@@ -69,14 +70,13 @@ class MClient extends ChangeNotifier {
       notifyListeners();
     };
 
-    await _mqttClient!.connect(username, password);
+    //await _mqttClient!.connect(username, password);
 
-    /*try {
+    try {
       await _mqttClient!.connect(username, password);
-    } catch (exception) {
-      print(exception);
-      return null;
-    }*/
+    } on SocketException {
+      rethrow;
+    }
 
     for (MClientSubscribtion sub in _subscribtions) {
       String prefix = description.channel;

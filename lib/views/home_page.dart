@@ -41,7 +41,7 @@ class _HomePage extends State<HomePage> {
   final Queue<SystemEventListTile> _events = Queue<SystemEventListTile>();
   String? callUuid;
   bool _sendButtonIsEnabled = false;
-  double? aspectRatio;
+  bool _callIsRequested = false;
 
   final ScrollController _controller = ScrollController();
 
@@ -76,6 +76,8 @@ class _HomePage extends State<HomePage> {
 
     Preferences preferences = context.read<Preferences>();
     MClient mclient = context.read<MClient>();
+    CallHandler handler = CallHandler.getInstance();
+
     mclient.subscribe("system/event", (message) {
       SystemEvent event = SystemEvent.fromJson(jsonDecode(message.message));
       SystemEventListTile tile = SystemEventListTile(
@@ -86,8 +88,21 @@ class _HomePage extends State<HomePage> {
         _events.addFirst(tile);
       });
     });
+
     _reconnect();
     preferences.addListener(_reconnect);
+
+    _takeoverActiveCall();
+    handler.addListener(_takeoverActiveCall);
+  }
+
+  void _takeoverActiveCall() {
+    CallHandler handler = CallHandler.getInstance();
+    if (callUuid != null) return;
+    if (handler.calls.isEmpty) return;
+    setState(() {
+      callUuid = handler.calls.keys.first;
+    });
   }
 
   void _reconnect() async {
@@ -132,7 +147,7 @@ class _HomePage extends State<HomePage> {
   Future<void> _onRefresh() async {
     MClient mclient = context.read<MClient>();
     if (mclient.isNotConnected()) return;
-    String? response = await mclient.get("request/events", "events");
+    String? response = await mclient.get("request/events/", "events");
 
     if (null == response) return;
 
@@ -173,15 +188,23 @@ class _HomePage extends State<HomePage> {
     MqttRtcDescription? des = mclient.mqttRtcDescription;
 
     if (null == uuid) {
+      setState(() {
+        _callIsRequested = true;
+      });
       uuid = const Uuid().v4();
       MqttRtcDescription description = MqttRtcDescription(
         host: "wss://server.dieklingel.com",
         port: 9002,
-        channel: "com.dieklingel/mayer/kai/rtc/$uuid",
+        channel: "com.dieklingel/mayer/kai/rtc/$uuid/",
+      );
+      MqttRtcDescription descriptionc = MqttRtcDescription(
+        host: "server.dieklingel.com",
+        port: 1883,
+        channel: "com.dieklingel/mayer/kai/rtc/$uuid/",
       );
 
       String? result = await mclient.get(
-        "request/rtc/test",
+        "request/rtc/test/",
         description.toString(),
       );
       if (null == result) {
@@ -191,7 +214,7 @@ class _HomePage extends State<HomePage> {
       if (des == null) return;
 
       MqttRtcClient mqttRtcClient = MqttRtcClient.invite(
-        des,
+        descriptionc,
         MediaRessource(),
       );
 
@@ -245,6 +268,7 @@ class _HomePage extends State<HomePage> {
       handler.calls[uuid] = mqttRtcClient;
       setState(() {
         callUuid = uuid;
+        _callIsRequested = false;
       });
     } else {
       if (handler.calls.containsKey(uuid)) {
@@ -254,6 +278,7 @@ class _HomePage extends State<HomePage> {
         setState(() {
           callUuid = null;
         });
+        _takeoverActiveCall();
       }
     }
   }
@@ -278,7 +303,7 @@ class _HomePage extends State<HomePage> {
   }
 
   Widget _scrollView(BuildContext context) {
-    bool listIsVisible = _events.isNotEmpty || aspectRatio != null;
+    bool listIsVisible = _events.isNotEmpty;
     CallHandler handler = CallHandler.getInstance();
     MqttRtcClient? client = handler.calls[callUuid];
 
@@ -303,7 +328,14 @@ class _HomePage extends State<HomePage> {
                       mediaRessource: client.mediaRessource,
                       rtcVideoRenderer: client.rtcVideoRenderer,
                     )
-                  : Container(),
+                  : _callIsRequested
+                      ? const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: CupertinoActivityIndicator(
+                            radius: 14,
+                          ),
+                        )
+                      : Container(),
             ),
             SliverList(
               delegate: listIsVisible
@@ -345,6 +377,7 @@ class _HomePage extends State<HomePage> {
               onSendPressed: mclient.isConnected() && _sendButtonIsEnabled
                   ? _onUserNotificationSendPressed
                   : null,
+              isInCall: callUuid != null,
             ),
           ],
         ),
@@ -355,7 +388,11 @@ class _HomePage extends State<HomePage> {
   @override
   void deactivate() {
     Preferences preferences = context.read<Preferences>();
+    CallHandler handler = CallHandler.getInstance();
+
     preferences.removeListener(_reconnect);
+    handler.removeListener(_takeoverActiveCall);
+
     super.deactivate();
   }
 }
