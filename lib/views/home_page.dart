@@ -7,6 +7,7 @@ import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/components/simple_alert_dialog.dart';
 import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:dieklingel_app/event/system_event.dart';
+import 'package:dieklingel_app/globals.dart';
 import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/views/preview/camera_live_view.dart';
 import 'package:dieklingel_app/views/preview/message_bar.dart';
@@ -360,7 +361,9 @@ class _HomePage extends State<HomePage> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
+  void deactivate() {
+    Preferences preferences = context.read<Preferences>();
+    preferences.removeListener(_reconnect);
+    super.deactivate();
   }
 }

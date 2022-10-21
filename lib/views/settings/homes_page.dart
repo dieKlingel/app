@@ -3,6 +3,7 @@ import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/components/radio_box.dart';
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/views/settings/home_config_page.dart';
+import 'package:dieklingel_app/views/wizard/wizard_page.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -65,6 +66,20 @@ class _HomesPage extends State<HomesPage> {
     setState(() {
       _homes.remove(id);
     });
+    if (_homes.isEmpty && mounted) {
+      Navigator.popUntil(context, (route) {
+        if (!route.isFirst) {
+          Navigator.replaceRouteBelow(
+            context,
+            anchorRoute: route,
+            newRoute: CupertinoPageRoute(
+              builder: (context) => WizardPage(),
+            ),
+          );
+        }
+        return route.isFirst;
+      });
+    }
   }
 
   void _onPlusBtnPressed() async {
@@ -177,5 +192,11 @@ class _HomesPage extends State<HomesPage> {
         child: _listview(),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _database?.close();
   }
 }

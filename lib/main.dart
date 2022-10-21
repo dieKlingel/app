@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
+import 'package:dieklingel_app/views/wizard/wizard_page.dart';
 import 'package:objectdb/objectdb.dart';
 
 import 'messaging/mclient_topic_message.dart';
@@ -174,9 +175,12 @@ class _App extends State<App> {
       home: FutureBuilder<bool>(
         future: isInitialized(),
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-          return (snapshot.data ?? false)
-              ? const TabbarPage()
-              : const HomeConfigPage();
+          if (!snapshot.hasData) {
+            return Center(
+              child: Text("loading"),
+            );
+          }
+          return (snapshot.data!) ? const TabbarPage() : const WizardPage();
         },
       ),
     );
