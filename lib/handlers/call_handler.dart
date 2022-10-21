@@ -3,16 +3,20 @@ import 'package:dieklingel_app/rtc/mqtt_rtc_client.dart';
 import 'package:callkeep/callkeep.dart';
 import 'package:flutter/material.dart';
 
+import '../components/notifyable_map.dart';
+
 class CallHandler extends ChangeNotifier {
   static final CallHandler _instance = CallHandler._();
   factory CallHandler.getInstance() => _instance;
 
-  final Map<String, MqttRtcClient> calls = {};
+  final NotifyableMap<String, MqttRtcClient> calls =
+      NotifyableMap<String, MqttRtcClient>();
   final FlutterCallkeep callkeep = FlutterCallkeep();
   final MClient mClient = MClient();
   late final Future<void> callkeepIsReady;
 
   CallHandler._() {
+    calls.addListener(notifyListeners);
     _initCallkeep();
   }
 
@@ -38,17 +42,12 @@ class CallHandler extends ChangeNotifier {
     };
     callkeepIsReady = callkeep.setup(null, options, backgroundMode: true);
 
-    callkeep.on(
+    /* callkeep.on(
       CallKeepPerformAnswerCallAction(),
       (CallKeepPerformAnswerCallAction event) {
-        String? uuid = event.callUUID;
-        if (null == uuid) return;
-        if (!calls.containsKey(uuid)) return;
-
-        calls[uuid]!.open();
-        notifyListeners();
+        //notifyListeners();
       },
-    );
+    );*/
     callkeep.on(
       CallKeepPerformEndCallAction(),
       (CallKeepPerformEndCallAction event) {
