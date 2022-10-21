@@ -9,7 +9,6 @@ import 'package:dieklingel_app/rtc/mqtt_rtc_client.dart';
 import 'package:dieklingel_app/rtc/mqtt_rtc_description.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mqtt_client/mqtt_client.dart';
 import 'package:uuid/uuid.dart';
 
 import '../rtc/rtc_client.dart';
@@ -137,6 +136,7 @@ Future<void> onBackgroundNotificationReceived(RemoteMessage message) async {
     handleType: "generic",
     hasVideo: false,
   );
+  print("anserd");
   handler.callkeep.backToForeground();
 }
 

@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:dieklingel_app/database/objectdb_factory.dart';
-
 class MqttRtcDescription {
   final String host;
   final int port;
@@ -17,7 +15,7 @@ class MqttRtcDescription {
     this.websocket = false,
   });
 
-  factory MqttRtcDescription.fromJson(JSON json) {
+  factory MqttRtcDescription.fromJson(Map<String, dynamic> json) {
     return MqttRtcDescription(
       host: json["host"],
       port: json["port"],
@@ -37,7 +35,7 @@ class MqttRtcDescription {
     );
   }
 
-  JSON toJson() {
+  Map<String, dynamic> toJson() {
     return {
       "host": host,
       "port": port,
@@ -65,6 +63,22 @@ class MqttRtcDescription {
   bool operator ==(Object other) {
     if (other is! MqttRtcDescription) return false;
     return hashCode == other.hashCode;
+  }
+
+  MqttRtcDescription copyWith({
+    String? host,
+    int? port,
+    String? channel,
+    bool? ssl,
+    bool? websocket,
+  }) {
+    return MqttRtcDescription(
+      host: host ?? this.host,
+      port: port ?? this.port,
+      channel: channel ?? this.channel,
+      ssl: ssl ?? this.ssl,
+      websocket: websocket ?? this.websocket,
+    );
   }
 
   @override

@@ -199,7 +199,9 @@ class MqttRtcClient extends ChangeNotifier {
       topic: topic,
       message: smes.toString(),
     );
-    mclient.publish(tmes);
+    if (mclient.isConnected()) {
+      mclient.publish(tmes);
+    }
 
     return Future.delayed(const Duration(seconds: 1), () async {
       mclient.disconnect();
