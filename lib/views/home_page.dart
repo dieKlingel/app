@@ -4,10 +4,8 @@ import 'dart:io';
 import 'package:audio_session/audio_session.dart';
 import 'package:dieklingel_app/components/home.dart';
 import 'package:dieklingel_app/components/preferences.dart';
-import 'package:dieklingel_app/components/simple_alert_dialog.dart';
 import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:dieklingel_app/event/system_event.dart';
-import 'package:dieklingel_app/globals.dart';
 import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/views/preview/camera_live_view.dart';
 import 'package:dieklingel_app/views/preview/message_bar.dart';
@@ -105,8 +103,7 @@ class _HomePage extends State<HomePage> {
       if (home.description == mclient.mqttRtcDescription) return;
       mclient.disconnect();
       mclient.mqttRtcDescription = home.description;
-      MqttClientConnectionStatus? status;
-      status = await mclient.connect(
+      await mclient.connect(
         username: home.username,
         password: home.password,
       );
@@ -115,24 +112,20 @@ class _HomePage extends State<HomePage> {
       showCupertinoDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: Text("Connection Error"),
+          title: const Text("Connection Error"),
           content: Text(exception.osError?.message ?? exception.message),
           actions: [
             CupertinoDialogAction(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("Ok"),
               isDefaultAction: true,
+              child: const Text("Ok"),
             ),
           ],
         ),
       );
-    } on Exception catch (exception) {
-      print("exception");
     }
-    print("a");
-
     database.close();
   }
 
@@ -192,7 +185,6 @@ class _HomePage extends State<HomePage> {
         description.toString(),
       );
       if (null == result) {
-        print("no answer");
         return;
       }
 
@@ -335,10 +327,10 @@ class _HomePage extends State<HomePage> {
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text("dieKlingel"),
+        middle: const Text("dieKlingel"),
         trailing: mclient.connectionState == MqttConnectionState.connecting
-            ? CupertinoActivityIndicator()
-            : SizedBox(width: 0),
+            ? const CupertinoActivityIndicator()
+            : const SizedBox(width: 0),
       ),
       child: SafeArea(
         child: Column(

@@ -5,7 +5,6 @@ import 'package:dieklingel_app/views/tabbar_page.dart';
 import 'package:dieklingel_app/views/wizard/input_view.dart';
 import 'package:dieklingel_app/views/wizard/validator.dart';
 import 'package:dieklingel_app/views/wizard/welcome_view.dart';
-import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:objectdb/objectdb.dart';
@@ -174,7 +173,7 @@ class _WizardPage extends State<WizardPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Padding(
-            padding: const EdgeInsets.all(30.0),
+            padding: EdgeInsets.all(30.0),
             child: Text(
               "you did it. Press finish, to set up the app!",
               style: TextStyle(
@@ -186,8 +185,8 @@ class _WizardPage extends State<WizardPage> {
           CupertinoButton(
             borderRadius: BorderRadius.circular(20),
             color: Colors.orange,
-            child: const Text("finish"),
             onPressed: _onFinishedBtnPressed,
+            child: const Text("finish"),
           ),
         ],
       )

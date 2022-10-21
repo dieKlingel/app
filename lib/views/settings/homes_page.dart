@@ -1,7 +1,6 @@
 import 'package:dieklingel_app/components/home.dart';
 import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/components/radio_box.dart';
-import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/views/settings/home_config_page.dart';
 import 'package:dieklingel_app/views/wizard/wizard_page.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
@@ -73,7 +72,7 @@ class _HomesPage extends State<HomesPage> {
             context,
             anchorRoute: route,
             newRoute: CupertinoPageRoute(
-              builder: (context) => WizardPage(),
+              builder: (context) => const WizardPage(),
             ),
           );
         }

@@ -17,8 +17,6 @@ import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
 
-import 'views/settings/home_config_page.dart';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -176,7 +174,7 @@ class _App extends State<App> {
         future: isInitialized(),
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
           if (!snapshot.hasData) {
-            return Center(
+            return const Center(
               child: Text("loading"),
             );
           }

@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Validator<T> {
   final bool Function(T value) validator;
   T value;

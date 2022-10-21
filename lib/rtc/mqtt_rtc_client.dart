@@ -88,7 +88,6 @@ class MqttRtcClient extends ChangeNotifier {
         ),
       );
     }
-    print("inited");
   }
 
   void _onMessage(MClientTopicMessage message) async {
