@@ -1,3 +1,4 @@
+import 'package:dieklingel_app/views/settings/about_page.dart';
 import 'package:dieklingel_app/views/settings/homes_page.dart';
 import 'package:dieklingel_app/views/settings/ice_servers_page.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
@@ -67,22 +68,35 @@ class SettingsPage extends StatelessWidget {
           ),
           CupertinoFormSection.insetGrouped(
             header: const Text("Information"),
-            children: const [
-              CupertinoFormRow(
-                prefix: PrefixWidget(
-                  title: "About",
-                  icon: CupertinoIcons.info_circle,
-                  color: Colors.green,
+            children: [
+              CupertinoInkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (context) => const AboutPage(),
+                    ),
+                  );
+                },
+                child: const CupertinoFormRow(
+                  prefix: PrefixWidget(
+                    title: "About",
+                    icon: CupertinoIcons.info_circle,
+                    color: Colors.green,
+                  ),
+                  child: Icon(CupertinoIcons.forward),
                 ),
-                child: Icon(CupertinoIcons.forward),
               ),
-              CupertinoFormRow(
-                prefix: PrefixWidget(
-                  title: "Licenses",
-                  icon: CupertinoIcons.chevron_left_slash_chevron_right,
-                  color: Colors.lightBlue,
+              CupertinoInkWell(
+                onTap: () {},
+                child: const CupertinoFormRow(
+                  prefix: PrefixWidget(
+                    title: "Licenses",
+                    icon: CupertinoIcons.chevron_left_slash_chevron_right,
+                    color: Colors.lightBlue,
+                  ),
+                  child: Icon(CupertinoIcons.forward),
                 ),
-                child: Icon(CupertinoIcons.forward),
               ),
             ],
           ),
