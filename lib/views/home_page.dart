@@ -78,7 +78,7 @@ class _HomePage extends State<HomePage> {
     MClient mclient = context.read<MClient>();
     CallHandler handler = CallHandler.getInstance();
 
-    mclient.subscribe("system/event", (message) {
+    mclient.subscribe("system/event/", (message) {
       SystemEvent event = SystemEvent.fromJson(jsonDecode(message.message));
       SystemEventListTile tile = SystemEventListTile(
         key: Key(event.timestamp.toIso8601String()),

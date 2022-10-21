@@ -66,8 +66,8 @@ class _SystemEventListTile extends State<SystemEventListTile>
       borderRadius: BorderRadius.circular(20),
       child: Container(
         color: CupertinoDynamicColor.withBrightness(
-          color: Colors.blue.shade400,
-          darkColor: Colors.blue.shade200,
+          color: Colors.orange.shade400,
+          darkColor: Colors.orange.shade200,
         ).withOpacity(0.9),
         child: Padding(
           padding: const EdgeInsets.all(9),
