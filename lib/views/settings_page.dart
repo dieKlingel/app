@@ -1,9 +1,12 @@
 import 'package:dieklingel_app/views/settings/about_page.dart';
 import 'package:dieklingel_app/views/settings/homes_page.dart';
 import 'package:dieklingel_app/views/settings/ice_servers_page.dart';
+import 'package:dieklingel_app/views/settings/notifications_page.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'settings/licenses_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -56,13 +59,23 @@ class SettingsPage extends StatelessWidget {
                   child: Icon(CupertinoIcons.forward),
                 ),
               ),
-              const CupertinoFormRow(
-                prefix: PrefixWidget(
-                  title: "Sound",
-                  icon: CupertinoIcons.bell_fill,
-                  color: Colors.red,
+              CupertinoInkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (context) => const NotificationsPage(),
+                    ),
+                  );
+                },
+                child: const CupertinoFormRow(
+                  prefix: PrefixWidget(
+                    title: "Notifications",
+                    icon: CupertinoIcons.bell_fill,
+                    color: Colors.red,
+                  ),
+                  child: Icon(CupertinoIcons.forward),
                 ),
-                child: Icon(CupertinoIcons.forward),
               ),
             ],
           ),
@@ -88,7 +101,14 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               CupertinoInkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (context) => const LicensesPage(),
+                    ),
+                  );
+                },
                 child: const CupertinoFormRow(
                   prefix: PrefixWidget(
                     title: "Licenses",
