@@ -181,105 +181,122 @@ class _HomePage extends State<HomePage> {
     _bodyController.clear();
   }
 
+  Future<void> _startCall(String uuid) async {
+    MClient mclient = context.read<MClient>();
+    CallHandler handler = CallHandler.getInstance();
+    MqttRtcDescription? description = mclient.mqttRtcDescription?.copyWith(
+      channel: "${mclient.mqttRtcDescription!.channel}rtc/$uuid/",
+    );
+
+    if (null == description) {
+      return;
+    }
+
+    MqttRtcClient mqttRtcClient = MqttRtcClient.invite(
+      description,
+      MediaRessource(),
+    );
+    handler.callkeep.startCall(
+      uuid,
+      "https://www.dieklingel.de/",
+      "dieKlingel",
+      handleType: "generic",
+      hasVideo: false,
+    );
+    handler.calls[uuid] = mqttRtcClient;
+    setState(() {
+      _callIsRequested = true;
+      callUuid = uuid;
+    });
+
+    await mqttRtcClient.mediaRessource.open(true, false);
+
+    await mqttRtcClient.init(iceServers: {
+      "iceServers": [
+        {"url": "stun:stun1.l.google.com:19302"},
+        {
+          "urls": "turn:dieklingel.com:3478",
+          "username": "guest",
+          "credential": "12345"
+        },
+        {"urls": "stun:openrelay.metered.ca:80"},
+        {
+          "urls": "turn:openrelay.metered.ca:80",
+          "username": "openrelayproject",
+          "credential": "openrelayproject"
+        },
+        {
+          "urls": "turn:openrelay.metered.ca:443",
+          "username": "openrelayproject",
+          "credential": "openrelayproject"
+        },
+        {
+          "urls": "turn:openrelay.metered.ca:443?transport=tcp",
+          "username": "openrelayproject",
+          "credential": "openrelayproject"
+        }
+      ],
+      "sdpSemantics": "unified-plan" // important to work
+    }, transceivers: [
+      RtcTransceiver(
+        kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+        direction: TransceiverDirection.SendRecv,
+      ),
+      RtcTransceiver(
+        kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+        direction: TransceiverDirection.RecvOnly,
+      ),
+    ]);
+
+    String? result = await mclient.get(
+      "request/rtc/test/",
+      description
+          .copyWith(channel: "${description.channel}rtc/$uuid/")
+          .toString(),
+      timeout: const Duration(seconds: 10),
+    );
+    if (null == result) {
+      _endCall(uuid);
+      return;
+    }
+
+    await mqttRtcClient.open();
+
+    setState(() {
+      _callIsRequested = false;
+    });
+  }
+
+  Future<void> _endCall(String uuid) async {
+    CallHandler handler = CallHandler.getInstance();
+
+    setState(() {
+      callUuid = null;
+      _callIsRequested = false;
+    });
+    handler.callkeep.endCall(uuid);
+    await handler.calls[uuid]?.close();
+    handler.calls.remove(uuid);
+    _takeoverActiveCall();
+  }
+
   void _onCallButtonPressed() async {
     MClient mclient = context.read<MClient>();
     CallHandler handler = CallHandler.getInstance();
     String? uuid = callUuid;
-    MqttRtcDescription? des = mclient.mqttRtcDescription;
+    MqttRtcDescription? description = mclient.mqttRtcDescription?.copyWith(
+      channel: "${mclient.mqttRtcDescription!.channel}rtc/$uuid/",
+    );
+
+    if (null == description) {
+      return;
+    }
 
     if (null == uuid) {
-      setState(() {
-        _callIsRequested = true;
-      });
       uuid = const Uuid().v4();
-      MqttRtcDescription description = MqttRtcDescription(
-        host: "wss://server.dieklingel.com",
-        port: 9002,
-        channel: "com.dieklingel/mayer/kai/rtc/$uuid/",
-      );
-      MqttRtcDescription descriptionc = MqttRtcDescription(
-        host: "server.dieklingel.com",
-        port: 1883,
-        channel: "com.dieklingel/mayer/kai/rtc/$uuid/",
-      );
-
-      String? result = await mclient.get(
-        "request/rtc/test/",
-        description.toString(),
-      );
-      if (null == result) {
-        return;
-      }
-
-      if (des == null) return;
-
-      MqttRtcClient mqttRtcClient = MqttRtcClient.invite(
-        descriptionc,
-        MediaRessource(),
-      );
-
-      await mqttRtcClient.mediaRessource.open(true, false);
-
-      await mqttRtcClient.init(iceServers: {
-        "iceServers": [
-          {"url": "stun:stun1.l.google.com:19302"},
-          {
-            "urls": "turn:dieklingel.com:3478",
-            "username": "guest",
-            "credential": "12345"
-          },
-          {"urls": "stun:openrelay.metered.ca:80"},
-          {
-            "urls": "turn:openrelay.metered.ca:80",
-            "username": "openrelayproject",
-            "credential": "openrelayproject"
-          },
-          {
-            "urls": "turn:openrelay.metered.ca:443",
-            "username": "openrelayproject",
-            "credential": "openrelayproject"
-          },
-          {
-            "urls": "turn:openrelay.metered.ca:443?transport=tcp",
-            "username": "openrelayproject",
-            "credential": "openrelayproject"
-          }
-        ],
-        "sdpSemantics": "unified-plan" // important to work
-      }, transceivers: [
-        RtcTransceiver(
-          kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
-          direction: TransceiverDirection.SendRecv,
-        ),
-        RtcTransceiver(
-          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
-          direction: TransceiverDirection.RecvOnly,
-        ),
-      ]);
-      await mqttRtcClient.open();
-
-      handler.callkeep.startCall(
-        uuid,
-        "https://www.dieklingel.de/",
-        "dieKlingel",
-        handleType: "generic",
-        hasVideo: false,
-      );
-      handler.calls[uuid] = mqttRtcClient;
-      setState(() {
-        callUuid = uuid;
-        _callIsRequested = false;
-      });
-    } else {
-      if (handler.calls.containsKey(uuid)) {
-        await handler.calls[uuid]?.close();
-        handler.calls.remove(uuid);
-        handler.callkeep.endCall(uuid);
-        setState(() {
-          callUuid = null;
-        });
-        _takeoverActiveCall();
-      }
+      _startCall(uuid);
+    } else if (handler.calls.containsKey(uuid)) {
+      _endCall(uuid);
     }
   }
 

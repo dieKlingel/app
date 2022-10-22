@@ -63,6 +63,9 @@ class _NotificationHandler {
     CallHandler handler = CallHandler.getInstance();
     if (event.callUUID != uuid) return;
 
+    handler.callkeep.remove(CallKeepPerformAnswerCallAction(), _onAnswer);
+    handler.callkeep.remove(CallKeepPerformEndCallAction(), _onDecline);
+
     String? descriptions = message.data["mqtt-rtc-descriptions"];
     if (null == descriptions) {
       print("no descriptions");
@@ -105,8 +108,13 @@ class _NotificationHandler {
       mclient = await completer.future;
     } catch (e) {
       /* timeout */
+      handler.callkeep.endCall(uuid);
       return;
     }
+
+    MqttRtcDescription description = mclient.mqttRtcDescription!.copyWith(
+      channel: "${mclient.mqttRtcDescription!.channel}rtc/$uuid/",
+    );
 
     MqttRtcDescription rtcDescription = MqttRtcDescription(
       host: "wss://server.dieklingel.com",
@@ -114,26 +122,8 @@ class _NotificationHandler {
       channel: "${mclient.mqttRtcDescription!.channel}rtc/$uuid",
     );
 
-    String? result = await mclient.get(
-      "request/rtc/test/",
-      rtcDescription.toString(),
-    );
-
-    mclient.disconnect();
-
-    if (null == result) {
-      print("no answer");
-      return;
-    }
-
-    MqttRtcDescription localDescription = MqttRtcDescription(
-      host: mclient.mqttRtcDescription!.host,
-      port: mclient.mqttRtcDescription!.port,
-      channel: rtcDescription.channel,
-    );
-
     MqttRtcClient mqttRtcClient = MqttRtcClient.invite(
-      localDescription,
+      description,
       MediaRessource(),
     );
     await mqttRtcClient.mediaRessource.open(true, false);
@@ -173,11 +163,27 @@ class _NotificationHandler {
         direction: TransceiverDirection.RecvOnly,
       ),
     ]);
-    await mqttRtcClient.open();
     handler.calls[uuid] = mqttRtcClient;
 
-    handler.callkeep.remove(CallKeepPerformAnswerCallAction(), _onAnswer);
-    handler.callkeep.remove(CallKeepPerformEndCallAction(), _onDecline);
+    String? result = await mclient.get(
+      "request/rtc/test/",
+      description.toString(),
+      timeout: const Duration(seconds: 10),
+    );
+
+    mclient.disconnect();
+
+    /**
+     * notice: if the call was canceld in meantime, the call should already be 
+     * cleaned up (if canceld correctly) and we shoudl stop here -> never call
+     * open. 
+     */
+    if (null == result || handler.calls.containsKey(uuid)) {
+      handler.callkeep.endCall(uuid);
+      return;
+    }
+
+    await mqttRtcClient.open();
   }
 
   void _onDecline(CallKeepPerformEndCallAction event) {

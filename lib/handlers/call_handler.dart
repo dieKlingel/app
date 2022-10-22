@@ -42,12 +42,13 @@ class CallHandler extends ChangeNotifier {
     };
     callkeepIsReady = callkeep.setup(null, options, backgroundMode: true);
 
-    /* callkeep.on(
+    callkeep.on(
       CallKeepPerformAnswerCallAction(),
       (CallKeepPerformAnswerCallAction event) {
+        print("on answer");
         //notifyListeners();
       },
-    );*/
+    );
     callkeep.on(
       CallKeepPerformEndCallAction(),
       (CallKeepPerformEndCallAction event) {
@@ -60,5 +61,17 @@ class CallHandler extends ChangeNotifier {
         notifyListeners();
       },
     );
+  }
+
+  Future<String?> getActiveCallUuid() async {
+    await callkeepIsReady;
+
+    for (MapEntry<String, MqttRtcClient> call in calls.entries) {
+      if (await callkeep.isCallActive(call.key)) {
+        return call.key;
+      }
+    }
+
+    return null;
   }
 }
