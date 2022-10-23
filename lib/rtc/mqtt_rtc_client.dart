@@ -17,7 +17,7 @@ class MqttRtcClient extends ChangeNotifier {
   final String password;
   final MqttRtcDescription mqttRtcDescription;
   final MediaRessource mediaRessource;
-  final RTCVideoRenderer rtcVideoRenderer = RTCVideoRenderer()..initialize();
+  final RTCVideoRenderer rtcVideoRenderer = RTCVideoRenderer();
 
   late final MClient mclient;
   late final MClientSubscribtion sub;

@@ -168,7 +168,7 @@ class _NotificationHandler {
     String? result = await mclient.get(
       "request/rtc/test/",
       description.toString(),
-      timeout: const Duration(seconds: 10),
+      timeout: const Duration(seconds: 30),
     );
 
     mclient.disconnect();
@@ -178,7 +178,7 @@ class _NotificationHandler {
      * cleaned up (if canceld correctly) and we shoudl stop here -> never call
      * open. 
      */
-    if (null == result || handler.calls.containsKey(uuid)) {
+    if (null == result || !handler.calls.containsKey(uuid)) {
       handler.callkeep.endCall(uuid);
       return;
     }

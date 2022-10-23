@@ -15,6 +15,17 @@ class CallHandler extends ChangeNotifier {
   final MClient mClient = MClient();
   late final Future<void> callkeepIsReady;
 
+  String? _activeCallUuid;
+
+  String? get activeCallUuid {
+    return _activeCallUuid;
+  }
+
+  set activeCallUuid(String? uuid) {
+    _activeCallUuid = uuid;
+    notifyListeners();
+  }
+
   CallHandler._() {
     calls.addListener(notifyListeners);
     _initCallkeep();
@@ -45,8 +56,12 @@ class CallHandler extends ChangeNotifier {
     callkeep.on(
       CallKeepPerformAnswerCallAction(),
       (CallKeepPerformAnswerCallAction event) {
-        print("on answer");
-        //notifyListeners();
+        String? uuid = event.callUUID;
+        if (null == uuid) return;
+        //active[uuid] =
+        activeCallUuid = uuid;
+
+        notifyListeners();
       },
     );
     callkeep.on(
@@ -54,24 +69,43 @@ class CallHandler extends ChangeNotifier {
       (CallKeepPerformEndCallAction event) {
         String? uuid = event.callUUID;
         if (null == uuid) return;
-        if (!calls.containsKey(uuid)) return;
+        activeCallUuid = null;
 
-        calls[uuid]!.close();
+        calls[uuid]?.close();
         calls.remove(uuid);
+
         notifyListeners();
       },
     );
-  }
 
-  Future<String?> getActiveCallUuid() async {
-    await callkeepIsReady;
+    callkeep.on(
+      CallKeepDidReceiveStartCallAction(),
+      (CallKeepDidReceiveStartCallAction event) {
+        print("start call");
+      },
+    );
 
-    for (MapEntry<String, MqttRtcClient> call in calls.entries) {
-      if (await callkeep.isCallActive(call.key)) {
-        return call.key;
-      }
-    }
+    callkeep.on(
+      CallKeepDidToggleHoldAction(),
+      (CallKeepDidToggleHoldAction event) {
+        String? uuid = event.callUUID;
+        bool? hold = event.hold;
+        print("toogle $uuid $hold");
+        if (null == uuid || null == hold) return;
 
-    return null;
+        if (activeCallUuid == uuid) {
+          if (hold) {
+            activeCallUuid = null;
+          } else {
+            activeCallUuid = uuid;
+          }
+        }
+        /* if (!calls.containsKey(uuid)) return;
+        calls[uuid]!.close();
+        calls.remove(uuid); */
+
+        notifyListeners();
+      },
+    );
   }
 }

@@ -39,7 +39,8 @@ class HomePage extends StatefulWidget {
 class _HomePage extends State<HomePage> {
   final TextEditingController _bodyController = TextEditingController();
   final Queue<SystemEventListTile> _events = Queue<SystemEventListTile>();
-  String? callUuid;
+  final RTCVideoRenderer _rtcVideoRenderer = RTCVideoRenderer()..initialize();
+  //String? callUuid;
   bool _sendButtonIsEnabled = false;
   bool _callIsRequested = false;
 
@@ -76,7 +77,7 @@ class _HomePage extends State<HomePage> {
 
     Preferences preferences = context.read<Preferences>();
     MClient mclient = context.read<MClient>();
-    CallHandler handler = CallHandler.getInstance();
+    CallHandler handler = context.read<CallHandler>();
 
     mclient.subscribe("system/event/", (message) {
       SystemEvent event = SystemEvent.fromJson(jsonDecode(message.message));
@@ -91,18 +92,6 @@ class _HomePage extends State<HomePage> {
 
     _reconnect();
     preferences.addListener(_reconnect);
-
-    _takeoverActiveCall();
-    handler.addListener(_takeoverActiveCall);
-  }
-
-  void _takeoverActiveCall() {
-    CallHandler handler = CallHandler.getInstance();
-    if (callUuid != null) return;
-    if (handler.calls.isEmpty) return;
-    setState(() {
-      callUuid = handler.calls.keys.first;
-    });
   }
 
   void _reconnect() async {
@@ -183,7 +172,7 @@ class _HomePage extends State<HomePage> {
 
   Future<void> _startCall(String uuid) async {
     MClient mclient = context.read<MClient>();
-    CallHandler handler = CallHandler.getInstance();
+    CallHandler handler = context.read<CallHandler>();
     MqttRtcDescription? description = mclient.mqttRtcDescription?.copyWith(
       channel: "${mclient.mqttRtcDescription!.channel}rtc/$uuid/",
     );
@@ -196,7 +185,7 @@ class _HomePage extends State<HomePage> {
       description,
       MediaRessource(),
     );
-    handler.callkeep.startCall(
+    await handler.callkeep.startCall(
       uuid,
       "https://www.dieklingel.de/",
       "dieKlingel",
@@ -204,9 +193,12 @@ class _HomePage extends State<HomePage> {
       hasVideo: false,
     );
     handler.calls[uuid] = mqttRtcClient;
+    handler.activeCallUuid = uuid;
+    await handler.callkeep.setCurrentCallActive(uuid);
+    print(await handler.callkeep.isCallActive(uuid));
     setState(() {
       _callIsRequested = true;
-      callUuid = uuid;
+      //callUuid = uuid;
     });
 
     await mqttRtcClient.mediaRessource.open(true, false);
@@ -250,9 +242,7 @@ class _HomePage extends State<HomePage> {
 
     String? result = await mclient.get(
       "request/rtc/test/",
-      description
-          .copyWith(channel: "${description.channel}rtc/$uuid/")
-          .toString(),
+      description.toString(),
       timeout: const Duration(seconds: 10),
     );
     if (null == result) {
@@ -268,22 +258,24 @@ class _HomePage extends State<HomePage> {
   }
 
   Future<void> _endCall(String uuid) async {
-    CallHandler handler = CallHandler.getInstance();
+    CallHandler handler = context.read<CallHandler>();
 
     setState(() {
-      callUuid = null;
+      //callUuid = null;
       _callIsRequested = false;
     });
-    handler.callkeep.endCall(uuid);
-    await handler.calls[uuid]?.close();
+    await handler.callkeep.endCall(uuid);
     handler.calls.remove(uuid);
-    _takeoverActiveCall();
+    if (handler.calls.isNotEmpty) {
+      handler.activeCallUuid = handler.calls.keys.first;
+    }
+    //handler.dequeue();
   }
 
   void _onCallButtonPressed() async {
     MClient mclient = context.read<MClient>();
-    CallHandler handler = CallHandler.getInstance();
-    String? uuid = callUuid;
+    CallHandler handler = context.read<CallHandler>();
+    String? uuid = handler.activeCallUuid; //callUuid;
     MqttRtcDescription? description = mclient.mqttRtcDescription?.copyWith(
       channel: "${mclient.mqttRtcDescription!.channel}rtc/$uuid/",
     );
@@ -321,8 +313,10 @@ class _HomePage extends State<HomePage> {
 
   Widget _scrollView(BuildContext context) {
     bool listIsVisible = _events.isNotEmpty;
-    CallHandler handler = CallHandler.getInstance();
-    MqttRtcClient? client = handler.calls[callUuid];
+    CallHandler handler = context.watch<CallHandler>();
+
+    List<MapEntry<String, MqttRtcClient>> clients =
+        handler.calls.entries.toList();
 
     return GestureDetector(
       onTap: () {
@@ -340,19 +334,32 @@ class _HomePage extends State<HomePage> {
               onRefresh: _onRefresh,
             ),
             SliverToBoxAdapter(
-              child: client != null
-                  ? CameraLiveView(
-                      mediaRessource: client.mediaRessource,
-                      rtcVideoRenderer: client.rtcVideoRenderer,
-                    )
-                  : _callIsRequested
-                      ? const Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: CupertinoActivityIndicator(
-                            radius: 14,
-                          ),
-                        )
-                      : Container(),
+              child: Text(handler.activeCallUuid ?? ""),
+            ),
+            SliverToBoxAdapter(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                //width: MediaQuery.of(context).size.width,
+                ///height: MediaQuery.of(context).size.width,
+                child: Row(
+                  children: List.generate(
+                    clients.length,
+                    (index) {
+                      String uuid = clients[index].key;
+                      MqttRtcClient client = clients[index].value;
+
+                      return SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: CameraLiveView(
+                          key: Key(uuid),
+                          mediaRessource: client.mediaRessource,
+                          rtcVideoRenderer: client.rtcVideoRenderer,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
             ),
             SliverList(
               delegate: listIsVisible
@@ -372,6 +379,7 @@ class _HomePage extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     MClient mclient = context.watch<MClient>();
+    CallHandler handler = context.watch<CallHandler>();
     print(mclient.connectionState);
 
     return CupertinoPageScaffold(
@@ -394,7 +402,22 @@ class _HomePage extends State<HomePage> {
               onSendPressed: mclient.isConnected() && _sendButtonIsEnabled
                   ? _onUserNotificationSendPressed
                   : null,
-              isInCall: callUuid != null,
+              isInCall: handler.activeCallUuid != null,
+              onUnlockPressed: () async {
+                CallHandler.getInstance().callkeep.endAllCalls();
+                return;
+                String? uuid = handler.activeCallUuid;
+                if (null != uuid) {
+                  handler.callkeep.setOnHold(uuid, true);
+                } else {
+                  handler.callkeep.setOnHold(handler.calls.keys.first, false);
+                }
+
+                //handler.dequeue();
+                //handler.dequeue();
+                /* String? a = handler.getActiveCallUuid();
+                handler.callkeep.setOnHold(a!, true);*/
+              },
             ),
           ],
         ),
@@ -405,10 +428,8 @@ class _HomePage extends State<HomePage> {
   @override
   void deactivate() {
     Preferences preferences = context.read<Preferences>();
-    CallHandler handler = CallHandler.getInstance();
 
     preferences.removeListener(_reconnect);
-    handler.removeListener(_takeoverActiveCall);
 
     super.deactivate();
   }

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/database/objectdb_factory.dart';
+import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
 import 'package:dieklingel_app/views/wizard/wizard_page.dart';
 import 'package:objectdb/objectdb.dart';
@@ -35,6 +36,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => mclient),
         ChangeNotifierProvider(create: (context) => preferences),
+        ChangeNotifierProvider(create: (context) => CallHandler.getInstance()),
       ],
       child: const App(),
     ),
