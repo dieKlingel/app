@@ -7,11 +7,13 @@ import 'package:flutter/cupertino.dart';
 class CallPage extends StatefulWidget {
   final MediaRessource mediaRessource;
   final RTCVideoRenderer rtcVideoRenderer;
+  final Key heroKey;
 
   const CallPage({
     super.key,
     required this.mediaRessource,
     required this.rtcVideoRenderer,
+    required this.heroKey,
   });
 
   @override
@@ -41,7 +43,7 @@ class _CallPage extends State<CallPage> {
               alignment: Alignment.topLeft,
               child: InteractiveViewer(
                 child: Hero(
-                  tag: const Key("call_view_page"),
+                  tag: widget.heroKey,
                   child: RTCVideoView(
                     widget.rtcVideoRenderer,
                   ),

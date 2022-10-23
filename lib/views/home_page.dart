@@ -10,6 +10,7 @@ import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/views/preview/camera_live_view.dart';
 import 'package:dieklingel_app/views/preview/message_bar.dart';
 import 'package:dieklingel_app/views/preview/system_event_list_tile.dart';
+import 'package:flutter_voip_kit/flutter_voip_kit.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:objectdb/objectdb.dart';
 import 'package:uuid/uuid.dart';
@@ -18,11 +19,8 @@ import '../messaging/mclient_topic_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
-import '../media/media_ressource.dart';
 import '../messaging/mclient.dart';
 import '../rtc/mqtt_rtc_client.dart';
-import '../rtc/mqtt_rtc_description.dart';
-import '../rtc/rtc_client.dart';
 import '../touch_scroll_behavior.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -39,20 +37,9 @@ class HomePage extends StatefulWidget {
 class _HomePage extends State<HomePage> {
   final TextEditingController _bodyController = TextEditingController();
   final Queue<SystemEventListTile> _events = Queue<SystemEventListTile>();
-  final RTCVideoRenderer _rtcVideoRenderer = RTCVideoRenderer()..initialize();
-  //String? callUuid;
   bool _sendButtonIsEnabled = false;
-  bool _callIsRequested = false;
 
   final ScrollController _controller = ScrollController();
-
-  /*ConnectionConfiguration getDefaultConnectionConfiguration() {
-    return context.read<AppSettings>().connectionConfigurations.firstWhere(
-          (element) => element.isDefault,
-          orElse: () =>
-              context.read<AppSettings>().connectionConfigurations.first,
-        );
-  }*/
 
   @override
   void initState() {
@@ -170,125 +157,17 @@ class _HomePage extends State<HomePage> {
     _bodyController.clear();
   }
 
-  Future<void> _startCall(String uuid) async {
-    MClient mclient = context.read<MClient>();
-    CallHandler handler = context.read<CallHandler>();
-    MqttRtcDescription? description = mclient.mqttRtcDescription?.copyWith(
-      channel: "${mclient.mqttRtcDescription!.channel}rtc/$uuid/",
-    );
-
-    if (null == description) {
-      return;
-    }
-
-    MqttRtcClient mqttRtcClient = MqttRtcClient.invite(
-      description,
-      MediaRessource(),
-    );
-    await handler.callkeep.startCall(
-      uuid,
-      "https://www.dieklingel.de/",
-      "dieKlingel",
-      handleType: "generic",
-      hasVideo: false,
-    );
-    handler.calls[uuid] = mqttRtcClient;
-    handler.activeCallUuid = uuid;
-    await handler.callkeep.setCurrentCallActive(uuid);
-    print(await handler.callkeep.isCallActive(uuid));
-    setState(() {
-      _callIsRequested = true;
-      //callUuid = uuid;
-    });
-
-    await mqttRtcClient.mediaRessource.open(true, false);
-
-    await mqttRtcClient.init(iceServers: {
-      "iceServers": [
-        {"url": "stun:stun1.l.google.com:19302"},
-        {
-          "urls": "turn:dieklingel.com:3478",
-          "username": "guest",
-          "credential": "12345"
-        },
-        {"urls": "stun:openrelay.metered.ca:80"},
-        {
-          "urls": "turn:openrelay.metered.ca:80",
-          "username": "openrelayproject",
-          "credential": "openrelayproject"
-        },
-        {
-          "urls": "turn:openrelay.metered.ca:443",
-          "username": "openrelayproject",
-          "credential": "openrelayproject"
-        },
-        {
-          "urls": "turn:openrelay.metered.ca:443?transport=tcp",
-          "username": "openrelayproject",
-          "credential": "openrelayproject"
-        }
-      ],
-      "sdpSemantics": "unified-plan" // important to work
-    }, transceivers: [
-      RtcTransceiver(
-        kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
-        direction: TransceiverDirection.SendRecv,
-      ),
-      RtcTransceiver(
-        kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
-        direction: TransceiverDirection.RecvOnly,
-      ),
-    ]);
-
-    String? result = await mclient.get(
-      "request/rtc/test/",
-      description.toString(),
-      timeout: const Duration(seconds: 10),
-    );
-    if (null == result) {
-      _endCall(uuid);
-      return;
-    }
-
-    await mqttRtcClient.open();
-
-    setState(() {
-      _callIsRequested = false;
-    });
-  }
-
-  Future<void> _endCall(String uuid) async {
-    CallHandler handler = context.read<CallHandler>();
-
-    setState(() {
-      //callUuid = null;
-      _callIsRequested = false;
-    });
-    await handler.callkeep.endCall(uuid);
-    handler.calls.remove(uuid);
-    if (handler.calls.isNotEmpty) {
-      handler.activeCallUuid = handler.calls.keys.first;
-    }
-    //handler.dequeue();
-  }
-
   void _onCallButtonPressed() async {
     MClient mclient = context.read<MClient>();
     CallHandler handler = context.read<CallHandler>();
-    String? uuid = handler.activeCallUuid; //callUuid;
-    MqttRtcDescription? description = mclient.mqttRtcDescription?.copyWith(
-      channel: "${mclient.mqttRtcDescription!.channel}rtc/$uuid/",
-    );
-
-    if (null == description) {
-      return;
-    }
+    String? uuid = handler.active?.uuid; //callUuid;
 
     if (null == uuid) {
-      uuid = const Uuid().v4();
-      _startCall(uuid);
+      uuid = const Uuid().v4().toUpperCase();
+      handler.requested[uuid] = mclient;
+      FlutterVoipKit.startCall("01234567890", uuid: uuid);
     } else if (handler.calls.containsKey(uuid)) {
-      _endCall(uuid);
+      await FlutterVoipKit.endCall(uuid);
     }
   }
 
@@ -334,13 +213,8 @@ class _HomePage extends State<HomePage> {
               onRefresh: _onRefresh,
             ),
             SliverToBoxAdapter(
-              child: Text(handler.activeCallUuid ?? ""),
-            ),
-            SliverToBoxAdapter(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                //width: MediaQuery.of(context).size.width,
-                ///height: MediaQuery.of(context).size.width,
                 child: Row(
                   children: List.generate(
                     clients.length,
@@ -402,22 +276,8 @@ class _HomePage extends State<HomePage> {
               onSendPressed: mclient.isConnected() && _sendButtonIsEnabled
                   ? _onUserNotificationSendPressed
                   : null,
-              isInCall: handler.activeCallUuid != null,
-              onUnlockPressed: () async {
-                CallHandler.getInstance().callkeep.endAllCalls();
-                return;
-                String? uuid = handler.activeCallUuid;
-                if (null != uuid) {
-                  handler.callkeep.setOnHold(uuid, true);
-                } else {
-                  handler.callkeep.setOnHold(handler.calls.keys.first, false);
-                }
-
-                //handler.dequeue();
-                //handler.dequeue();
-                /* String? a = handler.getActiveCallUuid();
-                handler.callkeep.setOnHold(a!, true);*/
-              },
+              isInCall: handler.active != null,
+              onUnlockPressed: null,
             ),
           ],
         ),

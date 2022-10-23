@@ -55,7 +55,7 @@ class CameraLiveView extends StatelessWidget {
               : Padding(
                   padding: const EdgeInsets.all(10),
                   child: Hero(
-                    tag: const Key("call_view_page"),
+                    tag: Key(rtcVideoRenderer.hashCode.toString()),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
                       child: GestureDetector(
@@ -63,6 +63,9 @@ class CameraLiveView extends StatelessWidget {
                             context.pushTransparentRoute(CallPage(
                               mediaRessource: mediaRessource,
                               rtcVideoRenderer: rtcVideoRenderer,
+                              heroKey: Key(
+                                rtcVideoRenderer.hashCode.toString(),
+                              ),
                             ));
                           },
                           child: Stack(
