@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/rtc/mqtt_rtc_description.dart';
@@ -11,56 +12,65 @@ Future<void> onBackgroundNotificationReceived(RemoteMessage message) async {
   CallHandler handler = CallHandler.getInstance();
   String uuid = const Uuid().v4().toUpperCase();
 
+  String? title = message.notification?.title;
+  String? body = message.notification?.body;
   String? descriptions = message.data["mqtt-rtc-descriptions"];
-  if (null == descriptions) {
-    print("no descriptions");
+
+  Preferences preferences = await Preferences.getInstance();
+
+  if (!(preferences.getBool("incomming_call_enabled") ?? true) &&
+      (null != title || null != body)) {
+    print("display local notification");
     return;
   }
-  List<Uri> uris = descriptions
-      .split(";")
-      .map<Uri>(
-        (e) => Uri.parse(e),
-      )
-      .toList();
 
-  Completer<MClient> completer = Completer<MClient>();
-  for (Uri uri in uris) {
-    MClient client = MClient(mqttRtcDescription: MqttRtcDescription.parse(uri));
+  if (null != descriptions) {
+    List<Uri> uris = descriptions
+        .split(";")
+        .map<Uri>(
+          (e) => Uri.parse(e),
+        )
+        .toList();
 
-    client.connect().then(
-      (value) {
-        if (completer.isCompleted) {
+    Completer<MClient> completer = Completer<MClient>();
+    for (Uri uri in uris) {
+      MClient client =
+          MClient(mqttRtcDescription: MqttRtcDescription.parse(uri));
+
+      client.connect().then(
+        (value) {
+          if (completer.isCompleted) {
+            client.disconnect();
+            return;
+          }
+          completer.complete(client);
+        },
+      ).catchError(
+        (error) {
           client.disconnect();
-          return;
-        }
-        completer.complete(client);
-      },
-    ).catchError(
-      (error) {
-        client.disconnect();
-      },
-    );
-  }
-  Future.delayed(const Duration(seconds: 10), () {
-    if (!completer.isCompleted) {
-      completer.completeError(Object());
+        },
+      );
     }
-  });
+    Future.delayed(const Duration(seconds: 10), () {
+      if (!completer.isCompleted) {
+        completer.completeError(Object());
+      }
+    });
 
-  MClient mclient;
-  try {
-    mclient = await completer.future;
-  } catch (e) {
-    /* timeout */
-    return;
+    MClient mclient;
+    try {
+      mclient = await completer.future;
+    } catch (e) {
+      /* timeout */
+      return;
+    }
+
+    handler.requested[uuid] = mclient;
+    await FlutterVoipKit.reportIncomingCall(handle: "01772727", uuid: uuid);
+    Future.delayed(const Duration(seconds: 10), () {
+      mclient.disconnect();
+    });
   }
-
-  handler.requested[uuid] = mclient;
-  await FlutterVoipKit.reportIncomingCall(handle: "01772727", uuid: uuid);
-  Future.delayed(const Duration(seconds: 10), () {
-    mclient.disconnect();
-  });
-  //mclient.disconnect();
 }
 
 class NotificationHandler {

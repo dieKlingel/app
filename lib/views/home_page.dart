@@ -17,7 +17,6 @@ import 'package:uuid/uuid.dart';
 import '../extensions/get_mclient.dart';
 import '../messaging/mclient_topic_message.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import '../messaging/mclient.dart';
 import '../rtc/mqtt_rtc_client.dart';

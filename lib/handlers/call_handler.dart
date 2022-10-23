@@ -62,6 +62,10 @@ class CallHandler extends ChangeNotifier {
           MediaRessource(),
         );
 
+        calls[call.uuid] = mqttRtcClient;
+        requested.remove(call.uuid);
+        _setActive(call);
+
         await mqttRtcClient.mediaRessource.open(true, false);
         await mqttRtcClient.init(iceServers: {
           "iceServers": [
@@ -106,14 +110,10 @@ class CallHandler extends ChangeNotifier {
           timeout: const Duration(seconds: 30),
         );
 
-        requested.remove(call.uuid);
-
         if (null == result) {
           mqttRtcClient.close();
           return false;
         }
-
-        calls[call.uuid] = mqttRtcClient;
 
         return true;
       case CallState.active:
