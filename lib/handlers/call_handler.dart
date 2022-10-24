@@ -52,7 +52,6 @@ class CallHandler extends ChangeNotifier {
   }
 
   Future<bool> callStateChangeHandler(Call call) async {
-    print("call state changed ${call.callState}");
     //it is important we perform logic and return true/false for every CallState possible
 
     switch (call.callState) {
@@ -163,12 +162,14 @@ class CallHandler extends ChangeNotifier {
   }
 
   Future<bool> callActionHandler(Call call, CallAction action) async {
-    print("widget call action handler: $call");
-
     //it is important we perform logic and return true/false for every CallState possible
     switch (action) {
       case CallAction.muted:
         //EXAMPLE: here we would perform the logic on our end to mute the audio streams between the caller and reciever
+        if (!calls.any((element) => element.uuid == call.uuid)) return false;
+        MqttRtcClient client = clients[call.uuid]!;
+        client.mediaRessource.stream?.getAudioTracks().first.enabled =
+            !call.muted;
         return true;
       default:
         return false;

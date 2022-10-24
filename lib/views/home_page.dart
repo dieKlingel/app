@@ -63,7 +63,6 @@ class _HomePage extends State<HomePage> {
 
     Preferences preferences = context.read<Preferences>();
     MClient mclient = context.read<MClient>();
-    CallHandler handler = context.read<CallHandler>();
 
     mclient.subscribe("system/event/", (message) {
       SystemEvent event = SystemEvent.fromJson(jsonDecode(message.message));

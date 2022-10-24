@@ -2,7 +2,6 @@ import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/media/media_ressource.dart';
 import 'package:dismissible_page/dismissible_page.dart';
 import 'package:flutter_voip_kit/call.dart';
-import 'package:flutter_voip_kit/flutter_voip_kit.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -65,28 +64,60 @@ class _CallPage extends State<CallPage> {
             ),
             SafeArea(
               child: Align(
-                alignment: Alignment.bottomCenter,
+                alignment: Alignment.bottomRight,
                 child: Container(
                   margin: const EdgeInsets.only(left: 10, right: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      CupertinoButton(
-                          onPressed: _onMicButtonPressed,
-                          child: Icon(
-                            getCurrentCall() == null || getCurrentCall()!.muted
-                                ? CupertinoIcons.mic_off
-                                : CupertinoIcons.mic,
-                            size: 40,
-                          )),
-                      const CupertinoButton(
-                        onPressed: null,
-                        child: Icon(
-                          CupertinoIcons.speaker_2,
-                          size: 40,
-                        ),
-                      ),
-                    ],
+                  child: OrientationBuilder(
+                    builder: (context, orientation) {
+                      switch (orientation) {
+                        case Orientation.landscape:
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              CupertinoButton(
+                                  onPressed: _onMicButtonPressed,
+                                  child: Icon(
+                                    getCurrentCall() == null ||
+                                            getCurrentCall()!.muted
+                                        ? CupertinoIcons.mic_off
+                                        : CupertinoIcons.mic,
+                                    size: 40,
+                                  )),
+                              const CupertinoButton(
+                                onPressed: null,
+                                child: Icon(
+                                  CupertinoIcons.speaker_2,
+                                  size: 40,
+                                ),
+                              ),
+                            ],
+                          );
+
+                        case Orientation.portrait:
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              CupertinoButton(
+                                  onPressed: _onMicButtonPressed,
+                                  child: Icon(
+                                    getCurrentCall() == null ||
+                                            getCurrentCall()!.muted
+                                        ? CupertinoIcons.mic_off
+                                        : CupertinoIcons.mic,
+                                    size: 40,
+                                  )),
+                              const CupertinoButton(
+                                onPressed: null,
+                                child: Icon(
+                                  CupertinoIcons.speaker_2,
+                                  size: 40,
+                                ),
+                              ),
+                            ],
+                          );
+                      }
+                    },
                   ),
                 ),
               ),
