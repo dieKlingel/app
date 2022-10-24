@@ -19,6 +19,8 @@ class NotificationsPage extends StatelessWidget {
           children: [
             CupertinoFormSection.insetGrouped(
               header: const Text("Call"),
+              footer: const Text(
+                  "If incomming call is enabled, an incoming call is shown instead of a notification."),
               children: [
                 CupertinoFormRow(
                   prefix: const Text("Incomming Call"),
