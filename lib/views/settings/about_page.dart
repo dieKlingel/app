@@ -1,8 +1,7 @@
 import 'package:dieklingel_app/views/settings/about/privacy_policy_page.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
-
-import 'about/legal_notice_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -22,11 +21,8 @@ class AboutPage extends StatelessWidget {
               children: [
                 CupertinoInkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      CupertinoPageRoute(
-                        builder: (context) => const LegalNoticePage(),
-                      ),
+                    launchUrl(
+                      Uri.parse("https://dieklingel.de/credit-notes"),
                     );
                   },
                   child: const CupertinoFormRow(
@@ -37,11 +33,8 @@ class AboutPage extends StatelessWidget {
                 ),
                 CupertinoInkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      CupertinoPageRoute(
-                        builder: (context) => const PrivacyPolicyPage(),
-                      ),
+                    launchUrl(
+                      Uri.parse("https://dieklingel.de/privacy-policy"),
                     );
                   },
                   child: const CupertinoFormRow(
