@@ -163,9 +163,9 @@ class _HomePage extends State<HomePage> {
 
     if (null == uuid) {
       uuid = const Uuid().v4().toUpperCase();
-      handler.requested[uuid] = mclient;
+      handler.prepare(uuid, mclient);
       FlutterVoipKit.startCall("01234567890", uuid: uuid);
-    } else if (handler.calls.containsKey(uuid)) {
+    } else if (handler.calls.any((element) => element.uuid == uuid)) {
       await FlutterVoipKit.endCall(uuid);
     }
   }
@@ -194,7 +194,7 @@ class _HomePage extends State<HomePage> {
     CallHandler handler = context.watch<CallHandler>();
 
     List<MapEntry<String, MqttRtcClient>> clients =
-        handler.calls.entries.toList();
+        handler.clients.entries.toList();
 
     return GestureDetector(
       onTap: () {
@@ -227,6 +227,7 @@ class _HomePage extends State<HomePage> {
                           key: Key(uuid),
                           mediaRessource: client.mediaRessource,
                           rtcVideoRenderer: client.rtcVideoRenderer,
+                          uuid: uuid,
                         ),
                       );
                     },

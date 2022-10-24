@@ -67,7 +67,8 @@ Future<void> _call(RemoteMessage message) async {
     return;
   }
 
-  handler.requested[uuid] = mclient;
+  //handler.requested[uuid] = mclient;
+  handler.prepare(uuid, mclient);
   await FlutterVoipKit.reportIncomingCall(handle: "01772727", uuid: uuid);
   Future.delayed(const Duration(seconds: 10), () {
     mclient.disconnect();

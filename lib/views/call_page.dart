@@ -1,5 +1,8 @@
+import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/media/media_ressource.dart';
 import 'package:dismissible_page/dismissible_page.dart';
+import 'package:flutter_voip_kit/call.dart';
+import 'package:flutter_voip_kit/flutter_voip_kit.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -7,6 +10,7 @@ import 'package:flutter/cupertino.dart';
 class CallPage extends StatefulWidget {
   final MediaRessource mediaRessource;
   final RTCVideoRenderer rtcVideoRenderer;
+  final String uuid;
   final Key heroKey;
 
   const CallPage({
@@ -14,6 +18,7 @@ class CallPage extends StatefulWidget {
     required this.mediaRessource,
     required this.rtcVideoRenderer,
     required this.heroKey,
+    required this.uuid,
   });
 
   @override
@@ -22,12 +27,20 @@ class CallPage extends StatefulWidget {
 
 class _CallPage extends State<CallPage> {
   void _onMicButtonPressed() {
-    MediaStreamTrack? audioTrack =
-        widget.mediaRessource.stream?.getAudioTracks().first;
-    if (null == audioTrack) return;
+    Call? call = getCurrentCall();
+    if (null == call) return;
     setState(() {
-      audioTrack.enabled = !audioTrack.enabled;
+      call.mute(muted: !call.muted);
     });
+  }
+
+  Call? getCurrentCall() {
+    CallHandler handler = CallHandler.getInstance();
+    if (handler.calls.any((element) => element.uuid == widget.uuid)) {
+      Call call = handler.calls.firstWhere((call) => call.uuid == widget.uuid);
+      return call;
+    }
+    return null;
   }
 
   @override
@@ -61,13 +74,9 @@ class _CallPage extends State<CallPage> {
                       CupertinoButton(
                           onPressed: _onMicButtonPressed,
                           child: Icon(
-                            widget.mediaRessource.stream
-                                        ?.getAudioTracks()
-                                        .first
-                                        .enabled ??
-                                    false
-                                ? CupertinoIcons.mic
-                                : CupertinoIcons.mic_off,
+                            getCurrentCall() == null || getCurrentCall()!.muted
+                                ? CupertinoIcons.mic_off
+                                : CupertinoIcons.mic,
                             size: 40,
                           )),
                       const CupertinoButton(

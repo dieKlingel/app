@@ -15,11 +15,17 @@ class CallHandler extends ChangeNotifier {
   static final CallHandler _instance = CallHandler._();
   factory CallHandler.getInstance() => _instance;
 
-  final NotifyableMap<String, MqttRtcClient> calls =
+  final NotifyableMap<String, MqttRtcClient> _clients =
       NotifyableMap<String, MqttRtcClient>();
 
-  final NotifyableMap<String, MClient> requested =
+  final NotifyableMap<String, MClient> _requested =
       NotifyableMap<String, MClient>();
+
+  List<Call> _calls = [];
+
+  List<Call> get calls => _calls;
+
+  Map<String, MqttRtcClient> get clients => _clients;
 
   Call? _active;
 
@@ -33,7 +39,11 @@ class CallHandler extends ChangeNotifier {
   }
 
   CallHandler._() {
-    calls.addListener(notifyListeners);
+    _clients.addListener(notifyListeners);
+
+    FlutterVoipKit.callListStream.listen((event) {
+      _calls = event;
+    });
 
     FlutterVoipKit.init(
       callStateChangeHandler: callStateChangeHandler,
@@ -47,10 +57,10 @@ class CallHandler extends ChangeNotifier {
 
     switch (call.callState) {
       case CallState.connecting:
-        if (!requested.containsKey(call.uuid)) {
+        if (!_requested.containsKey(call.uuid)) {
           return false;
         }
-        MClient mclient = requested[call.uuid]!;
+        MClient mclient = _requested[call.uuid]!;
         if (mclient.isNotConnected()) return false;
 
         MqttRtcDescription description = mclient.mqttRtcDescription!.copyWith(
@@ -62,8 +72,8 @@ class CallHandler extends ChangeNotifier {
           MediaRessource(),
         );
 
-        calls[call.uuid] = mqttRtcClient;
-        requested.remove(call.uuid);
+        _clients[call.uuid] = mqttRtcClient;
+        _requested.remove(call.uuid);
         _setActive(call);
 
         await mqttRtcClient.mediaRessource.open(true, false);
@@ -114,33 +124,33 @@ class CallHandler extends ChangeNotifier {
           mqttRtcClient.close();
           return false;
         }
-
+        call.mute(muted: true);
         return true;
       case CallState.active:
         //here we would likely begin playig audio out of speakers
-        if (!calls.containsKey(call.uuid)) return false;
+        if (!_clients.containsKey(call.uuid)) return false;
 
-        MqttRtcClient client = calls[call.uuid]!;
+        MqttRtcClient client = _clients[call.uuid]!;
         await client.open();
 
         _setActive(call);
 
         return true;
       case CallState.ended: //end audio, disconnect
-        if (!calls.containsKey(call.uuid)) return false;
+        if (!_clients.containsKey(call.uuid)) return false;
 
-        MqttRtcClient client = calls[call.uuid]!;
+        MqttRtcClient client = _clients[call.uuid]!;
         client.close();
-        calls.remove(call.uuid);
+        _clients.remove(call.uuid);
         _setActive(null);
 
         return true;
       case CallState.failed: //cleanup
-        if (!calls.containsKey(call.uuid)) return false;
+        if (!_clients.containsKey(call.uuid)) return false;
 
-        MqttRtcClient client = calls[call.uuid]!;
+        MqttRtcClient client = _clients[call.uuid]!;
         client.close();
-        calls.remove(call.uuid);
+        _clients.remove(call.uuid);
         _setActive(null);
 
         return true;
@@ -163,5 +173,9 @@ class CallHandler extends ChangeNotifier {
       default:
         return false;
     }
+  }
+
+  void prepare(String uuid, MClient client) {
+    _requested[uuid] = client;
   }
 }

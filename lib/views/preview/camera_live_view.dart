@@ -10,11 +10,13 @@ import '../call_page.dart';
 class CameraLiveView extends StatelessWidget {
   final MediaRessource mediaRessource;
   final RTCVideoRenderer rtcVideoRenderer;
+  final String uuid;
 
   const CameraLiveView({
     super.key,
     required this.mediaRessource,
     required this.rtcVideoRenderer,
+    required this.uuid,
   });
 
   Widget _livedot(BuildContext context) {
@@ -66,6 +68,7 @@ class CameraLiveView extends StatelessWidget {
                               heroKey: Key(
                                 rtcVideoRenderer.hashCode.toString(),
                               ),
+                              uuid: uuid,
                             ));
                           },
                           child: Stack(
