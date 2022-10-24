@@ -6,6 +6,7 @@ import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'components/cupertino_form_row_prefix.dart';
 import 'settings/licenses_page.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -33,7 +34,7 @@ class SettingsPage extends StatelessWidget {
                   );
                 },
                 child: const CupertinoFormRow(
-                  prefix: PrefixWidget(
+                  prefix: CupertinoFormRowPrefix(
                     title: "Homes",
                     icon: CupertinoIcons.house,
                     color: Colors.orange,
@@ -51,7 +52,7 @@ class SettingsPage extends StatelessWidget {
                   );
                 },
                 child: const CupertinoFormRow(
-                  prefix: PrefixWidget(
+                  prefix: CupertinoFormRowPrefix(
                     title: "ICE Servers",
                     icon: CupertinoIcons.cloud,
                     color: Colors.blue,
@@ -69,7 +70,7 @@ class SettingsPage extends StatelessWidget {
                   );
                 },
                 child: const CupertinoFormRow(
-                  prefix: PrefixWidget(
+                  prefix: CupertinoFormRowPrefix(
                     title: "Notifications",
                     icon: CupertinoIcons.bell_fill,
                     color: Colors.red,
@@ -92,7 +93,7 @@ class SettingsPage extends StatelessWidget {
                   );
                 },
                 child: const CupertinoFormRow(
-                  prefix: PrefixWidget(
+                  prefix: CupertinoFormRowPrefix(
                     title: "About",
                     icon: CupertinoIcons.info_circle,
                     color: Colors.green,
@@ -110,7 +111,7 @@ class SettingsPage extends StatelessWidget {
                   );
                 },
                 child: const CupertinoFormRow(
-                  prefix: PrefixWidget(
+                  prefix: CupertinoFormRowPrefix(
                     title: "Licenses",
                     icon: CupertinoIcons.chevron_left_slash_chevron_right,
                     color: Colors.lightBlue,
@@ -122,37 +123,6 @@ class SettingsPage extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class PrefixWidget extends StatelessWidget {
-  const PrefixWidget({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.color,
-  });
-
-  final IconData icon;
-  final String title;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        Container(
-          padding: const EdgeInsets.all(4.0),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: Icon(icon, color: CupertinoColors.white),
-        ),
-        const SizedBox(width: 15),
-        Text(title)
-      ],
     );
   }
 }
