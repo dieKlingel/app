@@ -1,4 +1,3 @@
-import 'package:dieklingel_app/views/settings/about/privacy_policy_page.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:url_launcher/url_launcher.dart';
