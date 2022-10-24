@@ -1,3 +1,4 @@
+import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:dieklingel_app/extensions/get_mclient.dart';
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/rtc/mqtt_rtc_client.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_voip_kit/call.dart';
 import 'package:flutter_voip_kit/flutter_voip_kit.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:objectdb/objectdb.dart';
 
 import '../components/notifyable_map.dart';
 import '../media/media_ressource.dart';
@@ -76,31 +78,13 @@ class CallHandler extends ChangeNotifier {
         _setActive(call);
 
         await mqttRtcClient.mediaRessource.open(true, false);
+
+        ObjectDB database = await ObjectDBFactory.named("ice_servers");
+        List<Map<dynamic, dynamic>> ice = await database.find({});
+        database.close();
+
         await mqttRtcClient.init(iceServers: {
-          "iceServers": [
-            {"url": "stun:stun1.l.google.com:19302"},
-            {
-              "urls": "turn:dieklingel.com:3478",
-              "username": "guest",
-              "credential": "12345"
-            },
-            {"urls": "stun:openrelay.metered.ca:80"},
-            {
-              "urls": "turn:openrelay.metered.ca:80",
-              "username": "openrelayproject",
-              "credential": "openrelayproject"
-            },
-            {
-              "urls": "turn:openrelay.metered.ca:443",
-              "username": "openrelayproject",
-              "credential": "openrelayproject"
-            },
-            {
-              "urls": "turn:openrelay.metered.ca:443?transport=tcp",
-              "username": "openrelayproject",
-              "credential": "openrelayproject"
-            }
-          ],
+          "iceServers": ice,
           "sdpSemantics": "unified-plan" // important to work
         }, transceivers: [
           RtcTransceiver(
