@@ -18,9 +18,8 @@ class RadioBox extends StatelessWidget {
   }) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: (onChanged == null)
+    return GestureDetector(
+      onTap: (onChanged == null)
           ? null
           : () {
               onChanged?.call(!value);

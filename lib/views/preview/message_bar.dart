@@ -1,15 +1,13 @@
 import 'dart:ui';
 
-import 'package:dieklingel_app/components/notifyable_value.dart';
-import 'package:dieklingel_app/rtc/rtc_client.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class MessageBar extends StatelessWidget {
   final void Function()? onCallPressed;
   final void Function()? onSendPressed;
   final void Function()? onUnlockPressed;
+  final bool isInCall;
   final TextEditingController? controller;
 
   const MessageBar({
@@ -18,6 +16,7 @@ class MessageBar extends StatelessWidget {
     this.onSendPressed,
     this.onUnlockPressed,
     this.controller,
+    this.isInCall = false,
   });
 
   Widget _icon(
@@ -73,8 +72,6 @@ class MessageBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    RtcClient? rtcClient = context.watch<NotifyableValue<RtcClient?>>().value;
-
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -86,9 +83,9 @@ class MessageBar extends StatelessWidget {
             children: [
               _icon(
                 context,
-                icon: rtcClient == null
-                    ? CupertinoIcons.phone_circle
-                    : CupertinoIcons.phone_down_circle,
+                icon: isInCall
+                    ? CupertinoIcons.phone_down_circle
+                    : CupertinoIcons.phone_circle,
                 onPressed: onCallPressed,
               ),
               _textfield(context),

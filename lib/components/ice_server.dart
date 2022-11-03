@@ -1,27 +1,22 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+class IceServer {
+  final String urls;
+  final String username;
+  final String credential;
 
-class IceConfiguration {
-  final Key key;
-  String urls;
-  String username;
-  String credential;
-
-  IceConfiguration({
+  IceServer({
     required this.urls,
     this.username = "",
     this.credential = "",
-  }) : key = UniqueKey();
+  });
 
-  IceConfiguration.fromJson(Map<String, dynamic> json)
-      : key = Key(json['_key']),
-        urls = json['urls'],
+  IceServer.fromJson(Map<String, dynamic> json)
+      : urls = json['urls'],
         username = json['username'],
         credential = json['credential'];
 
   Map<String, dynamic> toJson() => {
-        '_key': key.toString(),
         'urls': urls,
         'username': username,
         'credential': credential,
@@ -34,10 +29,12 @@ class IceConfiguration {
 
   @override
   bool operator ==(Object other) {
-    if (other is! IceConfiguration) {
+    if (other is! IceServer) {
       return false;
     }
-    return (other.key == key);
+    return other.urls == urls &&
+        other.username == username &&
+        other.credential == credential;
   }
 
   @override

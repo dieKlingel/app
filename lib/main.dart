@@ -1,13 +1,16 @@
 import 'dart:convert';
 
-import 'components/notifyable_value.dart';
+import 'package:dieklingel_app/components/preferences.dart';
+import 'package:dieklingel_app/database/objectdb_factory.dart';
+import 'package:dieklingel_app/handlers/call_handler.dart';
+import 'package:dieklingel_app/handlers/notification_handler.dart';
+import 'package:dieklingel_app/views/wizard/wizard_page.dart';
+import 'package:objectdb/objectdb.dart';
+
 import 'messaging/mclient_topic_message.dart';
-import 'rtc/rtc_client.dart';
 import 'components/app_settings.dart';
 import 'messaging/mclient.dart';
-import 'signaling/signaling_client.dart';
-import 'views/home_view_page.dart';
-import 'components/connection_configuration.dart';
+import 'views/tabbar_page.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,33 +18,25 @@ import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:provider/provider.dart';
 
-import './views/settings/connection_configuration_view.dart';
-import 'globals.dart' as app;
-
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  NotificationHandler.init();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await app.init();
-  MClient mClient = MClient();
-  mClient.prefix = "com.dieklingel/mayer/kai/";
-  SignalingClient signalingClient = SignalingClient.fromMessagingClient(
-    mClient,
-    signalingTopic: "rtc/signaling",
-  );
-  AppSettings appSettings = AppSettings();
-  NotifyableValue<RtcClient?> rtcClient = NotifyableValue(value: null);
+
+  MClient mclient = MClient();
+  Preferences preferences = await Preferences.getInstance();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => mClient),
-        ChangeNotifierProvider(create: (context) => signalingClient),
-        ChangeNotifierProvider(create: (context) => appSettings),
-        ChangeNotifierProvider(create: (context) => rtcClient),
+        ChangeNotifierProvider(create: (context) => mclient),
+        ChangeNotifierProvider(create: (context) => preferences),
+        ChangeNotifierProvider(create: (context) => CallHandler.getInstance()),
       ],
       child: const App(),
     ),
@@ -57,10 +52,10 @@ class App extends StatefulWidget {
 
 class _App extends State<App> {
   bool get isInitialzied {
-    return app.connectionConfigurations.isNotEmpty;
+    return true; // app.connectionConfigurations.isNotEmpty;
   }
 
-  ConnectionConfiguration? getDefaultConnectionConfiguration() {
+  /* ConnectionConfiguration? getDefaultConnectionConfiguration() {
     return context.read<AppSettings>().connectionConfigurations.isEmpty
         ? null
         : context.read<AppSettings>().connectionConfigurations.firstWhere(
@@ -68,7 +63,7 @@ class _App extends State<App> {
               orElse: () =>
                   context.read<AppSettings>().connectionConfigurations.first,
             );
-  }
+  } */
 
   @override
   void initState() {
@@ -92,8 +87,7 @@ class _App extends State<App> {
     if (null == token) return;
     print("Token: $token");
     if (!mounted) return;
-    context.read<AppSettings>().firebaseToken.addListener(publishFirebaseToken);
-    context.read<AppSettings>().firebaseToken.value = token;
+    context.read<Preferences>().setString("firebase_token", token);
   }
 
   void publishFirebaseToken() {
@@ -122,15 +116,19 @@ class _App extends State<App> {
     } else {
       registerFcmPushNotifications();
     }
-    context.read<AppSettings>().connectionConfigurations.addListener(
+    /* context.read<AppSettings>().connectionConfigurations.addListener(
       () async {
         ConnectionConfiguration? defaultConfig =
             getDefaultConnectionConfiguration();
         if (defaultConfig == null) return;
-        context.read<MClient>().host =
-            "${kIsWeb ? "${defaultConfig.uri?.scheme}://" : ""}${defaultConfig.uri?.host}";
-        context.read<MClient>().port = defaultConfig.uri?.port;
-        context.read<MClient>().prefix = defaultConfig.channelPrefix ?? "";
+        context.read<MClient>().mqttRtcDescription = MqttRtcDescription(
+          host: defaultConfig.uri!.host,
+          port: defaultConfig.uri!.port,
+          channel: "com.dieklingel/mayer/kai",
+          websocket: kIsWeb,
+          ssl: defaultConfig.uri!.scheme == "mqtts" ||
+              defaultConfig.uri!.scheme == "wss",
+        );
         context.read<MClient>().disconnect();
         await context.read<MClient>().connect(
               username: defaultConfig.username,
@@ -143,33 +141,48 @@ class _App extends State<App> {
             .listen("rtc/signaling")
             .listen("io/camera/snapshot");*/
       },
-    );
+    ); */
 
-    context
+    /* context
         .read<AppSettings>()
         .iceConfigurations
-        .replace(app.iceConfigurations);
-    context.read<AppSettings>().iceConfigurations.addListener(() {
+        .replace(app.iceConfigurations); */
+    /*context.read<AppSettings>().iceConfigurations.addListener(() {
       app.iceConfigurations =
-          context.read<AppSettings>().iceConfigurations.asList();
-    });
+          context.read<AppSettings>().iceConfigurations.asList(); 
+    });*/
 
-    context
+    /* context
         .read<AppSettings>()
         .connectionConfigurations
         .replace(app.connectionConfigurations);
     context.read<AppSettings>().connectionConfigurations.addListener(() {
       app.connectionConfigurations =
           context.read<AppSettings>().connectionConfigurations.asList();
-    });
+    }); */
+  }
+
+  Future<bool> isInitialized() async {
+    ObjectDB db = await ObjectDBFactory.named("homes");
+    List<Map<dynamic, dynamic>> result = await db.find({});
+    return result.isNotEmpty;
   }
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      home:
-          isInitialzied ? const HomeViewPage() : ConnectionConfigurationView(),
+      home: FutureBuilder<bool>(
+        future: isInitialized(),
+        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(
+              child: Text("loading"),
+            );
+          }
+          return (snapshot.data!) ? const TabbarPage() : const WizardPage();
+        },
+      ),
     );
   }
 }
