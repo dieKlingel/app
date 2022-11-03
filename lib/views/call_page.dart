@@ -45,6 +45,8 @@ class _CallPage extends State<CallPage> {
   @override
   Widget build(BuildContext context) {
     return DismissiblePage(
+      minRadius: 40,
+      maxRadius: 50,
       onDismissed: () {
         Navigator.of(context).pop();
       },
