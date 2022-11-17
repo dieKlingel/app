@@ -4,13 +4,14 @@ import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
+import 'package:dieklingel_app/views/home_page.dart';
 import 'package:dieklingel_app/views/wizard/wizard_page.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:objectdb/objectdb.dart';
 
 import 'messaging/mclient_topic_message.dart';
 import 'components/app_settings.dart';
 import 'messaging/mclient.dart';
-import 'views/tabbar_page.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -180,7 +181,9 @@ class _App extends State<App> {
               child: Text("loading"),
             );
           }
-          return (snapshot.data!) ? const TabbarPage() : const WizardPage();
+          return (snapshot.data!)
+              ? const CupertinoScaffold(body: HomePage())
+              : const WizardPage();
         },
       ),
     );

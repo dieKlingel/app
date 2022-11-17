@@ -7,12 +7,18 @@ import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:dieklingel_app/event/system_event.dart';
 import 'package:dieklingel_app/handlers/call_handler.dart';
+import 'package:dieklingel_app/views/home/add_home_page.dart';
 import 'package:dieklingel_app/views/preview/camera_live_view.dart';
 import 'package:dieklingel_app/views/preview/message_bar.dart';
 import 'package:dieklingel_app/views/preview/system_event_list_tile.dart';
+import 'package:dieklingel_app/views/settings_page.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_voip_kit/flutter_voip_kit.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:objectdb/objectdb.dart';
+import 'package:pull_down_button/pull_down_button.dart';
 import 'package:uuid/uuid.dart';
 import '../extensions/get_mclient.dart';
 import '../messaging/mclient_topic_message.dart';
@@ -249,6 +255,67 @@ class _HomePage extends State<HomePage> {
     );
   }
 
+  ObstructingPreferredSizeWidget _navigationBar(BuildContext context) {
+    return CupertinoNavigationBar(
+      middle: const Text("Home"),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: const Icon(CupertinoIcons.plus),
+            onPressed: () {
+              CupertinoScaffold.showCupertinoModalBottomSheet<void>(
+                duration: const Duration(milliseconds: 300),
+                expand: true,
+                context: context,
+                builder: (context) {
+                  return const AddHomePage();
+                },
+              );
+            },
+          ),
+          PullDownButton(
+            itemBuilder: (context) => [
+              PullDownMenuItem(
+                title: "Settings",
+                icon: CupertinoIcons.settings,
+                onTap: () {
+                  Navigator.of(context).push(
+                    CupertinoPageRoute(
+                      builder: (context) => const SettingsPage(),
+                    ),
+                  );
+                },
+              ),
+              const PullDownMenuDivider.large(),
+              const PullDownMenuDivider.large(),
+              PullDownMenuItem(
+                title: "Edit",
+                icon: CupertinoIcons.pencil,
+                onTap: () {},
+              ),
+              PullDownMenuItem(
+                title: "Delete",
+                icon: CupertinoIcons.delete,
+                onTap: () {},
+                textStyle: CupertinoTheme.of(context)
+                    .textTheme
+                    .textStyle
+                    .copyWith(color: Colors.red),
+              )
+            ],
+            buttonBuilder: (context, showMenu) => CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: showMenu,
+              child: const Icon(CupertinoIcons.ellipsis_circle),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     MClient mclient = context.watch<MClient>();
@@ -256,30 +323,66 @@ class _HomePage extends State<HomePage> {
     print(mclient.connectionState);
 
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: const Text("dieKlingel"),
-        trailing: mclient.connectionState == MqttConnectionState.connecting
-            ? const CupertinoActivityIndicator()
-            : const SizedBox(width: 0),
-      ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: _scrollView(context),
+      navigationBar: _navigationBar(context),
+      resizeToAvoidBottomInset: false,
+      child: Column(
+        children: [
+          Expanded(
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  CupertinoButton(
+                      child: Text("test"),
+                      onPressed: () {
+                        CupertinoScaffold.showCupertinoModalBottomSheet<void>(
+                          duration: Duration(milliseconds: 300),
+                          expand: true,
+                          context: context,
+                          builder: (context) {
+                            return AddHomePage();
+                          },
+                        );
+                      }),
+                  Expanded(
+                    child: _scrollView(context),
+                  ),
+                  MessageBar(
+                    controller: _bodyController,
+                    onCallPressed:
+                        mclient.isConnected() ? _onCallButtonPressed : null,
+                    onSendPressed: mclient.isConnected() && _sendButtonIsEnabled
+                        ? _onUserNotificationSendPressed
+                        : null,
+                    isInCall: handler.active != null,
+                    onUnlockPressed: null,
+                  ),
+                ],
+              ),
             ),
-            MessageBar(
-              controller: _bodyController,
-              onCallPressed:
-                  mclient.isConnected() ? _onCallButtonPressed : null,
-              onSendPressed: mclient.isConnected() && _sendButtonIsEnabled
-                  ? _onUserNotificationSendPressed
-                  : null,
-              isInCall: handler.active != null,
-              onUnlockPressed: null,
+          ),
+          Container(
+            width: double.infinity,
+            color: CupertinoColors.secondarySystemBackground,
+            child: SafeArea(
+              left: false,
+              top: false,
+              right: false,
+              bottom: true,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(),
+                  Container(),
+                  CupertinoButton(
+                      padding: EdgeInsets.only(right: 18, top: 18),
+                      child: Icon(CupertinoIcons.plus_bubble),
+                      onPressed: () {})
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -357,9 +357,9 @@ packages:
   flutter_voip_kit:
     dependency: "direct main"
     description:
-      name: flutter_voip_kit
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../flutter_voip_kit"
+      relative: true
+    source: path
     version: "0.0.6"
   flutter_web_plugins:
     dependency: transitive
@@ -478,6 +478,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "5.3.2"
+  modal_bottom_sheet:
+    dependency: "direct main"
+    description:
+      name: modal_bottom_sheet
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.2"
   mqtt_client:
     dependency: "direct main"
     description:
@@ -625,6 +632,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.1"
+  pull_down_button:
+    dependency: "direct main"
+    description:
+      name: pull_down_button
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.3.1"
   rxdart:
     dependency: transitive
     description:
