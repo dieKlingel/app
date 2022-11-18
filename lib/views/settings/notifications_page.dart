@@ -1,4 +1,5 @@
 import 'package:dieklingel_app/components/preferences.dart';
+import 'package:dieklingel_app/views/components/cupertino_selection_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
@@ -34,6 +35,26 @@ class NotificationsPage extends StatelessWidget {
                 ),
               ],
             ),
+            CupertinoFormSection.insetGrouped(
+              header: const Text("Notification"),
+              children: [
+                CupertinoFormRow(
+                  padding: const EdgeInsets.only(left: 15, top: 3, bottom: 3),
+                  prefix: const Text("Sound"),
+                  child: CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {},
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 12.0),
+                      child: Text(
+                        preferences.getString("notification_sound") ??
+                            "default",
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
           ],
         ),
       ),
