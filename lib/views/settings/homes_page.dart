@@ -34,7 +34,7 @@ class _HomesPage extends State<HomesPage> {
     Map<String, Home> homes = {};
     for (Map<dynamic, dynamic> document in result) {
       String id = document["_id"];
-      Home home = Home.fromJson(document.cast<String, dynamic>());
+      Home home = Home.fromMap(document.cast<String, dynamic>());
       homes[id] = home;
     }
 
@@ -45,7 +45,7 @@ class _HomesPage extends State<HomesPage> {
 
   Future<void> _insert(Home home) async {
     if (null == _database) return;
-    ObjectId id = await _database!.insert(home.toJson());
+    ObjectId id = await _database!.insert(home.toMap());
     setState(() {
       _homes[id.hexString] = home;
     });
@@ -53,7 +53,7 @@ class _HomesPage extends State<HomesPage> {
 
   Future<void> _update(String id, Home home) async {
     if (null == _database) return;
-    await _database!.update({"_id": id}, home.toJson());
+    await _database!.update({"_id": id}, home.toMap());
     setState(() {
       _homes[id] = home;
     });
@@ -65,20 +65,6 @@ class _HomesPage extends State<HomesPage> {
     setState(() {
       _homes.remove(id);
     });
-    if (_homes.isEmpty && mounted) {
-      Navigator.popUntil(context, (route) {
-        if (!route.isFirst) {
-          Navigator.replaceRouteBelow(
-            context,
-            anchorRoute: route,
-            newRoute: CupertinoPageRoute(
-              builder: (context) => const WizardPage(),
-            ),
-          );
-        }
-        return route.isFirst;
-      });
-    }
   }
 
   void _onPlusBtnPressed() async {

@@ -1,10 +1,10 @@
-import 'home_page.dart';
+import 'home_view.dart';
 import 'settings_page.dart';
 import 'package:flutter/cupertino.dart';
 
 enum TabBarPages {
   preview(
-    HomePage(),
+    HomeView(),
   ),
   settings(
     SettingsPage(),

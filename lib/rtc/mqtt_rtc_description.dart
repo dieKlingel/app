@@ -15,7 +15,7 @@ class MqttRtcDescription {
     this.websocket = false,
   });
 
-  factory MqttRtcDescription.fromJson(Map<String, dynamic> json) {
+  factory MqttRtcDescription.fromMap(Map<String, dynamic> json) {
     return MqttRtcDescription(
       host: json["host"],
       port: json["port"],
@@ -35,7 +35,7 @@ class MqttRtcDescription {
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
       "host": host,
       "port": port,
@@ -83,7 +83,7 @@ class MqttRtcDescription {
 
   @override
   String toString() {
-    return jsonEncode(toJson());
+    return jsonEncode(toMap());
   }
 
   @override

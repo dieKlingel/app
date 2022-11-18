@@ -78,7 +78,7 @@ class _WizardPage extends State<WizardPage> {
 
     ObjectDB database = await ObjectDBFactory.named("homes");
     //await database.remove({});
-    ObjectId id = await database.insert(home.toJson());
+    ObjectId id = await database.insert(home.toMap());
     preferences.setString("default_home_id", id.hexString);
     database.cleanup();
     database.close();

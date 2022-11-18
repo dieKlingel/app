@@ -4,9 +4,9 @@ import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
-import 'package:dieklingel_app/views/home_page.dart';
+import 'package:dieklingel_app/views/home_view.dart';
+import 'package:dieklingel_app/views/home_view_model.dart';
 import 'package:dieklingel_app/views/wizard/wizard_page.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:objectdb/objectdb.dart';
 
 import 'messaging/mclient_topic_message.dart';
@@ -38,6 +38,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => mclient),
         ChangeNotifierProvider(create: (context) => preferences),
         ChangeNotifierProvider(create: (context) => CallHandler.getInstance()),
+        ChangeNotifierProvider(create: ((context) => HomeViewModel()))
       ],
       child: const App(),
     ),
@@ -172,20 +173,8 @@ class _App extends State<App> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return CupertinoApp(
-      home: FutureBuilder<bool>(
-        future: isInitialized(),
-        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child: Text("loading"),
-            );
-          }
-          return (snapshot.data!)
-              ? const CupertinoScaffold(body: HomePage())
-              : const WizardPage();
-        },
-      ),
+    return const CupertinoApp(
+      home: HomeView(),
     );
   }
 }

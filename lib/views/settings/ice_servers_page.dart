@@ -1,5 +1,6 @@
 import 'package:dieklingel_app/components/ice_server.dart';
 import 'package:dieklingel_app/views/settings/ice_server_config_page.dart';
+import 'package:dieklingel_app/views/sheets/ice_server_config_sheet.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -63,14 +64,14 @@ class _IceServersPage extends State<IceServersPage> {
   }
 
   void _onPlusBtnPressed() async {
-    IceServer? result = await Navigator.push(
+    /* IceServer? result = await Navigator.push(
       context,
       CupertinoPageRoute(
         builder: (context) => const IceServerConfigPage(),
       ),
     );
     if (null == result) return;
-    await _insert(result);
+    await _insert(result);*/
   }
 
   void _onListTilePressed(String id, IceServer server) async {

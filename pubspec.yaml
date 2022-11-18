@@ -57,7 +57,6 @@ dependencies:
   url_launcher: ^6.1.6
   flutter_markdown: ^0.6.12
   pull_down_button: ^0.3.1
-  modal_bottom_sheet: ^2.1.2
 
 dev_dependencies:
   flutter_test:
