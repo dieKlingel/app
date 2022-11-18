@@ -6,6 +6,7 @@ import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
 import 'package:dieklingel_app/views/home_view.dart';
 import 'package:dieklingel_app/views/home_view_model.dart';
+import 'package:dieklingel_app/views/settings/ice_servers_view_model.dart';
 import 'package:dieklingel_app/views/wizard/wizard_page.dart';
 import 'package:objectdb/objectdb.dart';
 
@@ -38,7 +39,8 @@ void main() async {
         ChangeNotifierProvider(create: (context) => mclient),
         ChangeNotifierProvider(create: (context) => preferences),
         ChangeNotifierProvider(create: (context) => CallHandler.getInstance()),
-        ChangeNotifierProvider(create: ((context) => HomeViewModel()))
+        ChangeNotifierProvider(create: (context) => HomeViewModel()),
+        ChangeNotifierProvider(create: (context) => IceServersViewModel()),
       ],
       child: const App(),
     ),

@@ -1,6 +1,5 @@
 import 'package:dieklingel_app/views/settings/about_page.dart';
-import 'package:dieklingel_app/views/settings/homes_page.dart';
-import 'package:dieklingel_app/views/settings/ice_servers_page.dart';
+import 'package:dieklingel_app/views/settings/ice_servers_view.dart';
 import 'package:dieklingel_app/views/settings/notifications_page.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,25 +28,7 @@ class SettingsPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     CupertinoPageRoute(
-                      builder: (context) => const HomesPage(),
-                    ),
-                  );
-                },
-                child: const CupertinoFormRow(
-                  prefix: CupertinoFormRowPrefix(
-                    title: "Homes",
-                    icon: CupertinoIcons.house,
-                    color: Colors.orange,
-                  ),
-                  child: Icon(CupertinoIcons.forward),
-                ),
-              ),
-              CupertinoInkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    CupertinoPageRoute(
-                      builder: (context) => const IceServersPage(),
+                      builder: (context) => const IceServersView(),
                     ),
                   );
                 },

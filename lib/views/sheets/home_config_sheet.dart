@@ -87,53 +87,56 @@ class _HomeConfigSheet extends State<HomeConfigSheet> {
             ),
           ),
           SliverList(
-              delegate: SliverChildListDelegate([
-            CupertinoFormSection.insetGrouped(
-              header: const Text("Configuration"),
-              children: [
-                CupertinoTextFormFieldRow(
-                  prefix: const Text("Description"),
-                  placeholder: "My Home",
-                  controller: _name,
-                  onChanged: (value) => _validate(),
+            delegate: SliverChildListDelegate(
+              [
+                CupertinoFormSection.insetGrouped(
+                  header: const Text("Configuration"),
+                  children: [
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Description"),
+                      placeholder: "My Home",
+                      controller: _name,
+                      onChanged: (value) => _validate(),
+                    ),
+                  ],
+                ),
+                CupertinoFormSection.insetGrouped(
+                  header: const Text("Server"),
+                  children: [
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Server Url"),
+                      placeholder: "mqtt://dieklingel.com:1883/",
+                      controller: url,
+                      onChanged: (value) => _validate(),
+                    ),
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Username"),
+                      placeholder: "Max",
+                      controller: username,
+                      onChanged: (value) => _validate(),
+                    ),
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Password"),
+                      obscureText: true,
+                      controller: password,
+                      onChanged: (value) => _validate(),
+                    ),
+                  ],
+                ),
+                CupertinoFormSection.insetGrouped(
+                  header: const Text("Channel"),
+                  children: [
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Channel Prefix"),
+                      placeholder: "com.dieklingel/name/main/",
+                      controller: channel,
+                      onChanged: (value) => _validate(),
+                    ),
+                  ],
                 ),
               ],
             ),
-            CupertinoFormSection.insetGrouped(
-              header: const Text("Server"),
-              children: [
-                CupertinoTextFormFieldRow(
-                  prefix: const Text("Server Url"),
-                  placeholder: "mqtt://dieklingel.com:1883/",
-                  controller: url,
-                  onChanged: (value) => _validate(),
-                ),
-                CupertinoTextFormFieldRow(
-                  prefix: const Text("Username"),
-                  placeholder: "Max",
-                  controller: username,
-                  onChanged: (value) => _validate(),
-                ),
-                CupertinoTextFormFieldRow(
-                  prefix: const Text("Password"),
-                  obscureText: true,
-                  controller: password,
-                  onChanged: (value) => _validate(),
-                ),
-              ],
-            ),
-            CupertinoFormSection.insetGrouped(
-              header: const Text("Channel"),
-              children: [
-                CupertinoTextFormFieldRow(
-                  prefix: const Text("Channel Prefix"),
-                  placeholder: "com.dieklingel/name/main/",
-                  controller: channel,
-                  onChanged: (value) => _validate(),
-                ),
-              ],
-            ),
-          ]))
+          )
         ],
       ),
     );

@@ -15,7 +15,7 @@ void main() {
           "channel": channel
         };
 
-        MqttRtcDescription description = MqttRtcDescription.fromJson(input);
+        MqttRtcDescription description = MqttRtcDescription.fromMap(input);
         expect(description.host, host);
         expect(description.channel, channel);
         expect(description.port, port);
@@ -38,7 +38,7 @@ void main() {
           "ssl": ssl,
         };
 
-        MqttRtcDescription description = MqttRtcDescription.fromJson(input);
+        MqttRtcDescription description = MqttRtcDescription.fromMap(input);
         expect(description.host, host);
         expect(description.channel, channel);
         expect(description.port, port);

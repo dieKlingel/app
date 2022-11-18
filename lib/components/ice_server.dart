@@ -1,22 +1,26 @@
 import 'dart:convert';
 
 class IceServer {
+  final String? uuid;
   final String urls;
   final String username;
   final String credential;
 
   IceServer({
+    this.uuid,
     required this.urls,
     this.username = "",
     this.credential = "",
   });
 
-  IceServer.fromJson(Map<String, dynamic> json)
-      : urls = json['urls'],
+  IceServer.fromMap(Map<String, dynamic> json)
+      : uuid = json['uuid'],
+        urls = json['urls'],
         username = json['username'],
         credential = json['credential'];
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toMap() => {
+        'uuid': uuid,
         'urls': urls,
         'username': username,
         'credential': credential,
@@ -24,7 +28,7 @@ class IceServer {
 
   @override
   String toString() {
-    return jsonEncode(toJson());
+    return jsonEncode(toMap());
   }
 
   @override
@@ -32,9 +36,10 @@ class IceServer {
     if (other is! IceServer) {
       return false;
     }
-    return other.urls == urls &&
-        other.username == username &&
-        other.credential == credential;
+    if (uuid == null) {
+      return false;
+    }
+    return other.uuid == uuid;
   }
 
   @override
