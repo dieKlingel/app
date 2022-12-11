@@ -1,37 +1,10 @@
-import 'dart:collection';
-import 'dart:convert';
-import 'dart:io';
 import 'package:audio_session/audio_session.dart';
 import 'package:dieklingel_app/models/home.dart';
-import 'package:dieklingel_app/components/preferences.dart';
-import 'package:dieklingel_app/database/objectdb_factory.dart';
-import 'package:dieklingel_app/event/system_event.dart';
-import 'package:dieklingel_app/extensions/if_add_list.dart';
-import 'package:dieklingel_app/handlers/call_handler.dart';
-import 'package:dieklingel_app/models/mqtt_uri.dart';
-import 'package:dieklingel_app/views/components/pull_down_menu_item_empty.dart';
 import 'package:dieklingel_app/view_models/home_view_model.dart';
-import 'package:dieklingel_app/views/home_add_view.dart';
-import 'package:dieklingel_app/views/preview/camera_live_view.dart';
-import 'package:dieklingel_app/views/preview/system_event_list_tile.dart';
 import 'package:dieklingel_app/views/settings_view.dart';
-import 'package:flutter_voip_kit/flutter_voip_kit.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:objectdb/objectdb.dart';
-import 'package:pull_down_button/pull_down_button.dart';
-import 'package:uuid/uuid.dart';
-import '../extensions/get_mclient.dart';
-import '../messaging/mclient_topic_message.dart';
-import 'package:flutter/material.dart';
-
-import '../messaging/mclient.dart';
-import '../rtc/mqtt_rtc_client.dart';
-import '../touch_scroll_behavior.dart';
+import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
-
-typedef JSON = Map<dynamic, dynamic>;
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -41,8 +14,6 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomePage extends State<HomeView> {
-  late final HomeViewModel _vm = HomeViewModel();
-
   @override
   void initState() {
     super.initState();
@@ -59,6 +30,63 @@ class _HomePage extends State<HomeView> {
     });
   }
 
+  Widget _title(BuildContext context) {
+    return Consumer<HomeViewModel>(
+      builder: (context, vm, child) => CupertinoInkWell(
+        onTap: vm.homes.length < 2
+            ? null
+            : (() {
+                showCupertinoModalPopup(
+                  context: context,
+                  builder: (context) => Container(
+                    height: 216,
+                    padding: const EdgeInsets.only(top: 6.0),
+                    margin: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    color:
+                        CupertinoColors.systemBackground.resolveFrom(context),
+                    child: SafeArea(
+                      top: false,
+                      child: CupertinoPicker(
+                        itemExtent: 32.0,
+                        magnification: 1.22,
+                        useMagnifier: true,
+                        scrollController: FixedExtentScrollController(
+                          initialItem:
+                              vm.home == null ? 0 : vm.homes.indexOf(vm.home!),
+                        ),
+                        onSelectedItemChanged: (index) {
+                          vm.home = vm.homes[index];
+                        },
+                        children: List.generate(vm.homes.length, (index) {
+                          Home home = vm.homes[index];
+
+                          return Text(home.name);
+                        }),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(vm.home?.name ?? "No Homes"),
+            if (vm.homes.length > 1)
+              const Padding(
+                padding: EdgeInsets.only(left: 6.0),
+                child: Icon(
+                  CupertinoIcons.chevron_down,
+                  color: CupertinoColors.inactiveGray,
+                ),
+              )
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -66,10 +94,7 @@ class _HomePage extends State<HomeView> {
         slivers: [
           CupertinoSliverNavigationBar(
             // TODO: make clickable
-            largeTitle: Text(MqttUri.boxx.values.isEmpty
-                ? "empty"
-                : MqttUri.boxx.values.first
-                    .host), //Text(_vm.home?.name ?? "No Home"),
+            largeTitle: _title(context),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -98,30 +123,3 @@ class _HomePage extends State<HomeView> {
     );
   }
 }
-
-class User extends HiveObject {
-  String name;
-
-  String lastname;
-
-  User(this.name, this.lastname);
-
-  @override
-  String toString() => "$name $lastname "; // Just for print()
-}
-
-/* class UserAdapter extends TypeAdapter<User> {
-  @override
-  final typeId = 0;
-
-  @override
-  User read(BinaryReader reader) {
-    print(reader.read());
-    return User(reader.read(), "a");
-  }
-
-  @override
-  void write(BinaryWriter writer, User obj) {
-    writer.write(obj.name, writeTypeId: true);
-  }
-}*/

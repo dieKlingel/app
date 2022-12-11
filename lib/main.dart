@@ -41,6 +41,7 @@ void main() async {
     Hive.openBox<MqttUri>((MqttUri).toString()),
     Hive.openBox<Home>((Home).toString()),
     Hive.openBox<IceServer>((IceServer).toString()),
+    Hive.openBox("settings"),
   ]);
 
   await Firebase.initializeApp(
