@@ -1,5 +1,5 @@
-import 'package:dieklingel_app/components/ice_server.dart';
-import 'package:dieklingel_app/views/settings/ice_server_config_page.dart';
+import 'package:dieklingel_app/models/ice_server.dart';
+import 'package:dieklingel_app/views/ice_server_add_view.dart';
 import 'package:dieklingel_app/views/settings/ice_servers_view_model.dart';
 import 'package:dieklingel_app/views/sheets/ice_server_config_sheet.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
@@ -42,7 +42,7 @@ class _IceServersPage extends State<IceServersView> {
                       ),
                       direction: DismissDirection.endToStart,
                       onDismissed: (direction) => vm.delete(server),
-                      key: Key(server.uuid!),
+                      key: UniqueKey(), //Key(server.uuid!),
                       child: CupertinoInkWell(
                         onTap: () async {
                           IceServer? result = await Navigator.push(

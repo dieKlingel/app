@@ -1,57 +1,58 @@
-import 'package:dieklingel_app/components/home.dart';
+import 'package:dieklingel_app/models/home.dart';
+import 'package:dieklingel_app/models/mqtt_uri.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:uuid/uuid.dart';
 
-import '../../rtc/mqtt_rtc_description.dart';
-
-class HomeConfigSheet extends StatefulWidget {
+class HomeAddView extends StatefulWidget {
   final Home? home;
 
-  const HomeConfigSheet({super.key, this.home});
+  const HomeAddView({super.key, this.home});
 
   @override
-  State<HomeConfigSheet> createState() => _HomeConfigSheet();
+  State<HomeAddView> createState() => _HomeConfigSheet();
 }
 
-class _HomeConfigSheet extends State<HomeConfigSheet> {
+class _HomeConfigSheet extends State<HomeAddView> {
   final TextEditingController _name = TextEditingController();
-  final TextEditingController url = TextEditingController();
-  final TextEditingController username = TextEditingController();
-  final TextEditingController password = TextEditingController();
-  final TextEditingController channel = TextEditingController();
+  final TextEditingController _url = TextEditingController();
+  final TextEditingController _username = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+  final TextEditingController _channel = TextEditingController();
 
   bool _valid = false;
 
   @override
   void initState() {
     if (null != widget.home) {
-      Uri uri = widget.home!.description.toUri();
+      Uri uri = widget.home!.uri.toUri();
       _name.text = widget.home!.name;
-      url.text = "${uri.scheme}://${uri.authority}/";
-      username.text = widget.home!.username ?? "";
-      password.text = widget.home!.password ?? "";
-      channel.text = uri.path.substring(1);
+      _url.text = "${uri.scheme}://${uri.authority}/";
+      _username.text = widget.home!.username ?? "";
+      _password.text = widget.home!.password ?? "";
+      _channel.text = uri.path.substring(1);
     }
     super.initState();
   }
 
-  void _onSaveBtnPressed() {
-    Uri serverUrl = Uri.parse(url.text);
-    Uri uri = Uri.parse(
-      "${serverUrl.scheme}://${serverUrl.authority}/${channel.text}",
+  void _save(BuildContext context) async {
+    if (!_valid) {
+      return;
+    }
+
+    Uri serverUrl = Uri.parse(_url.text);
+    MqttUri uri = MqttUri.fromUri(
+      Uri.parse(
+        "${serverUrl.scheme}://${serverUrl.authority}/${_channel.text}",
+      ),
     );
 
-    MqttRtcDescription mqttRtcDescription = MqttRtcDescription.parse(uri);
+    Home home = widget.home ?? Home(name: _name.text, uri: uri);
+    home.name = _name.text;
+    home.uri = uri;
+    home.username = _username.text;
+    home.password = _password.text;
+    home.save();
 
-    Home home = Home(
-      uuid: widget.home?.uuid ?? const Uuid().v4(),
-      name: _name.text,
-      description: mqttRtcDescription,
-      username: username.text.isEmpty ? null : username.text,
-      password: password.text.isEmpty ? null : password.text,
-    );
-
-    Navigator.of(context).pop(home);
+    Navigator.pop(context);
   }
 
   void _validate() {
@@ -60,12 +61,12 @@ class _HomeConfigSheet extends State<HomeConfigSheet> {
     RegExp serverExp = RegExp(
       r'^(mqtt|mqtts|ws|wss):\/\/(?:[A-Za-z0-9]+\.)+[A-Za-z0-9]{2,3}:\d{1,5}(\/?)$',
     );
-    valid = valid && serverExp.hasMatch(url.text);
+    valid = valid && serverExp.hasMatch(_url.text);
 
     RegExp channelExp = RegExp(
       r'^(([a-z]+)([a-z\.+])([a-z]+)\/)+$',
     );
-    valid = valid && channelExp.hasMatch(channel.text);
+    valid = valid && channelExp.hasMatch(_channel.text);
 
     setState(() {
       _valid = valid;
@@ -82,7 +83,11 @@ class _HomeConfigSheet extends State<HomeConfigSheet> {
             largeTitle: const Text("Home"),
             trailing: CupertinoButton(
               padding: EdgeInsets.zero,
-              onPressed: _valid ? _onSaveBtnPressed : null,
+              onPressed: _valid
+                  ? () {
+                      _save(context);
+                    }
+                  : null,
               child: const Text("Save"),
             ),
           ),
@@ -106,19 +111,19 @@ class _HomeConfigSheet extends State<HomeConfigSheet> {
                     CupertinoTextFormFieldRow(
                       prefix: const Text("Server Url"),
                       placeholder: "mqtt://dieklingel.com:1883/",
-                      controller: url,
+                      controller: _url,
                       onChanged: (value) => _validate(),
                     ),
                     CupertinoTextFormFieldRow(
                       prefix: const Text("Username"),
                       placeholder: "Max",
-                      controller: username,
+                      controller: _username,
                       onChanged: (value) => _validate(),
                     ),
                     CupertinoTextFormFieldRow(
                       prefix: const Text("Password"),
                       obscureText: true,
-                      controller: password,
+                      controller: _password,
                       onChanged: (value) => _validate(),
                     ),
                   ],
@@ -129,7 +134,7 @@ class _HomeConfigSheet extends State<HomeConfigSheet> {
                     CupertinoTextFormFieldRow(
                       prefix: const Text("Channel Prefix"),
                       placeholder: "com.dieklingel/name/main/",
-                      controller: channel,
+                      controller: _channel,
                       onChanged: (value) => _validate(),
                     ),
                   ],

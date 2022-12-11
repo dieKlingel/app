@@ -1,4 +1,4 @@
-import 'package:dieklingel_app/components/ice_server.dart';
+import 'package:dieklingel_app/models/ice_server.dart';
 import 'package:flutter/material.dart';
 import 'package:objectdb/objectdb.dart';
 
@@ -16,17 +16,17 @@ class IceServersViewModel extends ChangeNotifier {
     _db = await ObjectDBFactory.named("iceservers");
     await _db!.remove({"uuid": null});
     List<Map<dynamic, dynamic>> result = await _db!.find({});
-    _servers = result
+    /* _servers = result
         .map((e) => e.cast<String, dynamic>())
         .map((e) => IceServer.fromMap(e))
-        .toList();
+        .toList(); */
     notifyListeners();
   }
 
   List<IceServer> get servers => List.unmodifiable(_servers);
 
   void insert(IceServer server) async {
-    if (_db == null) return;
+    /* if (_db == null) return;
 
     _servers.remove(server);
     _servers.add(server);
@@ -40,11 +40,11 @@ class IceServersViewModel extends ChangeNotifier {
     if (result < 1) {
       await _db!.insert(server.toMap());
     }
-    notifyListeners();
+    notifyListeners(); */
   }
 
   void delete(IceServer server) async {
-    if (_db == null) return;
+    /* if (_db == null) return;
     if (server.uuid == null) return;
 
     _servers.remove(server);
@@ -54,6 +54,6 @@ class IceServersViewModel extends ChangeNotifier {
       },
     );
 
-    notifyListeners();
+    notifyListeners(); */
   }
 }

@@ -1,4 +1,4 @@
-import 'package:dieklingel_app/components/ice_server.dart';
+import 'package:dieklingel_app/models/ice_server.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:uuid/uuid.dart';
 
@@ -29,14 +29,14 @@ class _IceServerConfigSheet extends State<IceServerConfigSheet> {
   }
 
   void _onSaveBtnPressed() {
-    IceServer server = IceServer(
+    /* IceServer server = IceServer(
       uuid: widget.server?.uuid ?? const Uuid().v4(),
       urls: urls.text,
       username: username.text,
       credential: credential.text,
-    );
+    ); */
 
-    Navigator.of(context).pop(server);
+    //Navigator.of(context).pop(server);
   }
 
   void _validate(String _) {

@@ -1,34 +1,30 @@
 import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:objectdb/objectdb.dart';
+import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
-import '../components/home.dart';
+import '../models/home.dart';
 
 class HomeViewModel extends ChangeNotifier {
-  Set<Home> _homes = {};
-  String? _uuid;
-  ObjectDB? _db;
-
   HomeViewModel() {
     _init();
   }
 
   void _init() async {
-    _db = await ObjectDBFactory.named("homes");
+    /* _db = await ObjectDBFactory.named("homes");
     await _db!.remove({"uuid": null});
     List<Map<dynamic, dynamic>> result = await _db!.find({});
     _homes = result
         .map((e) => e.cast<String, dynamic>())
         .map((e) => Home.fromMap(e))
         .toSet();
-    notifyListeners();
+    notifyListeners(); */
   }
 
-  List<Home> get homes => List.unmodifiable(_homes);
+  //List<Home> get homes =>
 
-  Home? get home {
+  /* Home? get home {
     if (_uuid == null) return null;
     for (Home home in homes) {
       if (home.uuid == _uuid) {
@@ -36,21 +32,21 @@ class HomeViewModel extends ChangeNotifier {
       }
     }
     return null;
-  }
+    */
 
   set home(Home? home) {
-    if (home != null) {
+    /* if (home != null) {
       if (home.uuid == null) {
         home = home.copyWith(uuid: const Uuid().v4());
         insert(home);
       }
     }
     _uuid = home?.uuid;
-    notifyListeners();
+    notifyListeners();*/
   }
 
   void insert(Home home) async {
-    if (_db == null) return;
+    /* if (_db == null) return;
     if (home.uuid == null) {
       home = home.copyWith(uuid: const Uuid().v4());
     }
@@ -66,20 +62,20 @@ class HomeViewModel extends ChangeNotifier {
     );
     if (result < 1) {
       await _db!.insert(home.toMap());
-    }
-    notifyListeners();
+    }*/
+    //notifyListeners();
   }
 
   void delete(Home home) async {
-    if (_db == null) return;
+    /* if (_db == null) return;
     if (home.uuid == null) return;
     _homes.remove(home);
     await _db!.remove(
       {
         "uuid": home.uuid,
       },
-    );
+    );*/
 
-    notifyListeners();
+    //notifyListeners();
   }
 }

@@ -1,10 +1,12 @@
+import 'package:dieklingel_app/view_models/home_view_model.dart';
+
 import 'home_view.dart';
-import 'settings_page.dart';
+import 'settings_view.dart';
 import 'package:flutter/cupertino.dart';
 
-enum TabBarPages {
+/* enum TabBarPages {
   preview(
-    HomeView(),
+    HomeView(vm: HomeViewModel()),
   ),
   settings(
     SettingsPage(),
@@ -12,8 +14,8 @@ enum TabBarPages {
 
   final Widget page;
 
-  const TabBarPages(this.page);
-}
+  TabBarPages(this.page);
+} */
 
 class TabbarPage extends StatelessWidget {
   const TabbarPage({Key? key}) : super(key: key);
@@ -40,7 +42,7 @@ class TabbarPage extends StatelessWidget {
         ],
       ),
       tabBuilder: (context, index) {
-        return TabBarPages.values[index].page;
+        return Text("tabbar"); //TabBarPages.values[index].page;
       },
     );
   }

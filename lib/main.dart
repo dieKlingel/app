@@ -4,10 +4,13 @@ import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
+import 'package:dieklingel_app/models/home.dart';
+import 'package:dieklingel_app/models/ice_server.dart';
+import 'package:dieklingel_app/models/mqtt_uri.dart';
 import 'package:dieklingel_app/views/home_view.dart';
-import 'package:dieklingel_app/views/home_view_model.dart';
+import 'package:dieklingel_app/view_models/home_view_model.dart';
 import 'package:dieklingel_app/views/settings/ice_servers_view_model.dart';
-import 'package:dieklingel_app/views/wizard/wizard_page.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:objectdb/objectdb.dart';
 
 import 'messaging/mclient_topic_message.dart';
@@ -26,6 +29,20 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   NotificationHandler.init();
+
+  await Hive.initFlutter();
+
+  Hive
+    ..registerAdapter(MqttUriAdapter())
+    ..registerAdapter(HomeAdapter())
+    ..registerAdapter(IceServerAdapter());
+
+  await Future.wait([
+    Hive.openBox<MqttUri>((MqttUri).toString()),
+    Hive.openBox<Home>((Home).toString()),
+    Hive.openBox<IceServer>((IceServer).toString()),
+  ]);
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
