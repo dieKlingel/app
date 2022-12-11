@@ -1,5 +1,4 @@
 import 'package:dieklingel_app/components/preferences.dart';
-import 'package:dieklingel_app/views/components/cupertino_selection_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
