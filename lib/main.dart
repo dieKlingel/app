@@ -1,26 +1,18 @@
-import 'dart:convert';
-
 import 'package:dieklingel_app/components/preferences.dart';
-import 'package:dieklingel_app/database/objectdb_factory.dart';
-import 'package:dieklingel_app/handlers/call_handler.dart';
-import 'package:dieklingel_app/handlers/notification_handler.dart';
+import 'package:dieklingel_app/injectable/dependecies.dart';
+import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_app/models/ice_server.dart';
 import 'package:dieklingel_app/models/mqtt_uri.dart';
-import 'package:dieklingel_app/views/home_view.dart';
 import 'package:dieklingel_app/view_models/home_view_model.dart';
-import 'package:dieklingel_app/views/settings/ice_servers_view_model.dart';
+import 'package:dieklingel_app/views/home_view.dart';
+import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:objectdb/objectdb.dart';
-
-import 'messaging/mclient_topic_message.dart';
-import 'components/app_settings.dart';
-import 'messaging/mclient.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mqtt_client/mqtt_client.dart';
+import 'package:injectable/injectable.dart';
 import 'package:provider/provider.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -28,10 +20,9 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  NotificationHandler.init();
+  configureDependecies();
 
   await Hive.initFlutter();
-
   Hive
     ..registerAdapter(MqttUriAdapter())
     ..registerAdapter(HomeAdapter())
@@ -48,21 +39,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  MClient mclient = MClient();
-  Preferences preferences = await Preferences.getInstance();
-
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => mclient),
-        ChangeNotifierProvider(create: (context) => preferences),
-        ChangeNotifierProvider(create: (context) => CallHandler.getInstance()),
-        ChangeNotifierProvider(create: (context) => HomeViewModel()),
-        ChangeNotifierProvider(create: (context) => IceServersViewModel()),
-      ],
-      child: const App(),
-    ),
-  );
+  runApp(const App());
 }
 
 class App extends StatefulWidget {
@@ -109,12 +86,13 @@ class _App extends State<App> {
     if (null == token) return;
     print("Token: $token");
     if (!mounted) return;
-    context.read<Preferences>().setString("firebase_token", token);
+    //context.read<Preferences>().setString("firebase_token", token);
   }
 
   void publishFirebaseToken() {
-    String? firebaseToken = context.read<AppSettings>().firebaseToken.value;
-    if (context.read<MClient>().connectionState !=
+    // TODO: publish token
+    /* String? firebaseToken = context.read<AppSettings>().firebaseToken.value;
+    if (context.read<MClientImpl>().connectionState !=
             MqttConnectionState.connected ||
         null == firebaseToken) {
       return;
@@ -124,12 +102,12 @@ class _App extends State<App> {
       "token": firebaseToken,
     };
     print("publish");
-    context.read<MClient>().publish(
+     context.read<MClientImpl>().publish(
           MClientTopicMessage(
             topic: "firebase/notification/token/add",
             message: jsonEncode(message),
           ),
-        );
+        );*/
   }
 
   void initialize() {
@@ -184,16 +162,10 @@ class _App extends State<App> {
     }); */
   }
 
-  Future<bool> isInitialized() async {
-    ObjectDB db = await ObjectDBFactory.named("homes");
-    List<Map<dynamic, dynamic>> result = await db.find({});
-    return result.isNotEmpty;
-  }
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const CupertinoApp(
+    return CupertinoApp(
       home: HomeView(),
     );
   }

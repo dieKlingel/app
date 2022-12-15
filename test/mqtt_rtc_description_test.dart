@@ -1,4 +1,4 @@
-import 'package:dieklingel_app/rtc/mqtt_rtc_description.dart';
+import 'package:dieklingel_app/models/mqtt_uri.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -15,7 +15,7 @@ void main() {
           "channel": channel
         };
 
-        MqttRtcDescription description = MqttRtcDescription.fromMap(input);
+        MqttUri description = MqttUri.fromMap(input);
         expect(description.host, host);
         expect(description.channel, channel);
         expect(description.port, port);
@@ -38,7 +38,7 @@ void main() {
           "ssl": ssl,
         };
 
-        MqttRtcDescription description = MqttRtcDescription.fromMap(input);
+        MqttUri description = MqttUri.fromMap(input);
         expect(description.host, host);
         expect(description.channel, channel);
         expect(description.port, port);
@@ -50,7 +50,7 @@ void main() {
       test("mqtt", () {
         Uri uri = Uri.parse("mqtt://server.dieklingel.com:1883/hallo/welt");
 
-        MqttRtcDescription description = MqttRtcDescription.parse(uri);
+        MqttUri description = MqttUri.fromUri(uri);
 
         expect(description.host, "server.dieklingel.com");
         expect(description.channel, "hallo/welt");
@@ -62,7 +62,7 @@ void main() {
       test("mqtts", () {
         Uri uri = Uri.parse("mqtts://server.dieklingel.com:1883/hallo/welt");
 
-        MqttRtcDescription description = MqttRtcDescription.parse(uri);
+        MqttUri description = MqttUri.fromUri(uri);
 
         expect(description.host, "server.dieklingel.com");
         expect(description.channel, "hallo/welt");
@@ -74,7 +74,7 @@ void main() {
       test("ws", () {
         Uri uri = Uri.parse("ws://server.dieklingel.com:1883/hallo/welt");
 
-        MqttRtcDescription description = MqttRtcDescription.parse(uri);
+        MqttUri description = MqttUri.fromUri(uri);
 
         expect(description.host, "server.dieklingel.com");
         expect(description.channel, "hallo/welt");
@@ -86,7 +86,7 @@ void main() {
       test("wss", () {
         Uri uri = Uri.parse("wss://server.dieklingel.com:1883/hallo/welt");
 
-        MqttRtcDescription description = MqttRtcDescription.parse(uri);
+        MqttUri description = MqttUri.fromUri(uri);
 
         expect(description.host, "server.dieklingel.com");
         expect(description.channel, "hallo/welt");
@@ -98,7 +98,7 @@ void main() {
       test("absolute path", () {
         Uri uri = Uri.parse("mqtt://server.dieklingel.com:1883//hallo/welt");
 
-        MqttRtcDescription description = MqttRtcDescription.parse(uri);
+        MqttUri description = MqttUri.fromUri(uri);
 
         expect(description.channel, "/hallo/welt");
       });

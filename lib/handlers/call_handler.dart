@@ -1,8 +1,6 @@
 import 'package:dieklingel_app/database/objectdb_factory.dart';
-import 'package:dieklingel_app/extensions/get_mclient.dart';
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/rtc/mqtt_rtc_client.dart';
-import 'package:dieklingel_app/rtc/mqtt_rtc_description.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_voip_kit/call.dart';
 import 'package:flutter_voip_kit/flutter_voip_kit.dart';
@@ -11,7 +9,6 @@ import 'package:objectdb/objectdb.dart';
 
 import '../components/notifyable_map.dart';
 import '../media/media_ressource.dart';
-import '../rtc/rtc_client.dart';
 
 class CallHandler extends ChangeNotifier {
   static final CallHandler _instance = CallHandler._();
@@ -62,10 +59,10 @@ class CallHandler extends ChangeNotifier {
           return false;
         }
         MClient mclient = _requested[call.uuid]!;
-        if (mclient.isNotConnected()) return false;
+        /* if (mclient.isNotConnected()) return false;
 
-        MqttRtcDescription description = mclient.mqttRtcDescription!.copyWith(
-          channel: "${mclient.mqttRtcDescription!.channel}rtc/${call.uuid}/",
+        MqttUri description = mclient.uri!.copyWith(
+          channel: "${mclient.uri!.channel}rtc/${call.uuid}/",
         );
 
         MqttRtcClient mqttRtcClient = MqttRtcClient.invite(
@@ -95,7 +92,7 @@ class CallHandler extends ChangeNotifier {
             kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
             direction: TransceiverDirection.RecvOnly,
           ),
-        ]);
+        ]); 
 
         String? result = await mclient.get(
           "request/rtc/test/",
@@ -107,7 +104,7 @@ class CallHandler extends ChangeNotifier {
           mqttRtcClient.close();
           return false;
         }
-        call.mute(muted: true);
+        call.mute(muted: true); */
         return true;
       case CallState.active:
         //here we would likely begin playig audio out of speakers

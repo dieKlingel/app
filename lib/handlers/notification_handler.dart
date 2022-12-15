@@ -4,11 +4,13 @@ import 'dart:math';
 import 'package:dieklingel_app/components/preferences.dart';
 import 'package:dieklingel_app/handlers/call_handler.dart';
 import 'package:dieklingel_app/messaging/mclient.dart';
-import 'package:dieklingel_app/rtc/mqtt_rtc_description.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_voip_kit/flutter_voip_kit.dart';
 import 'package:uuid/uuid.dart';
+
+import '../messaging/mclient.dart';
+import '../models/mqtt_uri.dart';
 
 Future<void> onBackgroundNotificationReceived(RemoteMessage message) async {
   Preferences preferences = await Preferences.getInstance();
@@ -38,9 +40,9 @@ Future<void> _call(RemoteMessage message) async {
 
   Completer<MClient> completer = Completer<MClient>();
   for (Uri uri in uris) {
-    MClient client = MClient(mqttRtcDescription: MqttRtcDescription.parse(uri));
+    MClient client = MClient();
 
-    client.connect().then(
+    client.connect(MqttUri.fromUri(uri)).then(
       (value) {
         if (completer.isCompleted) {
           client.disconnect();
@@ -69,7 +71,7 @@ Future<void> _call(RemoteMessage message) async {
   }
 
   //handler.requested[uuid] = mclient;
-  handler.prepare(uuid, mclient);
+  // handler.prepare(uuid, mclient);
   await FlutterVoipKit.reportIncomingCall(handle: caller, uuid: uuid);
   Future.delayed(const Duration(seconds: 10), () {
     mclient.disconnect();
