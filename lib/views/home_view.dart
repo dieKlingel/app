@@ -1,12 +1,16 @@
 import 'package:audio_session/audio_session.dart';
 import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_app/view_models/home_view_model.dart';
+import 'package:dieklingel_app/views/home_add_view.dart';
 import 'package:dieklingel_app/views/settings_view.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:injectable/injectable.dart';
 import 'package:provider/provider.dart';
 
+@injectable
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
 
@@ -15,6 +19,8 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomePage extends State<HomeView> {
+  final HomeViewModel vm = GetIt.I.get<HomeViewModel>();
+
   @override
   void initState() {
     super.initState();
@@ -31,95 +37,124 @@ class _HomePage extends State<HomeView> {
     });
   }
 
-  Widget _title(BuildContext context) {
-    HomeViewModel vm = context.watch<HomeViewModel>();
-    return CupertinoInkWell(
-      onTap: vm.homes.length < 2
-          ? null
-          : (() {
-              showCupertinoModalPopup(
-                context: context,
-                builder: (context) => Container(
-                  height: 216,
-                  padding: const EdgeInsets.only(top: 6.0),
-                  margin: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom,
-                  ),
-                  color: CupertinoColors.systemBackground.resolveFrom(context),
-                  child: SafeArea(
-                    top: false,
-                    child: CupertinoPicker(
-                      itemExtent: 32.0,
-                      magnification: 1.22,
-                      useMagnifier: true,
-                      scrollController: FixedExtentScrollController(
-                        // TODO: remove ! for home
-                        initialItem:
-                            vm.home == null ? 0 : vm.homes.indexOf(vm.home!),
-                      ),
-                      onSelectedItemChanged: (index) {
-                        vm.home = vm.homes[index];
-                      },
-                      children: List.generate(vm.homes.length, (index) {
-                        Home home = vm.homes[index];
+  void _onHomeTitleBtnPressed(BuildContext context) async {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (context) => CupertinoActionSheet(
+        actions: List.generate(
+          vm.homes.length,
+          (index) {
+            Home home = vm.homes[index];
 
-                        return Text(home.name);
-                      }),
-                    ),
-                  ),
-                ),
-              );
-            }),
+            return CupertinoActionSheetAction(
+              isDefaultAction: home == vm.home,
+              onPressed: () {
+                vm.home = home;
+                Navigator.pop(context);
+              },
+              child: Text(home.name),
+            );
+          },
+        )..add(
+            CupertinoActionSheetAction(
+              onPressed: () => Navigator.pop(context),
+              isDestructiveAction: true,
+              child: const Text("Cancel"),
+            ),
+          ),
+      ),
+    );
+  }
+
+  void _onSettingsBtnPressed() {
+    Navigator.push(
+      context,
+      CupertinoPageRoute(
+        builder: (context) => const SettingsView(),
+      ),
+    );
+  }
+
+  Widget _header(BuildContext context) {
+    return CupertinoSliverNavigationBar(
+      largeTitle: _title(context),
+      trailing: CupertinoButton(
+        padding: EdgeInsets.zero,
+        child: const Icon(CupertinoIcons.settings),
+        onPressed: () => _onSettingsBtnPressed(),
+      ),
+    );
+  }
+
+  Widget _title(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _onHomeTitleBtnPressed(context),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(vm.home?.name ?? "No Homes"),
-          if (vm.homes.length > 1)
-            const Padding(
-              padding: EdgeInsets.only(left: 6.0),
-              child: Icon(
-                CupertinoIcons.chevron_down,
-                color: CupertinoColors.inactiveGray,
-              ),
-            )
+          Flexible(
+            child: Text(
+              context.watch<HomeViewModel>().home?.name ?? "No Home!",
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          //if (context.watch<HomeViewModel>().homes.length > 1)
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Icon(CupertinoIcons.chevron_down),
+          )
         ],
+      ),
+    );
+  }
+
+  Widget _body(BuildContext context) {
+    return SliverList(
+      delegate: SliverChildListDelegate([
+        _shortcuts(context),
+        Text(context.watch<HomeViewModel>().client.state.toString()),
+      ]),
+    );
+  }
+
+  Widget _preview(BuildContext context) {
+    throw UnimplementedError();
+  }
+
+  Widget _shortcuts(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            CupertinoButton(
+              child: Text("connect"),
+              onPressed: () => vm.connectRTC(),
+            ),
+            CupertinoButton(
+              child: Text("disconnect"),
+              onPressed: () => vm.disconnectRTC(),
+            ),
+            //CupertinoButton(child: Text("unlock"), onPressed: () {}),
+            CupertinoButton(
+              child: Text("[DEBUG] reconnect"),
+              onPressed: () => vm.connect(),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => GetIt.I.get<HomeViewModel>(),
+    return ChangeNotifierProvider.value(
+      value: vm,
       builder: (context, child) => CupertinoPageScaffold(
         child: CustomScrollView(
           slivers: [
-            CupertinoSliverNavigationBar(
-              // TODO: make clickable
-              largeTitle: _title(context),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    child: const Icon(CupertinoIcons.add),
-                    onPressed: () {},
-                  ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    child: const Icon(CupertinoIcons.settings),
-                    onPressed: () async {
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => const SettingsView(),
-                        ),
-                      );
-                    },
-                  )
-                ],
-              ),
-            )
+            _header(context),
+            _body(context),
           ],
         ),
       ),

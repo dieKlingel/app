@@ -1,14 +1,10 @@
-import 'package:dieklingel_app/database/objectdb_factory.dart';
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/rtc/mqtt_rtc_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_voip_kit/call.dart';
 import 'package:flutter_voip_kit/flutter_voip_kit.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:objectdb/objectdb.dart';
 
 import '../components/notifyable_map.dart';
-import '../media/media_ressource.dart';
 
 class CallHandler extends ChangeNotifier {
   static final CallHandler _instance = CallHandler._();

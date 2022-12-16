@@ -5,6 +5,6 @@ import 'package:injectable/injectable.dart';
 
 @InjectableInit()
 void configureDependecies() {
-  GetIt.I.registerSingleton(MClient());
+  GetIt.I.registerFactory(() => MClient());
   GetIt.I.init();
 }

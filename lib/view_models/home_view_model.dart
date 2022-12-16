@@ -1,25 +1,30 @@
 import 'dart:async';
+import 'dart:io';
 
-import 'package:dieklingel_app/messaging/mclient_state.dart';
+import 'package:dieklingel_app/messaging/mclient.dart';
+import 'package:dieklingel_app/models/mqtt_uri.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+
 import 'package:injectable/injectable.dart';
 
-import '../messaging/mclient.dart';
 import '../models/home.dart';
 
 @injectable
 class HomeViewModel extends ChangeNotifier {
   late final StreamSubscription _homeSubscription;
-  late final MClient _client;
+  final MClient client;
 
-  HomeViewModel() : _client = GetIt.I.get<MClient>() {
+  HomeViewModel(this.client) {
     _homeSubscription = Home.boxx.watch().listen((event) {
+      if (event.value == home) {
+        connect();
+      }
       notifyListeners();
     });
+    client.addListener(notifyListeners);
+    connect();
   }
 
   List<Home> get homes => Home.boxx.values.toList();
@@ -48,22 +53,38 @@ class HomeViewModel extends ChangeNotifier {
       throw "cannot save a home as defautl, if not save into a box. Did you forgett to call home.save() ?";
     }
     box.put("home", home.key);
+    connect();
     notifyListeners();
   }
 
-  Future<MClientState> connect() async {
-    Home? home = this.home;
+  Future<void> connect() async {
     if (home == null) {
-      return MClientState.disconnected;
+      return;
     }
-    await _client.disconnect();
-    await _client.connect(
-      home.uri,
-      username: home.username ?? "",
-      password: home.password ?? "",
-    );
-    return _client.state;
+    MqttUri? uri = home?.uri;
+    if (uri == null) {
+      return;
+    }
+    await disconnect();
+    try {
+      await client.connect(
+        uri,
+        username: home?.username,
+        password: home?.password,
+      );
+    } on SocketException catch (e) {
+      // TODO: inform the user
+      print(e.message);
+    }
   }
+
+  Future<void> disconnect() async {
+    await client.disconnect();
+  }
+
+  Future<void> connectRTC() async {}
+
+  Future<void> disconnectRTC() async {}
 
   @override
   void dispose() {

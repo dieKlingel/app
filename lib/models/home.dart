@@ -1,10 +1,13 @@
 import 'package:dieklingel_app/models/mqtt_uri.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
+
+import 'preview.dart';
 
 part 'home.g.dart';
 
 @HiveType(typeId: 1)
-class Home extends HiveObject {
+class Home extends HiveObject with ChangeNotifier {
   static Box<Home> get boxx {
     Box<Home> box = Hive.box((Home).toString());
     return box;
