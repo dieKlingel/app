@@ -4,8 +4,8 @@ import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_app/models/ice_server.dart';
 import 'package:dieklingel_app/models/mqtt_uri.dart';
-import 'package:dieklingel_app/view_models/home_view_model.dart';
-import 'package:dieklingel_app/views/home_view.dart';
+import 'package:dieklingel_app/view_models/homes_view_model.dart';
+import 'package:dieklingel_app/views/homes_view.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -166,7 +166,7 @@ class _App extends State<App> {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      home: HomeView(),
+      home: HomesView(),
     );
   }
 }

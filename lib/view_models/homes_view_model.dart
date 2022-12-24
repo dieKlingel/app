@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/models/mqtt_uri.dart';
+import 'package:dieklingel_app/rtc/mqtt_rtc_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -12,11 +13,12 @@ import 'package:injectable/injectable.dart';
 import '../models/home.dart';
 
 @injectable
-class HomeViewModel extends ChangeNotifier {
+class HomesViewModel extends ChangeNotifier {
   late final StreamSubscription _homeSubscription;
   final MClient client;
+  MqttRtcClient? rtc;
 
-  HomeViewModel(this.client) {
+  HomesViewModel(this.client) {
     _homeSubscription = Home.boxx.watch().listen((event) {
       if (event.value == home) {
         connect();
