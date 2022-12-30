@@ -1,5 +1,6 @@
 import 'package:dieklingel_app/views/message_view.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import '../models/home.dart';
 
@@ -12,13 +13,7 @@ class CallView extends StatefulWidget {
 }
 
 class _CallView extends State<CallView> {
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-
-    print("state");
-  }
+  final RTCVideoRenderer _renderer = RTCVideoRenderer()..initialize();
 
   void _onMessagePressed(BuildContext context) {
     Navigator.push(
@@ -26,6 +21,43 @@ class _CallView extends State<CallView> {
       CupertinoPageRoute(
         builder: (context) => const MessageView(),
       ),
+    );
+  }
+
+  Widget _video(BuildContext context) {
+    return RTCVideoView(_renderer);
+  }
+
+  Widget _toolbar(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 15.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              CupertinoButton(
+                onPressed: () {},
+                child: Text("call"),
+              ),
+              CupertinoButton(
+                onPressed: () {},
+                child: Text("mic"),
+              ),
+              CupertinoButton(
+                onPressed: () {},
+                child: Text("speaker"),
+              ),
+              CupertinoButton(
+                onPressed: () {},
+                child: Text("lock"),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -42,7 +74,14 @@ class _CallView extends State<CallView> {
           ),
         ),
       ),
-      child: Text("a"),
+      child: SafeArea(
+        child: Stack(
+          children: [
+            _video(context),
+            _toolbar(context),
+          ],
+        ),
+      ),
     );
   }
 }
