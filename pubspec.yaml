@@ -44,7 +44,6 @@ dependencies:
   audio_session: ^0.1.10
   uuid: ^3.0.6
   dismissible_page: ^0.7.3
-  objectdb: ^1.2.1+1
   path_provider: ^2.0.11
   enough_platform_widgets: ^0.5.0
   # flutter_voip_kit: ^0.0.6
