@@ -1,3 +1,4 @@
+import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/models/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,9 @@ import 'message_view.dart';
 
 class HistoryView extends StatefulWidget {
   final Home home;
-  const HistoryView({required this.home, super.key});
+  final MClient client;
+
+  const HistoryView({required this.home, required this.client, super.key});
 
   @override
   State<StatefulWidget> createState() => _HistoryView();

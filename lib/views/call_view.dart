@@ -2,11 +2,13 @@ import 'package:dieklingel_app/views/message_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
+import '../messaging/mclient.dart';
 import '../models/home.dart';
 
 class CallView extends StatefulWidget {
   final Home home;
-  const CallView({required this.home, super.key});
+  final MClient client;
+  const CallView({required this.home, required this.client, super.key});
 
   @override
   State<StatefulWidget> createState() => _CallView();

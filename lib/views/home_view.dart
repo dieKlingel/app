@@ -1,4 +1,6 @@
+import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/models/home.dart';
+import 'package:dieklingel_app/models/mqtt_uri.dart';
 import 'package:dieklingel_app/views/call_view.dart';
 import 'package:dieklingel_app/views/history_view.dart';
 import 'package:dieklingel_app/views/settings_view.dart';
@@ -15,6 +17,14 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeView extends State<HomeView> {
+  final MClient _client = MClient();
+
+  @override
+  void initState() {
+    _client.connect(widget.home.uri);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoTabScaffold(
@@ -33,10 +43,12 @@ class _HomeView extends State<HomeView> {
           case 0:
             return CallView(
               home: widget.home,
+              client: _client,
             );
           case 1:
             return HistoryView(
               home: widget.home,
+              client: _client,
             );
         }
 
