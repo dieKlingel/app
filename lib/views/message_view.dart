@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 class MessageView extends StatefulWidget {
   const MessageView({super.key});
@@ -9,13 +8,20 @@ class MessageView extends StatefulWidget {
 }
 
 class _MessageView extends State<MessageView> {
+  void _onNotificationSendPressed(BuildContext context) {}
+
   @override
   Widget build(BuildContext context) {
-    return const CupertinoPageScaffold(
+    return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text("New Notification"),
+        middle: const Text("New Notification"),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: const Icon(CupertinoIcons.arrow_up_circle),
+          onPressed: () => _onNotificationSendPressed(context),
+        ),
       ),
-      child: Center(
+      child: const Center(
         // TODO: add content
         child: Text("send a messsage"),
       ),
