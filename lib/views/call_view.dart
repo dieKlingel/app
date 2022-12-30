@@ -1,6 +1,10 @@
+import 'dart:ui';
+
+import 'package:dieklingel_app/messaging/mclient_state.dart';
 import 'package:dieklingel_app/views/message_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:provider/provider.dart';
 
 import '../messaging/mclient.dart';
 import '../models/home.dart';
@@ -63,6 +67,23 @@ class _CallView extends State<CallView> {
     );
   }
 
+  Widget _taskbar(BuildContext context) {
+    return Row(
+      children: [
+        ChangeNotifierProvider.value(
+          value: widget.client,
+          builder: (context, child) {
+            return Icon(
+              (context.watch<MClient>().state == MClientState.connected)
+                  ? CupertinoIcons.check_mark_circled
+                  : CupertinoIcons.clear_circled,
+            );
+          },
+        )
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -80,6 +101,7 @@ class _CallView extends State<CallView> {
         child: Stack(
           children: [
             _video(context),
+            _taskbar(context),
             _toolbar(context),
           ],
         ),
