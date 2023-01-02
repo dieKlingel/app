@@ -4,6 +4,7 @@ import 'package:dieklingel_app/media/media_ressource.dart';
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/messaging/mclient_state.dart';
 import 'package:dieklingel_app/messaging/mclient_subscribtion.dart';
+import 'package:dieklingel_app/models/ice_server.dart';
 import 'package:dieklingel_app/rtc/rtc_connection_state.dart';
 import 'package:dieklingel_app/rtc/rtc_transceiver.dart';
 import 'package:dieklingel_app/signaling/signaling_message.dart';
@@ -65,10 +66,21 @@ class MqttRtcClient extends ChangeNotifier {
   /// make sure to open the media ressource before calling init
   Future<void> init({
     List<RtcTransceiver> transceivers = const [],
-    Map<String, dynamic> iceServers = const {},
+    List<IceServer> iceServers = const [],
   }) async {
     await mclient.connect(uri, username: username, password: password);
-    _rtcPeerConnection = await createPeerConnection(iceServers);
+
+    List<Map<String, dynamic>> servers = iceServers
+        .map(
+          (e) => {
+            "urls": e.urls,
+            "username": e.username,
+            "credential": e.credential
+          },
+        )
+        .toList();
+
+    _rtcPeerConnection = await createPeerConnection({"iceServers": servers});
 
     MediaStream? stream = mediaRessource.stream;
     if (null != stream) {
@@ -145,6 +157,7 @@ class MqttRtcClient extends ChangeNotifier {
       default:
         break;
     }
+    notifyListeners();
   }
 
   void _onTrack(RTCTrackEvent event) {

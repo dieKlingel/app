@@ -1,6 +1,5 @@
-import 'dart:ui';
-
 import 'package:dieklingel_app/messaging/mclient_state.dart';
+import 'package:dieklingel_app/view_models/call_view_model.dart';
 import 'package:dieklingel_app/views/message_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -10,17 +9,18 @@ import '../messaging/mclient.dart';
 import '../models/home.dart';
 
 class CallView extends StatefulWidget {
-  final Home home;
-  final MClient client;
-  const CallView({required this.home, required this.client, super.key});
+  final CallViewModel vm;
+
+  const CallView({
+    required this.vm,
+    super.key,
+  });
 
   @override
   State<StatefulWidget> createState() => _CallView();
 }
 
 class _CallView extends State<CallView> {
-  final RTCVideoRenderer _renderer = RTCVideoRenderer()..initialize();
-
   void _onMessagePressed(BuildContext context) {
     Navigator.push(
       context,
@@ -31,7 +31,14 @@ class _CallView extends State<CallView> {
   }
 
   Widget _video(BuildContext context) {
-    return RTCVideoView(_renderer);
+    RTCVideoRenderer? renderer =
+        context.watch<CallViewModel>().client?.rtcVideoRenderer;
+    if (renderer == null) {
+      return Text("no video");
+    }
+    return InteractiveViewer(
+      child: RTCVideoView(renderer),
+    );
   }
 
   Widget _toolbar(BuildContext context) {
@@ -45,8 +52,14 @@ class _CallView extends State<CallView> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               CupertinoButton(
-                onPressed: () {},
-                child: Text("call"),
+                onPressed: context.watch<CallViewModel>().isConnected
+                    ? () => context.read<CallViewModel>().hangup()
+                    : () => context.read<CallViewModel>().call(),
+                child: Text(
+                  context.watch<CallViewModel>().isConnected
+                      ? "hangup"
+                      : "call",
+                ),
               ),
               CupertinoButton(
                 onPressed: () {},
@@ -71,7 +84,7 @@ class _CallView extends State<CallView> {
     return Row(
       children: [
         ChangeNotifierProvider.value(
-          value: widget.client,
+          value: context.read<CallViewModel>().mclient,
           builder: (context, child) {
             return Icon(
               (context.watch<MClient>().state == MClientState.connected)
@@ -86,26 +99,35 @@ class _CallView extends State<CallView> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text(widget.home.name),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => _onMessagePressed(context),
-          child: const Icon(
-            CupertinoIcons.pencil_ellipsis_rectangle,
+    return ChangeNotifierProvider.value(
+      value: widget.vm,
+      builder: (context, child) => CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: Text(context.watch<CallViewModel>().home.name),
+          trailing: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => _onMessagePressed(context),
+            child: const Icon(
+              CupertinoIcons.pencil_ellipsis_rectangle,
+            ),
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              _video(context),
+              _taskbar(context),
+              _toolbar(context),
+            ],
           ),
         ),
       ),
-      child: SafeArea(
-        child: Stack(
-          children: [
-            _video(context),
-            _taskbar(context),
-            _toolbar(context),
-          ],
-        ),
-      ),
     );
+  }
+
+  @override
+  void dispose() {
+    widget.vm.hangup();
+    super.dispose();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_app/models/mqtt_uri.dart';
+import 'package:dieklingel_app/view_models/call_view_model.dart';
 import 'package:dieklingel_app/views/call_view.dart';
 import 'package:dieklingel_app/views/history_view.dart';
 import 'package:dieklingel_app/views/settings_view.dart';
@@ -18,6 +19,10 @@ class HomeView extends StatefulWidget {
 
 class _HomeView extends State<HomeView> {
   final MClient _client = MClient();
+  late final CallViewModel _callViewModel = CallViewModel(
+    home: widget.home,
+    mclient: _client,
+  );
 
   @override
   void initState() {
@@ -41,10 +46,7 @@ class _HomeView extends State<HomeView> {
       tabBuilder: (context, index) {
         switch (index) {
           case 0:
-            return CallView(
-              home: widget.home,
-              client: _client,
-            );
+            return CallView(vm: _callViewModel);
           case 1:
             return HistoryView(
               home: widget.home,
