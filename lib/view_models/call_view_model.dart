@@ -38,10 +38,17 @@ class CallViewModel extends ChangeNotifier {
     return true;
   }
 
+  bool get isCallRequested {
+    return _callRequested;
+  }
+
   bool _callRequested = false;
 
   bool get isMuted {
-    return false;
+    return client?.mediaRessource.stream
+            ?.getAudioTracks()
+            .any((element) => element.muted ?? false) ??
+        false;
   }
 
   Future<void> call() async {
@@ -104,7 +111,17 @@ class CallViewModel extends ChangeNotifier {
     client = null;
   }
 
-  void mute() {}
+  void mute() {
+    client?.mediaRessource.stream?.getAudioTracks().forEach((element) {
+      element.enabled = false;
+    });
+    notifyListeners();
+  }
 
-  void unmute() {}
+  void unmute() {
+    client?.mediaRessource.stream?.getAudioTracks().forEach((element) {
+      element.enabled = true;
+    });
+    notifyListeners();
+  }
 }

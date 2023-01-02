@@ -1,6 +1,7 @@
 import 'package:dieklingel_app/messaging/mclient_state.dart';
 import 'package:dieklingel_app/view_models/call_view_model.dart';
 import 'package:dieklingel_app/views/message_view.dart';
+import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
@@ -34,7 +35,12 @@ class _CallView extends State<CallView> {
     RTCVideoRenderer? renderer =
         context.watch<CallViewModel>().client?.rtcVideoRenderer;
     if (renderer == null) {
-      return Text("no video");
+      return Container();
+    }
+    if (context.watch<CallViewModel>().isCallRequested) {
+      return const Center(
+        child: CupertinoActivityIndicator(),
+      );
     }
     return InteractiveViewer(
       child: RTCVideoView(renderer),
@@ -42,6 +48,7 @@ class _CallView extends State<CallView> {
   }
 
   Widget _toolbar(BuildContext context) {
+    CallViewModel vm = context.watch<CallViewModel>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       mainAxisSize: MainAxisSize.max,
@@ -52,26 +59,32 @@ class _CallView extends State<CallView> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               CupertinoButton(
-                onPressed: context.watch<CallViewModel>().isConnected
-                    ? () => context.read<CallViewModel>().hangup()
-                    : () => context.read<CallViewModel>().call(),
-                child: Text(
-                  context.watch<CallViewModel>().isConnected
-                      ? "hangup"
-                      : "call",
+                onPressed: vm.isConnected ? () => vm.hangup() : () => vm.call(),
+                child: Icon(
+                  vm.isConnected
+                      ? CupertinoIcons.phone_arrow_down_left
+                      : CupertinoIcons.phone,
+                ),
+              ),
+              CupertinoButton(
+                onPressed: !vm.isConnected
+                    ? null
+                    : vm.isMuted
+                        ? () => vm.unmute()
+                        : () => vm.mute(),
+                child: Icon(
+                  vm.isMuted || !vm.isConnected
+                      ? CupertinoIcons.mic_off
+                      : CupertinoIcons.mic,
                 ),
               ),
               CupertinoButton(
                 onPressed: () {},
-                child: Text("mic"),
+                child: Icon(CupertinoIcons.speaker_2),
               ),
               CupertinoButton(
                 onPressed: () {},
-                child: Text("speaker"),
-              ),
-              CupertinoButton(
-                onPressed: () {},
-                child: Text("lock"),
+                child: Icon(CupertinoIcons.lock_open),
               ),
             ],
           ),
