@@ -57,11 +57,6 @@ dependencies:
   pull_down_button: ^0.3.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  get_it: ^7.2.0
-  injectable: ^2.1.0
-  get_it_mixin: ^3.1.4+2
-  
-
 
 dev_dependencies:
   flutter_test:

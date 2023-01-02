@@ -1,18 +1,15 @@
 import 'package:dieklingel_app/components/preferences.dart';
-import 'package:dieklingel_app/injectable/dependecies.dart';
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_app/models/ice_server.dart';
 import 'package:dieklingel_app/models/mqtt_uri.dart';
 import 'package:dieklingel_app/view_models/homes_view_model.dart';
 import 'package:dieklingel_app/views/homes_view.dart';
-import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:injectable/injectable.dart';
 import 'package:provider/provider.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -20,7 +17,6 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  configureDependecies();
 
   await Hive.initFlutter();
   Hive
@@ -166,7 +162,7 @@ class _App extends State<App> {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      home: HomesView(),
+      home: HomesView(vm: HomesViewModel()),
     );
   }
 }

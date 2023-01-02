@@ -7,23 +7,23 @@ import 'package:dieklingel_app/view_models/homes_view_model.dart';
 import 'package:dieklingel_app/views/settings_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:injectable/injectable.dart';
 import 'package:provider/provider.dart';
 
 import 'home_view.dart';
 
-@injectable
 class HomesView extends StatefulWidget {
-  const HomesView({Key? key}) : super(key: key);
+  final HomesViewModel vm;
+
+  const HomesView({
+    required this.vm,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<HomesView> createState() => _HomePage();
 }
 
 class _HomePage extends State<HomesView> {
-  final HomesViewModel vm = GetIt.I.get<HomesViewModel>();
-
   @override
   void initState() {
     super.initState();
@@ -38,35 +38,6 @@ class _HomePage extends State<HomesView> {
     AudioSession.instance.then((session) {
       session.configure(const AudioSessionConfiguration.speech());
     });
-  }
-
-  void _onHomeTitleBtnPressed(BuildContext context) async {
-    showCupertinoModalPopup(
-      context: context,
-      builder: (context) => CupertinoActionSheet(
-        actions: List.generate(
-          vm.homes.length,
-          (index) {
-            Home home = vm.homes[index];
-
-            return CupertinoActionSheetAction(
-              isDefaultAction: home == vm.home,
-              onPressed: () {
-                vm.home = home;
-                Navigator.pop(context);
-              },
-              child: Text(home.name),
-            );
-          },
-        )..add(
-            CupertinoActionSheetAction(
-              onPressed: () => Navigator.pop(context),
-              isDestructiveAction: true,
-              child: const Text("Cancel"),
-            ),
-          ),
-      ),
-    );
   }
 
   void _onSettingsBtnPressed() {
@@ -145,35 +116,10 @@ class _HomePage extends State<HomesView> {
     return RtcVideoRenderer(client.rtcVideoRenderer);
   }
 
-  Widget _shortcuts(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            CupertinoButton(
-              child: Text("connect"),
-              onPressed: () => vm.connectRTC(),
-            ),
-            CupertinoButton(
-              child: Text("disconnect"),
-              onPressed: () => vm.disconnectRTC(),
-            ),
-            //CupertinoButton(child: Text("unlock"), onPressed: () {}),
-            CupertinoButton(
-              child: Text("[DEBUG] reconnect"),
-              onPressed: () => vm.connect(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
-      value: vm,
+      value: widget.vm,
       builder: (context, child) => CupertinoPageScaffold(
         child: CustomScrollView(
           slivers: [
