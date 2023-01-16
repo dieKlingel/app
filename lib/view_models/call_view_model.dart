@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:dieklingel_app/media/media_ressource.dart';
 import 'package:dieklingel_app/media/media_ressource_impl.dart';
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/models/ice_server.dart';
@@ -69,6 +68,7 @@ class CallViewModel extends ChangeNotifier {
     notifyListeners();
 
     await client?.mediaRessource.open(true, false);
+    mute();
 
     await client?.init(
       iceServers: IceServer.boxx.values.toList(),

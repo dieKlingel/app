@@ -1,7 +1,6 @@
 import 'package:dieklingel_app/messaging/mclient.dart';
 import 'package:dieklingel_app/models/home.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 import 'message_view.dart';
 
@@ -38,8 +37,8 @@ class _HistoryView extends State<HistoryView> {
           ),
         ),
       ),
-      child: Center(
-        child: Text("History: ${widget.home.name}"),
+      child: const Center(
+        child: Text("Event history will be available soon."),
       ),
     );
   }

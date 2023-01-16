@@ -1,12 +1,8 @@
 import 'package:audio_session/audio_session.dart';
-import 'package:dieklingel_app/components/home_preview.dart';
-import 'package:dieklingel_app/components/rtc_video_renderer.dart';
 import 'package:dieklingel_app/models/home.dart';
-import 'package:dieklingel_app/rtc/mqtt_rtc_client.dart';
 import 'package:dieklingel_app/view_models/homes_view_model.dart';
 import 'package:dieklingel_app/views/settings_view.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'home_view.dart';
@@ -77,7 +73,7 @@ class _HomePage extends State<HomesView> {
             Home home = homes[index];
 
             return Padding(
-              padding: EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(10.0),
               child: GestureDetector(
                 onTap: () => _onHomePressed(context, home),
                 child: Container(
@@ -93,7 +89,7 @@ class _HomePage extends State<HomesView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(home.name),
-                      Icon(CupertinoIcons.chevron_forward),
+                      const Icon(CupertinoIcons.chevron_forward),
                     ],
                   ),
                 ),
@@ -103,17 +99,6 @@ class _HomePage extends State<HomesView> {
         ),
       ),
     );
-  }
-
-  Widget _preview(BuildContext context) {
-    MqttRtcClient? client = context.watch<HomesViewModel>().rtc;
-    if (client == null) {
-      return Container(
-        height: 10,
-        color: Colors.red,
-      );
-    }
-    return RtcVideoRenderer(client.rtcVideoRenderer);
   }
 
   @override

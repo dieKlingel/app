@@ -20,13 +20,10 @@ class MClient extends ChangeNotifier {
 
   String get _prefix => uri?.channel ?? "";
 
-  @override
   MqttUri? get uri => _uri;
 
-  @override
   MClientState get state => _state;
 
-  @override
   Future<MClientState> connect(
     MqttUri uri, {
     String? username,
@@ -91,7 +88,6 @@ class MClient extends ChangeNotifier {
     return _state;
   }
 
-  @override
   void publish(String topic, String message) {
     if (state != MClientState.connected) {
       throw "the mclient has to be connected, before publish";
@@ -105,7 +101,6 @@ class MClient extends ChangeNotifier {
     );
   }
 
-  @override
   MClientSubscribtion subscribe(
     String topic,
     void Function(String topic, String message) listener,
@@ -126,7 +121,6 @@ class MClient extends ChangeNotifier {
     return subscribtion;
   }
 
-  @override
   void unsubscribe(MClientSubscribtion subscribtion) {
     _subscribtions.remove(subscribtion);
     for (int i = 0; i < _subscribtions.length; i++) {
@@ -137,7 +131,6 @@ class MClient extends ChangeNotifier {
     _client?.unsubscribe(subscribtion.topic);
   }
 
-  @override
   Future<String?> get(
     String topic,
     String request, {
@@ -160,7 +153,6 @@ class MClient extends ChangeNotifier {
     return result;
   }
 
-  @override
   void listen(String topic, Future<String> Function(String message) executer) {
     subscribe("$topic+", (topic, message) async {
       String returnVal = await executer(message);
@@ -168,7 +160,6 @@ class MClient extends ChangeNotifier {
     });
   }
 
-  @override
   Future<void> disconnect() async {
     _client?.disconnect();
     _client = null;

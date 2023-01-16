@@ -1,14 +1,11 @@
 import 'package:dieklingel_app/views/home_list_view.dart';
 import 'package:dieklingel_app/views/ice_server_list_view.dart';
-import 'package:dieklingel_app/views/settings/about_page.dart';
-import 'package:dieklingel_app/views/settings/ice_servers_view.dart';
-import 'package:dieklingel_app/views/settings/notifications_page.dart';
+import 'package:dieklingel_app/views/about_view.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'components/cupertino_form_row_prefix.dart';
-import 'settings/licenses_page.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -61,24 +58,6 @@ class SettingsView extends StatelessWidget {
                   child: Icon(CupertinoIcons.forward),
                 ),
               ),
-              CupertinoInkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    CupertinoPageRoute(
-                      builder: (context) => const NotificationsPage(),
-                    ),
-                  );
-                },
-                child: const CupertinoFormRow(
-                  prefix: CupertinoFormRowPrefix(
-                    title: "Notifications",
-                    icon: CupertinoIcons.bell_fill,
-                    color: Colors.red,
-                  ),
-                  child: Icon(CupertinoIcons.forward),
-                ),
-              ),
             ],
           ),
           CupertinoFormSection.insetGrouped(
@@ -89,7 +68,7 @@ class SettingsView extends StatelessWidget {
                   Navigator.push(
                     context,
                     CupertinoPageRoute(
-                      builder: (context) => const AboutPage(),
+                      builder: (context) => const AboutView(),
                     ),
                   );
                 },
@@ -98,24 +77,6 @@ class SettingsView extends StatelessWidget {
                     title: "About",
                     icon: CupertinoIcons.info_circle,
                     color: Colors.green,
-                  ),
-                  child: Icon(CupertinoIcons.forward),
-                ),
-              ),
-              CupertinoInkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    CupertinoPageRoute(
-                      builder: (context) => const LicensesPage(),
-                    ),
-                  );
-                },
-                child: const CupertinoFormRow(
-                  prefix: CupertinoFormRowPrefix(
-                    title: "Licenses",
-                    icon: CupertinoIcons.chevron_left_slash_chevron_right,
-                    color: Colors.lightBlue,
                   ),
                   child: Icon(CupertinoIcons.forward),
                 ),

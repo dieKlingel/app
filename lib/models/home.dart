@@ -2,8 +2,6 @@ import 'package:dieklingel_app/models/mqtt_uri.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 
-import 'preview.dart';
-
 part 'home.g.dart';
 
 @HiveType(typeId: 1)

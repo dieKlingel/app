@@ -1,13 +1,11 @@
 import 'package:dieklingel_app/messaging/mclient_state.dart';
 import 'package:dieklingel_app/view_models/call_view_model.dart';
 import 'package:dieklingel_app/views/message_view.dart';
-import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
 
 import '../messaging/mclient.dart';
-import '../models/home.dart';
 
 class CallView extends StatefulWidget {
   final CallViewModel vm;
@@ -64,6 +62,7 @@ class _CallView extends State<CallView> {
                   vm.isConnected
                       ? CupertinoIcons.phone_arrow_down_left
                       : CupertinoIcons.phone,
+                  size: 35,
                 ),
               ),
               CupertinoButton(
@@ -76,15 +75,22 @@ class _CallView extends State<CallView> {
                   vm.isMuted || !vm.isConnected
                       ? CupertinoIcons.mic_off
                       : CupertinoIcons.mic,
+                  size: 35,
                 ),
               ),
-              CupertinoButton(
-                onPressed: () {},
-                child: Icon(CupertinoIcons.speaker_2),
+              const CupertinoButton(
+                onPressed: null,
+                child: Icon(
+                  CupertinoIcons.speaker_2,
+                  size: 35,
+                ),
               ),
-              CupertinoButton(
-                onPressed: () {},
-                child: Icon(CupertinoIcons.lock_open),
+              const CupertinoButton(
+                onPressed: null,
+                child: Icon(
+                  CupertinoIcons.lock_open,
+                  size: 35,
+                ),
               ),
             ],
           ),

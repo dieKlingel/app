@@ -2,8 +2,8 @@ import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class AboutPage extends StatelessWidget {
-  const AboutPage({super.key});
+class AboutView extends StatelessWidget {
+  const AboutView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ class AboutPage extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.all(12.0),
               child: Text(
-                "© Kai Mayer 2022 Heilbronn",
+                "© Kai Mayer 2023 Heilbronn",
                 style: TextStyle(
                   fontSize: 13,
                   color: CupertinoColors.secondaryLabel,
