@@ -1,9 +1,11 @@
-import 'package:dieklingel_app/messaging/mclient.dart';
-import 'package:dieklingel_app/models/home.dart';
-import 'package:dieklingel_app/view_models/call_view_model.dart';
-import 'package:dieklingel_app/views/call_view.dart';
-import 'package:dieklingel_app/views/history_view.dart';
 import 'package:flutter/cupertino.dart';
+
+import 'call_view.dart';
+import 'history_view.dart';
+
+import '../messaging/mclient.dart';
+import '../models/home.dart';
+import '../view_models/call_view_model.dart';
 
 class HomeView extends StatefulWidget {
   final Home home;

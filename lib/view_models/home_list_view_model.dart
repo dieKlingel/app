@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:dieklingel_app/models/home.dart';
 import 'package:flutter/material.dart';
+
+import '../models/home.dart';
 
 class HomeListViewModel extends ChangeNotifier {
   late final StreamSubscription _subscription;

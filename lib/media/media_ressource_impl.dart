@@ -1,5 +1,6 @@
-import 'package:dieklingel_app/media/media_ressource.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+
+import 'media_ressource.dart';
 
 class MediaRessourceImpl implements MediaRessource {
   MediaStream? _stream;

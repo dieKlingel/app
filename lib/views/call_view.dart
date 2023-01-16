@@ -1,11 +1,12 @@
-import 'package:dieklingel_app/messaging/mclient_state.dart';
-import 'package:dieklingel_app/view_models/call_view_model.dart';
-import 'package:dieklingel_app/views/message_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
 
+import 'message_view.dart';
+
 import '../messaging/mclient.dart';
+import '../messaging/mclient_state.dart';
+import '../view_models/call_view_model.dart';
 
 class CallView extends StatefulWidget {
   final CallViewModel vm;

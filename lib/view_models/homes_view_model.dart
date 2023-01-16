@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:dieklingel_app/rtc/mqtt_rtc_client.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import '../models/home.dart';
+import '../rtc/mqtt_rtc_client.dart';
 
 class HomesViewModel extends ChangeNotifier {
   late final StreamSubscription _homeSubscription;

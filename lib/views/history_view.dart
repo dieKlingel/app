@@ -1,8 +1,9 @@
-import 'package:dieklingel_app/messaging/mclient.dart';
-import 'package:dieklingel_app/models/home.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'message_view.dart';
+
+import '../messaging/mclient.dart';
+import '../models/home.dart';
 
 class HistoryView extends StatefulWidget {
   final Home home;

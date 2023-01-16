@@ -1,15 +1,16 @@
 import 'dart:convert';
-import 'package:dieklingel_app/media/media_ressource_impl.dart';
-import 'package:dieklingel_app/messaging/mclient.dart';
-import 'package:dieklingel_app/models/ice_server.dart';
-import 'package:dieklingel_app/models/mqtt_uri.dart';
-import 'package:dieklingel_app/rtc/mqtt_rtc_client.dart';
-import 'package:dieklingel_app/rtc/rtc_connection_state.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:uuid/uuid.dart';
 
+import '../media/media_ressource_impl.dart';
+import '../messaging/mclient.dart';
 import '../models/home.dart';
+import '../models/ice_server.dart';
+import '../models/mqtt_uri.dart';
+import '../rtc/mqtt_rtc_client.dart';
+import '../rtc/rtc_connection_state.dart';
 import '../rtc/rtc_transceiver.dart';
 
 class CallViewModel extends ChangeNotifier {

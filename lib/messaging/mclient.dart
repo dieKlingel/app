@@ -2,15 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dieklingel_app/messaging/mclient_state.dart';
-import 'package:dieklingel_app/models/mqtt_uri.dart';
 import 'package:flutter/material.dart';
+import 'package:mqtt_client/mqtt_client.dart';
 import 'package:uuid/uuid.dart';
 
+import 'mclient_state.dart';
 import 'mclient_subscribtion.dart';
-import 'package:mqtt_client/mqtt_client.dart';
+
 import 'mqtt_server_client_factory.dart'
     if (dart.library.js) 'mqtt_browser_client_factory.dart';
+import '../models/mqtt_uri.dart';
 
 class MClient extends ChangeNotifier {
   final List<MClientSubscribtion> _subscribtions = [];

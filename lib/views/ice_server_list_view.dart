@@ -1,9 +1,11 @@
-import 'package:dieklingel_app/models/ice_server.dart';
-import 'package:dieklingel_app/view_models/ice_server_list_view_model.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+
 import 'ice_server_add_view.dart';
+
+import '../models/ice_server.dart';
+import '../view_models/ice_server_list_view_model.dart';
 
 class IceServerListView extends StatefulWidget {
   const IceServerListView({super.key});

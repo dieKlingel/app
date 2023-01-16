@@ -1,18 +1,19 @@
 import 'dart:convert';
 
-import 'package:dieklingel_app/media/media_ressource.dart';
-import 'package:dieklingel_app/messaging/mclient.dart';
-import 'package:dieklingel_app/messaging/mclient_state.dart';
-import 'package:dieklingel_app/messaging/mclient_subscribtion.dart';
-import 'package:dieklingel_app/models/ice_server.dart';
-import 'package:dieklingel_app/rtc/rtc_connection_state.dart';
-import 'package:dieklingel_app/rtc/rtc_transceiver.dart';
-import 'package:dieklingel_app/signaling/signaling_message.dart';
-import 'package:dieklingel_app/signaling/signaling_message_type.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
+import 'rtc_connection_state.dart';
+import 'rtc_transceiver.dart';
+
+import '../media/media_ressource.dart';
+import '../messaging/mclient.dart';
+import '../messaging/mclient_state.dart';
+import '../messaging/mclient_subscribtion.dart';
+import '../models/ice_server.dart';
 import '../models/mqtt_uri.dart';
+import '../signaling/signaling_message.dart';
+import '../signaling/signaling_message_type.dart';
 
 class MqttRtcClient extends ChangeNotifier {
   final String username;

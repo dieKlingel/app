@@ -1,11 +1,12 @@
-import 'package:dieklingel_app/views/home_list_view.dart';
-import 'package:dieklingel_app/views/ice_server_list_view.dart';
-import 'package:dieklingel_app/views/about_view.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'components/cupertino_form_row_prefix.dart';
+import 'about_view.dart';
+import 'ice_server_list_view.dart';
+
+import './components/cupertino_form_row_prefix.dart';
+import '../views/home_list_view.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});

@@ -1,10 +1,11 @@
-import 'package:dieklingel_app/models/home.dart';
-import 'package:dieklingel_app/view_models/home_list_view_model.dart';
 import 'package:enough_platform_widgets/cupertino.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
 import 'home_add_view.dart';
+
+import '../models/home.dart';
+import '../view_models/home_list_view_model.dart';
 
 class HomeListView extends StatelessWidget {
   const HomeListView({super.key});

@@ -1,6 +1,7 @@
-import 'package:dieklingel_app/models/home.dart';
-import 'package:dieklingel_app/models/mqtt_uri.dart';
 import 'package:flutter/cupertino.dart';
+
+import '../models/home.dart';
+import '../models/mqtt_uri.dart';
 
 class HomeAddView extends StatefulWidget {
   final Home? home;

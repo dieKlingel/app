@@ -1,8 +1,8 @@
-import 'package:dieklingel_app/models/home.dart';
-import 'package:dieklingel_app/models/ice_server.dart';
-import 'package:dieklingel_app/models/mqtt_uri.dart';
-import 'package:dieklingel_app/view_models/homes_view_model.dart';
-import 'package:dieklingel_app/views/homes_view.dart';
+import './models/home.dart';
+import './models/ice_server.dart';
+import './models/mqtt_uri.dart';
+import './view_models/homes_view_model.dart';
+import './views/homes_view.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';

@@ -1,11 +1,12 @@
 import 'package:audio_session/audio_session.dart';
-import 'package:dieklingel_app/models/home.dart';
-import 'package:dieklingel_app/view_models/homes_view_model.dart';
-import 'package:dieklingel_app/views/settings_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
 import 'home_view.dart';
+import 'settings_view.dart';
+
+import '../models/home.dart';
+import '../view_models/homes_view_model.dart';
 
 class HomesView extends StatefulWidget {
   final HomesViewModel vm;
