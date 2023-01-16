@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'about_view.dart';
 import 'ice_server_list_view.dart';
 
-import './components/cupertino_form_row_prefix.dart';
+import '../components/cupertino_form_row_prefix.dart';
 import '../views/home_list_view.dart';
 
 class SettingsView extends StatelessWidget {
