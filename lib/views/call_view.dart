@@ -105,10 +105,13 @@ class _CallView extends State<CallView> {
         ChangeNotifierProvider.value(
           value: context.read<CallViewModel>().mclient,
           builder: (context, child) {
-            return Icon(
-              (context.watch<MClient>().state == MClientState.connected)
-                  ? CupertinoIcons.check_mark_circled
-                  : CupertinoIcons.clear_circled,
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Icon(
+                (context.watch<MClient>().state == MClientState.connected)
+                    ? CupertinoIcons.check_mark_circled
+                    : CupertinoIcons.clear_circled,
+              ),
             );
           },
         )

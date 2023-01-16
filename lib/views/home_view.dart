@@ -23,8 +23,16 @@ class _HomeView extends State<HomeView> {
 
   @override
   void initState() {
-    _client.connect(widget.home.uri);
+    init();
     super.initState();
+  }
+
+  void init() async {
+    try {
+      await _client.connect(widget.home.uri);
+    } catch (e) {
+      // TODO: handle exception
+    }
   }
 
   @override

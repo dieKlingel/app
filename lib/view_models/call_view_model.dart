@@ -70,19 +70,27 @@ class CallViewModel extends ChangeNotifier {
     await client?.mediaRessource.open(true, false);
     mute();
 
-    await client?.init(
-      iceServers: IceServer.boxx.values.toList(),
-      transceivers: [
-        RtcTransceiver(
-          kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
-          direction: TransceiverDirection.SendRecv,
-        ),
-        RtcTransceiver(
-          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
-          direction: TransceiverDirection.RecvOnly,
-        ),
-      ],
-    );
+    try {
+      await client?.init(
+        iceServers: IceServer.boxx.values.toList(),
+        transceivers: [
+          RtcTransceiver(
+            kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+            direction: TransceiverDirection.SendRecv,
+          ),
+          RtcTransceiver(
+            kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+            direction: TransceiverDirection.RecvOnly,
+          ),
+        ],
+      );
+    } catch (exception) {
+      // TODO: handle exception
+    } finally {
+      _callRequested = false;
+      client = null;
+      notifyListeners();
+    }
 
     String? result = await mclient.get(
       "request/rtc/test/",
