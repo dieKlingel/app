@@ -46,7 +46,7 @@ jobs:
       - name: Run Build Runner
         run: flutter pub run build_runner build
 
-      - name: Run Tests
+      - name: Build web in release mode
         run: flutter build web --release
 
   flutter-build-apk:
@@ -68,7 +68,7 @@ jobs:
       - name: Run Build Runner
         run: flutter pub run build_runner build
 
-      - name: Run Tests
+      - name: Build apk in release mode
         run: flutter build apk --release
 
   flutter-build-ipa:
@@ -90,5 +90,5 @@ jobs:
       - name: Run Build Runner
         run: flutter pub run build_runner build
 
-      - name: Run Tests
+      - name: Build ipa in release mode
         run: flutter build ios --release --no-codesign
