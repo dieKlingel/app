@@ -1,12 +1,14 @@
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:hive/hive.dart';
 
-class IceServerAdapter extends TypeAdapter<IceServer> {
+import '../models/hive_ice_server.dart';
+
+class HiveIceServerAdapter extends TypeAdapter<HiveIceServer> {
   @override
-  IceServer read(BinaryReader reader) {
+  HiveIceServer read(BinaryReader reader) {
     Map<String, dynamic> map = reader.readMap().cast<String, dynamic>();
 
-    IceServer server = IceServer.fromMap(map);
+    HiveIceServer server = HiveIceServer.fromMap(map);
     return server;
   }
 

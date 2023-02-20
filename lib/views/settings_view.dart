@@ -1,4 +1,7 @@
-/* import 'package:enough_platform_widgets/enough_platform_widgets.dart';
+import 'package:dieklingel_app/blocs/home_list_view_bloc.dart';
+import 'package:dieklingel_app/blocs/ice_server_list_view_bloc.dart';
+import 'package:dieklingel_core_shared/flutter_shared.dart';
+import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -28,7 +31,10 @@ class SettingsView extends StatelessWidget {
                   Navigator.push(
                     context,
                     CupertinoPageRoute(
-                      builder: (context) => const HomeListView(),
+                      builder: (context) => BlocProvider(
+                        bloc: HomeListViewBloc(),
+                        child: const HomeListView(),
+                      ),
                     ),
                   );
                 },
@@ -46,7 +52,10 @@ class SettingsView extends StatelessWidget {
                   Navigator.push(
                     context,
                     CupertinoPageRoute(
-                      builder: (context) => const IceServerListView(),
+                      builder: (context) => BlocProvider(
+                        bloc: IceServerListViewBloc(),
+                        child: const IceServerListView(),
+                      ),
                     ),
                   );
                 },
@@ -89,4 +98,3 @@ class SettingsView extends StatelessWidget {
     );
   }
 }
-*/

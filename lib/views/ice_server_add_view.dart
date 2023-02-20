@@ -1,8 +1,9 @@
-import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../models/hive_ice_server.dart';
+
 class IceServerAddView extends StatefulWidget {
-  final IceServer? server;
+  final HiveIceServer? server;
 
   const IceServerAddView({
     super.key,
@@ -35,11 +36,11 @@ class _IceServerAddView extends State<IceServerAddView> {
     if (!_valid) {
       return;
     }
-    IceServer iceServer = widget.server ?? IceServer(urls: _urls.text);
+    HiveIceServer iceServer = widget.server ?? HiveIceServer(urls: _urls.text);
     iceServer.urls = _urls.text;
     iceServer.username = _username.text;
     iceServer.credential = _credential.text;
-    // iceServer.save();
+    iceServer.save();
 
     Navigator.pop(context);
   }

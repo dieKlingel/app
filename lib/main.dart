@@ -1,3 +1,4 @@
+import 'package:dieklingel_app/blocs/homes_view_bloc.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 
 import './models/home.dart';
@@ -10,9 +11,11 @@ import 'package:flutter/foundation.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'hive/home_adapter.dart';
-import 'hive/ice_server_adapter.dart';
+import 'hive/hive_home_adapter.dart';
+import 'hive/hive_ice_server_adapter.dart';
 import 'hive/mqtt_uri_adapter.dart';
+import 'models/hive_home.dart';
+import 'models/hive_ice_server.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,13 +23,13 @@ void main() async {
   await Hive.initFlutter();
   Hive
     ..registerAdapter(MqttUriAdapter())
-    ..registerAdapter(HomeAdapter())
-    ..registerAdapter(IceServerAdapter());
+    ..registerAdapter(HiveHomeAdapter())
+    ..registerAdapter(HiveIceServerAdapter());
 
   await Future.wait([
     Hive.openBox<MqttUri>((MqttUri).toString()),
-    Hive.openBox<Home>((Home).toString()),
-    Hive.openBox<IceServer>((IceServer).toString()),
+    Hive.openBox<HiveHome>((Home).toString()),
+    Hive.openBox<HiveIceServer>((IceServer).toString()),
     Hive.openBox("settings"),
   ]);
 
@@ -80,7 +83,10 @@ class _App extends State<App> {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      home: HomesView(),
+      home: BlocProvider(
+        bloc: HomesViewBloc(),
+        child: HomesView(),
+      ),
     );
   }
 }

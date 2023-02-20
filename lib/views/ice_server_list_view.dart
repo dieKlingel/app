@@ -1,48 +1,52 @@
-/* import 'package:dieklingel_core_shared/flutter_shared.dart';
+import 'package:dieklingel_app/blocs/ice_server_list_view_bloc.dart';
+import 'package:dieklingel_app/models/hive_ice_server.dart';
+import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
 
 import 'ice_server_add_view.dart';
 
-import '../view_models/ice_server_list_view_model.dart';
-
-class IceServerListView extends StatefulWidget {
+class IceServerListView extends StatelessWidget {
   const IceServerListView({super.key});
 
   @override
-  State<IceServerListView> createState() => _IceServerListView();
-}
-
-class _IceServerListView extends State<IceServerListView> {
-  final IceServerListViewModel _vm = IceServerListViewModel();
-
-  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<IceServerListViewModel>(
-      create: (context) => _vm,
-      builder: (context, child) => CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-          middle: const Text("ICE Server's"),
-          trailing: CupertinoButton(
-            padding: EdgeInsets.zero,
-            child: const Icon(CupertinoIcons.add),
-            onPressed: () {
-              Navigator.push(
-                context,
-                CupertinoPageRoute(
-                  builder: (context) => const IceServerAddView(),
-                ),
-              );
-            },
-          ),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text("ICE Server's"),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: const Icon(CupertinoIcons.add),
+          onPressed: () {
+            Navigator.push(
+              context,
+              CupertinoPageRoute(
+                builder: (context) => const IceServerAddView(),
+              ),
+            );
+          },
         ),
-        child: SafeArea(
-          child: Consumer<IceServerListViewModel>(
-            builder: (context, vm, child) => ListView.builder(
-              itemCount: vm.servers.length,
+      ),
+      child: SafeArea(
+        child: StreamBuilder(
+          stream: context.bloc<IceServerListViewBloc>().servers,
+          builder: (
+            BuildContext context,
+            AsyncSnapshot<List<HiveIceServer>> snapshot,
+          ) {
+            if (!snapshot.hasData) {
+              return const Padding(
+                padding: EdgeInsets.all(20),
+                child: CupertinoActivityIndicator(),
+              );
+            }
+
+            List<HiveIceServer> servers = snapshot.data!;
+
+            return ListView.builder(
+              itemCount: servers.length,
               itemBuilder: (context, index) {
-                IceServer server = vm.servers[index];
+                HiveIceServer server = servers[index];
 
                 return Dismissible(
                   key: UniqueKey(),
@@ -62,15 +66,14 @@ class _IceServerListView extends State<IceServerListView> {
                     ),
                   ),
                   onDismissed: (direction) async {
-                    // await server.delete();
+                    await server.delete();
                   },
                 );
               },
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
 }
-*/

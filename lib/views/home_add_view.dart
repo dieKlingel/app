@@ -1,10 +1,9 @@
-/* import 'package:flutter/cupertino.dart';
-
-import '../models/home.dart';
-import '../models/mqtt_uri.dart';
+import 'package:dieklingel_core_shared/flutter_shared.dart';
+import 'package:flutter/cupertino.dart';
+import '../models/hive_home.dart';
 
 class HomeAddView extends StatefulWidget {
-  final Home? home;
+  final HiveHome? home;
 
   const HomeAddView({super.key, this.home});
 
@@ -46,7 +45,7 @@ class _HomeConfigSheet extends State<HomeAddView> {
       ),
     );
 
-    Home home = widget.home ?? Home(name: _name.text, uri: uri);
+    HiveHome home = widget.home ?? HiveHome(name: _name.text, uri: uri);
     home.name = _name.text;
     home.uri = uri;
     home.username = _username.text;
@@ -148,4 +147,3 @@ class _HomeConfigSheet extends State<HomeAddView> {
     );
   }
 }
-*/

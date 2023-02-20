@@ -1,12 +1,14 @@
 import 'package:dieklingel_app/models/home.dart';
 import 'package:hive/hive.dart';
 
-class HomeAdapter extends TypeAdapter<Home> {
+import '../models/hive_home.dart';
+
+class HiveHomeAdapter extends TypeAdapter<HiveHome> {
   @override
-  Home read(BinaryReader reader) {
+  HiveHome read(BinaryReader reader) {
     Map<String, dynamic> map = reader.readMap().cast<String, dynamic>();
 
-    Home home = Home.fromMap(map);
+    HiveHome home = HiveHome.fromMap(map);
     return home;
   }
 
