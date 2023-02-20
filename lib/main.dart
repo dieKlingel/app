@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:dieklingel_app/blocs/homes_view_bloc.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
+import 'package:get_it/get_it.dart';
+import 'package:uuid/uuid.dart';
 
 import './models/home.dart';
 import './views/homes_view.dart';
@@ -19,6 +23,8 @@ import 'models/hive_ice_server.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  GetIt.I.registerSingleton(MqttClientBloc());
 
   await Hive.initFlutter();
   Hive
@@ -70,6 +76,25 @@ class _App extends State<App> {
     if (null == token) return;
     print("Token: $token");
     if (!mounted) return;
+
+    Box<HiveHome> box = Hive.box<HiveHome>((Home).toString());
+    MqttClientBloc bloc = MqttClientBloc();
+    for (HiveHome home in box.values) {
+      // TODO: register to sign
+      Map<String, dynamic> payload = {
+        "token": token,
+        "identifier": "default",
+      };
+      await bloc.disconnect();
+      bloc.uri.add(home.uri);
+      await bloc.state
+          .firstWhere((element) => element == MqttClientState.connected);
+      await bloc.request(
+        "request/apn/register/${const Uuid().v4()}",
+        jsonEncode(payload),
+        timeout: const Duration(seconds: 2),
+      );
+    }
   }
 
   void initialize() {

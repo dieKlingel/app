@@ -9,6 +9,7 @@ import 'package:dieklingel_app/utils/rtc_transceiver.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 
@@ -38,9 +39,8 @@ class _CallView extends State<CallView> {
 
   Future<void> _onCallPressed(BuildContext context) async {
     HomeViewBloc homebloc = context.bloc<HomeViewBloc>();
-    MqttClientBloc mqtt = context.bloc<MqttClientBloc>();
+    MqttClientBloc mqtt = GetIt.I<MqttClientBloc>();
     Box<HiveIceServer> box = Hive.box<HiveIceServer>((IceServer).toString());
-    print(box.values);
     RtcClientWrapper client = await RtcClientWrapper.create(
       iceServers: box.values.toList(),
       transceivers: [
@@ -153,7 +153,7 @@ class _CallView extends State<CallView> {
 
   Widget _callButton(BuildContext context) {
     return StreamBuilder(
-      stream: context.bloc<MqttClientBloc>().state,
+      stream: GetIt.I<MqttClientBloc>().state,
       builder: (
         BuildContext context,
         AsyncSnapshot<MqttClientState> snapshot,
@@ -241,7 +241,7 @@ class _CallView extends State<CallView> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: StreamBuilder(
-            stream: context.bloc<MqttClientBloc>().state,
+            stream: GetIt.I<MqttClientBloc>().state,
             builder: (BuildContext context,
                 AsyncSnapshot<MqttClientState> snapshot) {
               if (snapshot.hasData &&

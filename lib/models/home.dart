@@ -68,4 +68,9 @@ class Home {
 
   @override
   int get hashCode => Object.hash(name, uri, username, password);
+
+  @override
+  String toString() {
+    return "Home -> name: $name";
+  }
 }

@@ -3,6 +3,7 @@ import 'package:dieklingel_app/blocs/home_view_bloc.dart';
 import 'package:dieklingel_app/blocs/homes_view_bloc.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:get_it/get_it.dart';
 
 import 'home_view.dart';
 import 'settings_view.dart';
@@ -33,7 +34,7 @@ class HomesView extends StatelessWidget {
   }
 
   void _onHomePressed(BuildContext context, Home home) async {
-    MqttClientBloc mqttbloc = MqttClientBloc();
+    MqttClientBloc mqttbloc = GetIt.I<MqttClientBloc>();
     mqttbloc.usernanme.add(home.username ?? "");
     mqttbloc.password.add(home.password ?? "");
     mqttbloc.uri.add(home.uri);
@@ -54,7 +55,6 @@ class HomesView extends StatelessWidget {
       CupertinoPageRoute(
         builder: (context) => MultiBlocProvider(
           blocs: [
-            BlocProvider(bloc: mqttbloc),
             BlocProvider(bloc: homebloc),
           ],
           child: const HomeView(),
