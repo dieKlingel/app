@@ -1,8 +1,10 @@
 import 'package:audio_session/audio_session.dart';
+import 'package:dieklingel_app/blocs/home_view_bloc.dart';
 import 'package:dieklingel_app/blocs/homes_view_bloc.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'home_view.dart';
 import 'settings_view.dart';
 
 import '../models/home.dart';
@@ -41,8 +43,26 @@ class HomesView extends StatelessWidget {
   }
 
   void _onHomePressed(BuildContext context, Home home) async {
-    /* Navigator.push(context,
-        CupertinoPageRoute(builder: ((context) => HomeView(home: home))));*/
+    MqttClientBloc mqttbloc = MqttClientBloc();
+    mqttbloc.usernanme.add(home.username ?? "");
+    mqttbloc.password.add(home.password ?? "");
+    mqttbloc.uri.add(home.uri);
+
+    HomeViewBloc homebloc = HomeViewBloc();
+    homebloc.home.add(home);
+
+    Navigator.push(
+      context,
+      CupertinoPageRoute(
+        builder: (context) => MultiBlocProvider(
+          blocs: [
+            BlocProvider(bloc: mqttbloc),
+            BlocProvider(bloc: homebloc),
+          ],
+          child: HomeView(),
+        ),
+      ),
+    );
   }
 
   Widget _body(BuildContext context) {

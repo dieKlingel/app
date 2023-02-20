@@ -1,26 +1,33 @@
-/* import 'package:flutter/cupertino.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:provider/provider.dart';
+import 'dart:async';
+import 'dart:convert';
 
+import 'package:dieklingel_app/blocs/home_view_bloc.dart';
+import 'package:dieklingel_app/models/hive_home.dart';
+import 'package:dieklingel_app/models/hive_ice_server.dart';
+import 'package:dieklingel_app/utils/mqtt_channel.dart';
+import 'package:dieklingel_app/utils/rtc_client_wrapper.dart';
+import 'package:dieklingel_app/utils/rtc_transceiver.dart';
+import 'package:dieklingel_core_shared/flutter_shared.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
+
+import '../models/home.dart';
+import '../signaling/signaling_message.dart';
+import '../signaling/signaling_message_type.dart';
 import 'message_view.dart';
 
-import '../messaging/mclient.dart';
-import '../messaging/mclient_state.dart';
-import '../view_models/call_view_model.dart';
-
 class CallView extends StatefulWidget {
-  final CallViewModel vm;
-
-  const CallView({
-    required this.vm,
-    super.key,
-  });
+  const CallView({super.key});
 
   @override
   State<StatefulWidget> createState() => _CallView();
 }
 
 class _CallView extends State<CallView> {
+  RtcClientWrapper? wrapper;
+
   void _onMessagePressed(BuildContext context) {
     Navigator.push(
       context,
@@ -30,13 +37,101 @@ class _CallView extends State<CallView> {
     );
   }
 
+  Future<void> _onCallPressed(BuildContext context) async {
+    HomeViewBloc homebloc = context.bloc<HomeViewBloc>();
+    MqttClientBloc mqtt = context.bloc<MqttClientBloc>();
+    Box<HiveIceServer> box = Hive.box<HiveIceServer>((IceServer).toString());
+    RtcClientWrapper client = await RtcClientWrapper.create(
+      iceServers: box.values.toList(),
+      transceivers: [
+        RtcTransceiver(
+          kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+          direction: TransceiverDirection.SendRecv,
+        ),
+        RtcTransceiver(
+          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+          direction: TransceiverDirection.RecvOnly,
+        )
+      ],
+    );
+    setState(() {
+      wrapper = client;
+    });
+    String uuid = const Uuid().v4();
+    MqttChannel channel = MqttChannel("rtc/$uuid");
+    String invite = channel.append("invite").toString();
+    String answer = channel.append("answer").toString();
+
+    StreamSubscription subscription = mqtt.watch(answer).listen(
+      (event) {
+        SignalingMessage message = SignalingMessage.fromJson(
+          jsonDecode(event.value),
+        );
+
+        client.addMessage(message);
+      },
+    );
+
+    client.onMessage(
+      (SignalingMessage message) {
+        if (message.type == SignalingMessageType.leave ||
+            message.type == SignalingMessageType.error) {
+          subscription.cancel();
+          client.dispose();
+        }
+
+        mqtt.message.add(
+          ChannelMessage(
+            invite,
+            jsonEncode(message.toJson()),
+          ),
+        );
+      },
+    );
+
+    client.renderer.onFirstFrameRendered = () {
+      // emit setState as soon,as the first frame is renderd, to update the ui
+      setState(() {});
+    };
+
+    await client.ressource.open(true, false);
+    Home home = await homebloc.home.stream.first;
+    MqttChannel rtcChannel = MqttChannel(
+      home.uri.channel,
+    ).append(channel.toString());
+
+    MqttUri rtcUri = home.uri.copyWith(channel: rtcChannel.toString());
+
+    String? result = await mqtt.request(
+      "request/rtc/${const Uuid().v4()}",
+      jsonEncode(rtcUri.toMap()),
+    );
+
+    if (result != "OK") {
+      client.close();
+      setState(() {
+        wrapper = null;
+      });
+      return;
+    }
+
+    await client.open();
+  }
+
+  Future<void> _onHangupPressed(BuildContext context) async {
+    await wrapper?.close();
+    setState(() {
+      wrapper = null;
+    });
+  }
+
   Widget _video(BuildContext context) {
-    RTCVideoRenderer? renderer =
-        context.watch<CallViewModel>().client?.rtcVideoRenderer;
+    RTCVideoRenderer? renderer = wrapper?.renderer;
     if (renderer == null) {
       return Container();
     }
-    if (context.watch<CallViewModel>().isCallRequested) {
+    if (wrapper?.connection.connectionState !=
+        RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
       return const Center(
         child: CupertinoActivityIndicator(),
       );
@@ -46,8 +141,58 @@ class _CallView extends State<CallView> {
     );
   }
 
+  Widget _callButton(BuildContext context) {
+    return StreamBuilder(
+      stream: context.bloc<MqttClientBloc>().state,
+      builder: (
+        BuildContext context,
+        AsyncSnapshot<MqttClientState> snapshot,
+      ) {
+        if (snapshot.data != MqttClientState.connected) {
+          return const CupertinoButton(
+            onPressed: null,
+            child: Icon(CupertinoIcons.phone),
+          );
+        }
+
+        return CupertinoButton(
+          onPressed: wrapper == null
+              ? () => _onCallPressed(context)
+              : () => _onHangupPressed(context),
+          child: Icon(
+            wrapper == null
+                ? CupertinoIcons.phone
+                : CupertinoIcons.phone_arrow_down_left,
+            size: 35,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _micButton(BuildContext context) {
+    if (wrapper == null) {
+      return const CupertinoButton(
+        onPressed: null,
+        child: Icon(
+          CupertinoIcons.mic_off,
+          size: 35,
+        ),
+      );
+    }
+
+    return CupertinoButton(
+      onPressed: () {
+        // TODO: toogle mic
+      },
+      child: const Icon(
+        CupertinoIcons.mic_off,
+        size: 35,
+      ),
+    );
+  }
+
   Widget _toolbar(BuildContext context) {
-    CallViewModel vm = context.watch<CallViewModel>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       mainAxisSize: MainAxisSize.max,
@@ -57,28 +202,8 @@ class _CallView extends State<CallView> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              CupertinoButton(
-                onPressed: vm.isConnected ? () => vm.hangup() : () => vm.call(),
-                child: Icon(
-                  vm.isConnected
-                      ? CupertinoIcons.phone_arrow_down_left
-                      : CupertinoIcons.phone,
-                  size: 35,
-                ),
-              ),
-              CupertinoButton(
-                onPressed: !vm.isConnected
-                    ? null
-                    : vm.isMuted
-                        ? () => vm.unmute()
-                        : () => vm.mute(),
-                child: Icon(
-                  vm.isMuted || !vm.isConnected
-                      ? CupertinoIcons.mic_off
-                      : CupertinoIcons.mic,
-                  size: 35,
-                ),
-              ),
+              _callButton(context),
+              _micButton(context),
               const CupertinoButton(
                 onPressed: null,
                 child: Icon(
@@ -103,18 +228,19 @@ class _CallView extends State<CallView> {
   Widget _taskbar(BuildContext context) {
     return Row(
       children: [
-        ChangeNotifierProvider.value(
-          value: context.read<CallViewModel>().mclient,
-          builder: (context, child) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(
-                (context.watch<MClient>().state == MClientState.connected)
-                    ? CupertinoIcons.check_mark_circled
-                    : CupertinoIcons.clear_circled,
-              ),
-            );
-          },
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: StreamBuilder(
+            stream: context.bloc<MqttClientBloc>().state,
+            builder: (BuildContext context,
+                AsyncSnapshot<MqttClientState> snapshot) {
+              if (snapshot.hasData &&
+                  snapshot.data == MqttClientState.connected) {
+                return const Icon(CupertinoIcons.check_mark_circled);
+              }
+              return const Icon(CupertinoIcons.clear_circled);
+            },
+          ),
         )
       ],
     );
@@ -122,27 +248,24 @@ class _CallView extends State<CallView> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: widget.vm,
-      builder: (context, child) => CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-          middle: Text(context.watch<CallViewModel>().home.name),
-          trailing: CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: () => _onMessagePressed(context),
-            child: const Icon(
-              CupertinoIcons.pencil_ellipsis_rectangle,
-            ),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text("gallo"),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => _onMessagePressed(context),
+          child: const Icon(
+            CupertinoIcons.pencil_ellipsis_rectangle,
           ),
         ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              _video(context),
-              _taskbar(context),
-              _toolbar(context),
-            ],
-          ),
+      ),
+      child: SafeArea(
+        child: Stack(
+          children: [
+            _video(context),
+            _taskbar(context),
+            _toolbar(context),
+          ],
         ),
       ),
     );
@@ -150,8 +273,6 @@ class _CallView extends State<CallView> {
 
   @override
   void dispose() {
-    widget.vm.hangup();
     super.dispose();
   }
 }
-*/

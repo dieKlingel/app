@@ -18,9 +18,11 @@ class HiveHome extends Home with HiveObjectMixin {
       throw "Cannot create Home from Map without uri";
     }
 
+    MqttUri uri = MqttUri.fromMap((map["uri"] as Map<dynamic, dynamic>).cast());
+
     return HiveHome(
       name: map["name"],
-      uri: MqttUri.fromMap(map["uri"]),
+      uri: uri,
       username: map["username"],
       password: map["password"],
     );

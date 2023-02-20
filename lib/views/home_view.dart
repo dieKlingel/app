@@ -1,25 +1,16 @@
-/* import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'call_view.dart';
 import 'history_view.dart';
 
-import '../models/home.dart';
-
 class HomeView extends StatefulWidget {
-  final Home home;
-
-  const HomeView({required this.home, super.key});
+  const HomeView({super.key});
 
   @override
   State<StatefulWidget> createState() => _HomeView();
 }
 
 class _HomeView extends State<HomeView> {
-  late final CallViewModel _callViewModel = CallViewModel(
-    home: widget.home,
-    mclient: _client,
-  );
-
   @override
   void initState() {
     init();
@@ -27,11 +18,11 @@ class _HomeView extends State<HomeView> {
   }
 
   void init() async {
-    try {
+    /* try {
       await _client.connect(widget.home.uri);
     } catch (e) {
       // TODO: handle exception
-    }
+    }*/
   }
 
   @override
@@ -50,12 +41,9 @@ class _HomeView extends State<HomeView> {
       tabBuilder: (context, index) {
         switch (index) {
           case 0:
-            return CallView(vm: _callViewModel);
+            return const CallView();
           case 1:
-            return HistoryView(
-              home: widget.home,
-              client: _client,
-            );
+            return const HistoryView();
         }
 
         return const Center(
@@ -65,4 +53,3 @@ class _HomeView extends State<HomeView> {
     );
   }
 }
-*/

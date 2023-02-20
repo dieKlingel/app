@@ -1,15 +1,9 @@
-/* import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'message_view.dart';
 
-import '../messaging/mclient.dart';
-import '../models/home.dart';
-
 class HistoryView extends StatefulWidget {
-  final Home home;
-  final MClient client;
-
-  const HistoryView({required this.home, required this.client, super.key});
+  const HistoryView({super.key});
 
   @override
   State<StatefulWidget> createState() => _HistoryView();
@@ -29,7 +23,7 @@ class _HistoryView extends State<HistoryView> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text(widget.home.name),
+        middle: Text("Comming soon!"),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => _onMessagePressed(context),
@@ -44,4 +38,3 @@ class _HistoryView extends State<HistoryView> {
     );
   }
 }
-*/

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -109,6 +111,17 @@ class RtcClientWrapper {
 
   void onMessage(void Function(SignalingMessage) handler) {
     _onMessage = handler;
+  }
+
+  Future<void> open() async {
+    RTCSessionDescription offer = await connection.createOffer();
+    await connection.setLocalDescription(offer);
+
+    SignalingMessage message = SignalingMessage();
+    message.type = SignalingMessageType.offer;
+    message.data = offer.toMap();
+
+    _onMessage?.call(message);
   }
 
   Future<void> close() async {
