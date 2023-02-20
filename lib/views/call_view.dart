@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dieklingel_app/blocs/home_view_bloc.dart';
-import 'package:dieklingel_app/models/hive_home.dart';
 import 'package:dieklingel_app/models/hive_ice_server.dart';
 import 'package:dieklingel_app/utils/mqtt_channel.dart';
 import 'package:dieklingel_app/utils/rtc_client_wrapper.dart';
@@ -41,6 +40,7 @@ class _CallView extends State<CallView> {
     HomeViewBloc homebloc = context.bloc<HomeViewBloc>();
     MqttClientBloc mqtt = context.bloc<MqttClientBloc>();
     Box<HiveIceServer> box = Hive.box<HiveIceServer>((IceServer).toString());
+    print(box.values);
     RtcClientWrapper client = await RtcClientWrapper.create(
       iceServers: box.values.toList(),
       transceivers: [
@@ -130,14 +130,24 @@ class _CallView extends State<CallView> {
     if (renderer == null) {
       return Container();
     }
-    if (wrapper?.connection.connectionState !=
-        RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
-      return const Center(
-        child: CupertinoActivityIndicator(),
-      );
-    }
-    return InteractiveViewer(
-      child: RTCVideoView(renderer),
+
+    return ValueListenableBuilder(
+      valueListenable: wrapper!.state,
+      builder: (
+        BuildContext context,
+        RTCPeerConnectionState state,
+        Widget? child,
+      ) {
+        if (wrapper?.connection.connectionState !=
+            RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
+          return const Center(
+            child: CupertinoActivityIndicator(),
+          );
+        }
+        return InteractiveViewer(
+          child: RTCVideoView(renderer),
+        );
+      },
     );
   }
 
@@ -250,7 +260,15 @@ class _CallView extends State<CallView> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text("gallo"),
+        middle: StreamBuilder(
+          stream: context.bloc<HomeViewBloc>().home.stream,
+          builder: (BuildContext context, AsyncSnapshot<Home> snapshot) {
+            if (!snapshot.hasData) {
+              return const Text("loading...");
+            }
+            return Text(snapshot.data!.name);
+          },
+        ),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => _onMessagePressed(context),
@@ -273,6 +291,7 @@ class _CallView extends State<CallView> {
 
   @override
   void dispose() {
+    wrapper?.close();
     super.dispose();
   }
 }

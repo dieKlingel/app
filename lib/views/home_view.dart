@@ -3,27 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'call_view.dart';
 import 'history_view.dart';
 
-class HomeView extends StatefulWidget {
+class HomeView extends StatelessWidget {
   const HomeView({super.key});
-
-  @override
-  State<StatefulWidget> createState() => _HomeView();
-}
-
-class _HomeView extends State<HomeView> {
-  @override
-  void initState() {
-    init();
-    super.initState();
-  }
-
-  void init() async {
-    /* try {
-      await _client.connect(widget.home.uri);
-    } catch (e) {
-      // TODO: handle exception
-    }*/
-  }
 
   @override
   Widget build(BuildContext context) {

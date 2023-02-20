@@ -23,7 +23,7 @@ class _HistoryView extends State<HistoryView> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text("Comming soon!"),
+        middle: const Text("Comming soon!"),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => _onMessagePressed(context),

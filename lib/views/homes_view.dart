@@ -12,16 +12,6 @@ import '../models/home.dart';
 class HomesView extends StatelessWidget {
   const HomesView({super.key});
 
-  void _init() async {
-    /* TODO: Hotfix: AudioSession
-    Do this, so the mic starts the first time we use navigator.mediaDevices
-    caues by this issue: https://github.com/flutter-webrtc/flutter-webrtc/issues/1094
-    */
-    AudioSession.instance.then((session) {
-      session.configure(const AudioSessionConfiguration.speech());
-    });
-  }
-
   void _onSettingsBtnPressed(BuildContext context) {
     Navigator.push(
       context,
@@ -51,6 +41,14 @@ class HomesView extends StatelessWidget {
     HomeViewBloc homebloc = HomeViewBloc();
     homebloc.home.add(home);
 
+    /* TODO: Hotfix: AudioSession
+    Do this, so the mic starts the first time we use navigator.mediaDevices
+    caues by this issue: https://github.com/flutter-webrtc/flutter-webrtc/issues/1094
+    */
+    AudioSession.instance.then((session) {
+      session.configure(const AudioSessionConfiguration.speech());
+    });
+
     Navigator.push(
       context,
       CupertinoPageRoute(
@@ -59,7 +57,7 @@ class HomesView extends StatelessWidget {
             BlocProvider(bloc: mqttbloc),
             BlocProvider(bloc: homebloc),
           ],
-          child: HomeView(),
+          child: const HomeView(),
         ),
       ),
     );

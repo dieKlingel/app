@@ -85,7 +85,7 @@ class _App extends State<App> {
     return CupertinoApp(
       home: BlocProvider(
         bloc: HomesViewBloc(),
-        child: HomesView(),
+        child: const HomesView(),
       ),
     );
   }

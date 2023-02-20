@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -15,11 +13,16 @@ class RtcClientWrapper {
   final List<IceServer> servers;
   final List<RtcTransceiver> transceivers;
   late final RTCPeerConnection connection;
+  final _state = ValueNotifier<RTCPeerConnectionState>(
+    RTCPeerConnectionState.RTCPeerConnectionStateDisconnected,
+  );
   bool _isDisposed = false;
 
   void Function(SignalingMessage)? _onMessage;
 
   RtcClientWrapper._(this.servers, this.transceivers);
+
+  ValueNotifier<RTCPeerConnectionState> get state => _state;
 
   static Future<RtcClientWrapper> create({
     List<IceServer> iceServers = const [],
@@ -60,6 +63,9 @@ class RtcClientWrapper {
   }
 
   void addMessage(SignalingMessage message) async {
+    if (_isDisposed) {
+      return;
+    }
     switch (message.type) {
       case SignalingMessageType.offer:
         MediaStream? stream = ressource.stream;
@@ -110,10 +116,16 @@ class RtcClientWrapper {
   }
 
   void onMessage(void Function(SignalingMessage) handler) {
+    if (_isDisposed) {
+      return;
+    }
     _onMessage = handler;
   }
 
   Future<void> open() async {
+    if (_isDisposed) {
+      return;
+    }
     RTCSessionDescription offer = await connection.createOffer();
     await connection.setLocalDescription(offer);
 
@@ -125,6 +137,9 @@ class RtcClientWrapper {
   }
 
   Future<void> close() async {
+    if (_isDisposed) {
+      return;
+    }
     SignalingMessage message = SignalingMessage()
       ..type = SignalingMessageType.leave;
 
@@ -150,6 +165,7 @@ class RtcClientWrapper {
   }
 
   void _onConnectionState(RTCPeerConnectionState state) {
+    _state.value = state;
     switch (state) {
       case RTCPeerConnectionState.RTCPeerConnectionStateFailed:
       case RTCPeerConnectionState.RTCPeerConnectionStateDisconnected:

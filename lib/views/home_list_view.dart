@@ -69,8 +69,7 @@ class HomeListView extends StatelessWidget {
                   ),
                 ),
                 onDismissed: (direction) async {
-                  // TODO: delete home
-                  //await home.delete();
+                  await home.delete();
                 },
               );
             },

@@ -25,6 +25,5 @@ class HomesViewBloc extends Bloc {
   void dispose() {
     _subscription.cancel();
     _homes.close();
-    // TODO: implement dispose
   }
 }
