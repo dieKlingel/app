@@ -1,11 +1,9 @@
-import 'package:flutter/cupertino.dart';
+/* import 'package:flutter/cupertino.dart';
 
 import 'call_view.dart';
 import 'history_view.dart';
 
-import '../messaging/mclient.dart';
 import '../models/home.dart';
-import '../view_models/call_view_model.dart';
 
 class HomeView extends StatefulWidget {
   final Home home;
@@ -17,7 +15,6 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeView extends State<HomeView> {
-  final MClient _client = MClient();
   late final CallViewModel _callViewModel = CallViewModel(
     home: widget.home,
     mclient: _client,
@@ -68,3 +65,4 @@ class _HomeView extends State<HomeView> {
     );
   }
 }
+*/

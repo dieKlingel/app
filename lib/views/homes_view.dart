@@ -6,13 +6,9 @@ import 'home_view.dart';
 import 'settings_view.dart';
 
 import '../models/home.dart';
-import '../view_models/homes_view_model.dart';
 
 class HomesView extends StatefulWidget {
-  final HomesViewModel vm;
-
   const HomesView({
-    required this.vm,
     Key? key,
   }) : super(key: key);
 
@@ -38,12 +34,12 @@ class _HomePage extends State<HomesView> {
   }
 
   void _onSettingsBtnPressed() {
-    Navigator.push(
+    /* Navigator.push(
       context,
       CupertinoPageRoute(
         builder: (context) => const SettingsView(),
       ),
-    );
+    );*/
   }
 
   Widget _header(BuildContext context) {
@@ -58,14 +54,14 @@ class _HomePage extends State<HomesView> {
   }
 
   void _onHomePressed(BuildContext context, Home home) async {
-    Navigator.push(context,
-        CupertinoPageRoute(builder: ((context) => HomeView(home: home))));
+    /* Navigator.push(context,
+        CupertinoPageRoute(builder: ((context) => HomeView(home: home))));*/
   }
 
   Widget _body(BuildContext context) {
-    List<Home> homes = context.watch<HomesViewModel>().homes;
+    return Text("center");
 
-    return SliverSafeArea(
+    /* return SliverSafeArea(
       top: false,
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
@@ -99,12 +95,13 @@ class _HomePage extends State<HomesView> {
           },
         ),
       ),
-    );
+    );*/
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
+    return Text("build");
+    /* return ChangeNotifierProvider.value(
       value: widget.vm,
       builder: (context, child) => CupertinoPageScaffold(
         child: CustomScrollView(
@@ -114,6 +111,6 @@ class _HomePage extends State<HomesView> {
           ],
         ),
       ),
-    );
+    );**/
   }
 }

@@ -1,27 +1,9 @@
-import 'package:flutter/cupertino.dart';
-import 'package:hive/hive.dart';
+import 'package:dieklingel_core_shared/flutter_shared.dart';
 
-import 'mqtt_uri.dart';
-
-part 'home.g.dart';
-
-@HiveType(typeId: 1)
-class Home extends HiveObject with ChangeNotifier {
-  static Box<Home> get boxx {
-    Box<Home> box = Hive.box((Home).toString());
-    return box;
-  }
-
-  @HiveField(0)
+class Home {
   String name;
-
-  @HiveField(1)
   MqttUri uri;
-
-  @HiveField(2)
   String? username;
-
-  @HiveField(3)
   String? password;
 
   Home({
@@ -31,13 +13,29 @@ class Home extends HiveObject with ChangeNotifier {
     this.password,
   });
 
-  @override
-  Future<void> save() async {
-    if (isInBox) {
-      await super.save();
-      return;
+  factory Home.fromMap(Map<String, dynamic> map) {
+    if (!map.containsKey("name")) {
+      throw "Cannot create Home from Map without name";
     }
-    await boxx.add(this);
+    if (!map.containsKey("uri")) {
+      throw "Cannot create Home from Map without uri";
+    }
+
+    return Home(
+      name: map["name"],
+      uri: MqttUri.fromMap(map["uri"]),
+      username: map["username"],
+      password: map["password"],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      "name": name,
+      "uri": uri.toMap(),
+      "username": username,
+      "password": password,
+    };
   }
 
   Home copy() {

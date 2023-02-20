@@ -1,10 +1,10 @@
+/* import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
 import 'ice_server_add_view.dart';
 
-import '../models/ice_server.dart';
 import '../view_models/ice_server_list_view_model.dart';
 
 class IceServerListView extends StatefulWidget {
@@ -62,7 +62,7 @@ class _IceServerListView extends State<IceServerListView> {
                     ),
                   ),
                   onDismissed: (direction) async {
-                    await server.delete();
+                    // await server.delete();
                   },
                 );
               },
@@ -73,3 +73,4 @@ class _IceServerListView extends State<IceServerListView> {
     );
   }
 }
+*/

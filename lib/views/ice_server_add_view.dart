@@ -1,6 +1,5 @@
+import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/cupertino.dart';
-
-import '../models/ice_server.dart';
 
 class IceServerAddView extends StatefulWidget {
   final IceServer? server;
@@ -40,7 +39,7 @@ class _IceServerAddView extends State<IceServerAddView> {
     iceServer.urls = _urls.text;
     iceServer.username = _username.text;
     iceServer.credential = _credential.text;
-    iceServer.save();
+    // iceServer.save();
 
     Navigator.pop(context);
   }

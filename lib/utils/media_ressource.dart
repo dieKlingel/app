@@ -1,16 +1,12 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
-import 'media_ressource.dart';
-
-class MediaRessourceImpl implements MediaRessource {
+class MediaRessource {
   MediaStream? _stream;
 
-  @override
   MediaStream? get stream {
     return _stream;
   }
 
-  @override
   Future<MediaStream?> open(bool audio, bool video) async {
     if (null != _stream) return _stream;
     Map<String, bool> constraints = {
@@ -21,7 +17,6 @@ class MediaRessourceImpl implements MediaRessource {
     return _stream;
   }
 
-  @override
   void close() {
     _stream?.getTracks().forEach((track) {
       track.stop();

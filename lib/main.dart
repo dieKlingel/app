@@ -1,7 +1,6 @@
+import 'package:dieklingel_core_shared/flutter_shared.dart';
+
 import './models/home.dart';
-import './models/ice_server.dart';
-import './models/mqtt_uri.dart';
-import './view_models/homes_view_model.dart';
 import './views/homes_view.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -11,6 +10,9 @@ import 'package:flutter/foundation.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'hive/home_adapter.dart';
+import 'hive/ice_server_adapter.dart';
+import 'hive/mqtt_uri_adapter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,7 +80,7 @@ class _App extends State<App> {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      home: HomesView(vm: HomesViewModel()),
+      home: HomesView(),
     );
   }
 }
