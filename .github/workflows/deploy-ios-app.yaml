@@ -43,6 +43,12 @@ jobs:
       - name: Install Pubs
         run: flutter pub get
 
+      - name: Install Pods
+        run: |
+          cd ios
+          pod install
+          cd ../
+
       - name: Build ipa in release mode
         run: flutter build ipa --release
 
