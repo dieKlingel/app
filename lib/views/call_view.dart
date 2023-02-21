@@ -89,11 +89,6 @@ class _CallView extends State<CallView> {
       },
     );
 
-    client.renderer.onFirstFrameRendered = () {
-      // emit setState as soon,as the first frame is renderd, to update the ui
-      setState(() {});
-    };
-
     await client.ressource.open(true, false);
     Home home = await homebloc.home.stream.first;
     MqttChannel rtcChannel = MqttChannel(
@@ -161,7 +156,10 @@ class _CallView extends State<CallView> {
         if (snapshot.data != MqttClientState.connected) {
           return const CupertinoButton(
             onPressed: null,
-            child: Icon(CupertinoIcons.phone),
+            child: Icon(
+              CupertinoIcons.phone,
+              size: 35,
+            ),
           );
         }
 

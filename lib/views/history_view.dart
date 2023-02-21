@@ -32,8 +32,16 @@ class _HistoryView extends State<HistoryView> {
           ),
         ),
       ),
-      child: const Center(
-        child: Text("Event history will be available soon."),
+      child: Center(
+        child: Text(
+          "Event history will be available soon.",
+          style: TextStyle(
+            color: CupertinoDynamicColor.resolve(
+              CupertinoColors.label,
+              context,
+            ),
+          ),
+        ),
       ),
     );
   }

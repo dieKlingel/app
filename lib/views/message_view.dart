@@ -12,8 +12,8 @@ class MessageView extends StatefulWidget {
 class _MessageView extends State<MessageView> {
   @override
   Widget build(BuildContext context) {
-    return const CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(
         middle: Text("New Notification"),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
@@ -22,7 +22,15 @@ class _MessageView extends State<MessageView> {
         ),
       ),
       child: Center(
-        child: Text("Sending a notification will be available soon."),
+        child: Text(
+          "Sending a notification will be available soon.",
+          style: TextStyle(
+            color: CupertinoDynamicColor.resolve(
+              CupertinoColors.label,
+              context,
+            ),
+          ),
+        ),
       ),
     );
   }

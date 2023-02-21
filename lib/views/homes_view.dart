@@ -96,13 +96,24 @@ class HomesView extends StatelessWidget {
                         horizontal: 14.0,
                       ),
                       decoration: BoxDecoration(
-                        color: CupertinoColors.secondarySystemBackground,
+                        color: CupertinoDynamicColor.resolve(
+                          CupertinoColors.secondarySystemBackground,
+                          context,
+                        ),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(home.name),
+                          Text(
+                            home.name,
+                            style: TextStyle(
+                              color: CupertinoDynamicColor.resolve(
+                                CupertinoColors.label,
+                                context,
+                              ),
+                            ),
+                          ),
                           const Icon(CupertinoIcons.chevron_forward),
                         ],
                       ),

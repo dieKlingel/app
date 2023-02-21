@@ -3,6 +3,7 @@ import 'package:dieklingel_app/models/hive_ice_server.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import 'ice_server_add_view.dart';
 
@@ -50,6 +51,18 @@ class IceServerListView extends StatelessWidget {
 
                 return Dismissible(
                   key: UniqueKey(),
+                  background: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    child: const Padding(
+                      padding: EdgeInsets.only(right: 8.0),
+                      child: Icon(
+                        CupertinoIcons.trash,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  direction: DismissDirection.endToStart,
                   child: CupertinoInkWell(
                     onTap: () {
                       Navigator.push(

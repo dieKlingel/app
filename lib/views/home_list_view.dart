@@ -2,6 +2,7 @@ import 'package:dieklingel_app/blocs/home_list_view_bloc.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:enough_platform_widgets/cupertino.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import '../models/hive_home.dart';
 import 'home_add_view.dart';
@@ -61,6 +62,21 @@ class HomeListView extends StatelessWidget {
 
               return Dismissible(
                 key: UniqueKey(),
+                background: Container(
+                  color: Colors.red,
+                  alignment: Alignment.centerRight,
+                  child: const Padding(
+                    padding: EdgeInsets.only(right: 8.0),
+                    child: Icon(
+                      CupertinoIcons.trash,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                direction: DismissDirection.endToStart,
+                onDismissed: (direction) async {
+                  await home.delete();
+                },
                 child: CupertinoInkWell(
                   onTap: () => _onHomeEditViewPressed(context, home),
                   child: CupertinoFormRow(
@@ -68,9 +84,6 @@ class HomeListView extends StatelessWidget {
                     child: const Icon(CupertinoIcons.forward),
                   ),
                 ),
-                onDismissed: (direction) async {
-                  await home.delete();
-                },
               );
             },
           );
