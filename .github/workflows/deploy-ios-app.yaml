@@ -1,0 +1,41 @@
+
+name: Build, sign and deploy the ios app to TestFlight.
+on:
+  push:
+    branches:
+      - feature/ci-ipa
+jobs:
+  deploy-webapp:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.7.3'
+          channel: 'stable'
+
+      - name: Install the Apple certificate and provisioning profile
+        env:
+          APPLE_DISTRIBUTION_CERTIFICATE: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE }}
+          APPLE_DISTRIBUTION_CERTIFICATE_PW: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PW }}
+          KEYCHAIN_PW: ${{ secrets.KEYCHAIN_PW }}
+        run: |
+          # import certificates
+          echo $APPLE_DISTRIBUTION_CERTIFICATE | base64 --decode --output certificate.p12
+          security create-keychain -p "$KEYCHAIN_PW" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PW" build.keychain
+          security import certificate.p12 -k build.keychain -P $APPLE_DISTRIBUTION_CERTIFICATE_PW -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PW" build.keychain
+
+      - name: Install Pubs
+        run: flutter pub get
+
+      - name: Build ipa in release mode
+        run: flutter build ipa --release
+
+      - name: Clean up keychain and provisioning profile
+        if: ${{ always() }}
+        run: |
+          security delete-keychain build.keychain
