@@ -25,8 +25,8 @@ jobs:
         run: |
           # import certificates
           echo $APPLE_DISTRIBUTION_CERTIFICATE | base64 --decode --output certificate.p12
-          echo $PROVISIONING_PROFILE | base64 --decode --output com_dieklingel_app.mobileprovision
-          echo $PROVISIONING_PROFILE_IMAGE_NOTIFICATION | base64 --decode --output com_dieklingel_app_ImageNotification.mobileprovision
+          echo $PROVISIONING_PROFILE | base64 --decode --output pp.mobileprovision
+          echo $PROVISIONING_PROFILE_IMAGE_NOTIFICATION | base64 --decode --output pp_ext.mobileprovision
           security create-keychain -p "$KEYCHAIN_PW" build.keychain
           security set-keychain-settings -lut 21600 build.keychain
           security unlock-keychain -p "$KEYCHAIN_PW" build.keychain
@@ -35,8 +35,8 @@ jobs:
           security list-keychain -d user -s build.keychain
           # profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp com_dieklingel_app.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles
-          cp com_dieklingel_app_ImageNotification.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles
+          cp pp.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles
+          cp pp_ext.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles
 
       - name: Install Pubs
         run: flutter pub get
@@ -48,5 +48,5 @@ jobs:
         if: ${{ always() }}
         run: |
           security delete-keychain build.keychain
-          rm ~/Library/MobileDevice/Provisioning\ Profiles/com_dieklingel_app.mobileprovision
-          rm ~/Library/MobileDevice/Provisioning\ Profiles/com_dieklingel_app_ImageNotification.mobileprovision
+          rm ~/Library/MobileDevice/Provisioning\ Profiles/pp.mobileprovision
+          rm ~/Library/MobileDevice/Provisioning\ Profiles/pp_ext.mobileprovision
