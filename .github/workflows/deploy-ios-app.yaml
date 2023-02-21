@@ -22,6 +22,8 @@ jobs:
           PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
           PROVISIONING_PROFILE_IMAGE_NOTIFICATION: ${{ secrets.PROVISIONING_PROFILE_IMAGE_NOTIFICATION }}
           KEYCHAIN_PW: ${{ secrets.KEYCHAIN_PW }}
+          ISSUER_ID: ${{ secrets.ISSUER_ID }}
+          API_KEy: ${{ secrets.API_KEY }}
         run: |
           # import certificates
           echo $APPLE_DISTRIBUTION_CERTIFICATE | base64 --decode --output certificate.p12
@@ -43,6 +45,10 @@ jobs:
 
       - name: Build ipa in release mode
         run: flutter build ipa --release
+
+      - name: Upload ipa to App Store Connect
+        run: |
+          xcrun altool --upload-app --type ios -f build/ios/ipa/dieklingel_app.ipa --apiKey $API_KEY --apiIssuer $ISSUER_ID
 
       - name: Clean up keychain and provisioning profile
         if: ${{ always() }}
