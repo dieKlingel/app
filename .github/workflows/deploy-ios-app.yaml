@@ -27,11 +27,11 @@ jobs:
           echo $APPLE_DISTRIBUTION_CERTIFICATE | base64 --decode --output certificate.p12
           echo $PROVISIONING_PROFILE | base64 --decode --output pp.mobileprovision
           echo $PROVISIONING_PROFILE_IMAGE_NOTIFICATION | base64 --decode --output pp_ext.mobileprovision
-          security create-keychain -p "$KEYCHAIN_PW" build.keychain
+          security create-keychain -p $KEYCHAIN_PW build.keychain
           security set-keychain-settings -lut 21600 build.keychain
-          security unlock-keychain -p "$KEYCHAIN_PW" build.keychain
+          security unlock-keychain -p $KEYCHAIN_PW build.keychain
           # import certificate to keychain
-          security import $APPLE_DISTRIBUTION_CERTIFICATE -P "$APPLE_DISTRIBUTION_CERTIFICATE_PW" -A -t cert -f pkcs12 -k build.keychain
+          security import $APPLE_DISTRIBUTION_CERTIFICATE -P $APPLE_DISTRIBUTION_CERTIFICATE_PW -A -t cert -f pkcs12 -k build.keychain
           security list-keychain -d user -s build.keychain
           # profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
