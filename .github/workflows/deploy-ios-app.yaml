@@ -5,7 +5,7 @@ on:
     branches:
       - feature/ci-ipa
 jobs:
-  deploy-webapp:
+  deploy-ios-app:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
@@ -31,7 +31,7 @@ jobs:
           security set-keychain-settings -lut 21600 build.keychain
           security unlock-keychain -p "$KEYCHAIN_PW" build.keychain
           # import certificate to keychain
-          security import $CERTIFICATE_PATH -P "$APPLE_DISTRIBUTION_CERTIFICATE_PW" -A -t cert -f pkcs12 -k build.keychain
+          security import $APPLE_DISTRIBUTION_CERTIFICATE -P "$APPLE_DISTRIBUTION_CERTIFICATE_PW" -A -t cert -f pkcs12 -k build.keychain
           security list-keychain -d user -s build.keychain
           # profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
