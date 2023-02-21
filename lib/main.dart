@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dieklingel_app/blocs/homes_view_bloc.dart';
+import 'package:dieklingel_app/handlers/notification_handler.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
@@ -62,6 +63,7 @@ class _App extends State<App> {
 
   void registerFcmPushNotifications() async {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
+    await NotificationHandler.init();
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       announcement: false,
