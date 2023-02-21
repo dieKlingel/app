@@ -1,11 +1,11 @@
 
-name: build-webapp
+name: deploy-webapp
 on:
   push:
     branches:
       - main
 jobs:
-  build-flutter:
+  deploy-webapp:
     runs-on: ubuntu-latest
     env:
         REPO: self
