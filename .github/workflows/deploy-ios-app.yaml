@@ -22,8 +22,6 @@ jobs:
           PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
           PROVISIONING_PROFILE_IMAGE_NOTIFICATION: ${{ secrets.PROVISIONING_PROFILE_IMAGE_NOTIFICATION }}
           KEYCHAIN_PW: ${{ secrets.KEYCHAIN_PW }}
-          ISSUER_ID: ${{ secrets.ISSUER_ID }}
-          API_KEY: ${{ secrets.API_KEY }}
         run: |
           # import certificates
           echo $APPLE_DISTRIBUTION_CERTIFICATE | base64 --decode --output certificate.p12
@@ -50,6 +48,9 @@ jobs:
         run: flutter build ipa --export-options-plist=ios/ExportOptions.plist
 
       - name: Upload ipa to App Store Connect
+        env:
+          ISSUER_ID: ${{ secrets.ISSUER_ID }}
+          API_KEY: ${{ secrets.API_KEY }}
         run: |
           xcrun altool --upload-app --type ios -f build/ios/ipa/dieklingel_app.ipa --apiKey $API_KEY --apiIssuer $ISSUER_ID
 
