@@ -50,11 +50,11 @@ jobs:
           cd ../
 
       - name: Build ipa in release mode
-        run: flutter build ipa --release
+        run: flutter build ipa --export-options-plist=ios/ExportOptions.plist
 
       - name: Upload ipa to App Store Connect
         run: |
-          xcrun altool --upload-app --type ios -f build/ios/ipa/dieklingel_app.ipa --apiKey $API_KEY --apiIssuer $ISSUER_ID
+          # xcrun altool --upload-app --type ios -f build/ios/ipa/dieklingel_app.ipa --apiKey $API_KEY --apiIssuer $ISSUER_ID
 
       - name: Clean up keychain and provisioning profile
         if: ${{ always() }}
