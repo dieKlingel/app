@@ -50,9 +50,13 @@ jobs:
       - name: Upload ipa to App Store Connect
         env:
           ISSUER_ID: ${{ secrets.ISSUER_ID }}
+          API_KEY_ID: ${{ secrets.API_KEY_ID }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          xcrun altool --upload-app --type ios -f build/ios/ipa/dieklingel_app.ipa --apiKey $API_KEY --apiIssuer $ISSUER_ID
+          mkdir -p ~/private_keys
+          echo $API_KEY | base64 --decode --output ~/private_keys/AuthKey_$API_KEY_ID.p8
+          xcrun altool --upload-app --type ios -f build/ios/ipa/dieklingel_app.ipa --apiKey $API_KEY_ID --apiIssuer $ISSUER_ID
+
 
       - name: Clean up keychain and provisioning profile
         if: ${{ always() }}
@@ -60,3 +64,4 @@ jobs:
           security delete-keychain build.keychain-db
           rm ~/Library/MobileDevice/Provisioning\ Profiles/pp.mobileprovision
           rm ~/Library/MobileDevice/Provisioning\ Profiles/pp_ext.mobileprovision
+          rm ~/private_keys/AuthKey_$API_KEY_ID.p8
