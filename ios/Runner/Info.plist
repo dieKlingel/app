@@ -30,6 +30,8 @@
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We use the Microphone to communicate with your doorbell.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We use the Camera to send an Image to your doorbell.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
