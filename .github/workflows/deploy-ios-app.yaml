@@ -60,6 +60,8 @@ jobs:
 
       - name: Clean up keychain and provisioning profile
         if: ${{ always() }}
+        env:
+          API_KEY_ID: ${{ secrets.API_KEY_ID }}
         run: |
           security delete-keychain build.keychain-db
           rm ~/Library/MobileDevice/Provisioning\ Profiles/pp.mobileprovision
