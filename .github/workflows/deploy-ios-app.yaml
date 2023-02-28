@@ -3,7 +3,7 @@ name: Build, sign and deploy the ios app to TestFlight.
 on:
   push:
     branches:
-      - feature/ci-ipa
+      - main
 jobs:
   deploy-ios-app:
     runs-on: macos-latest
