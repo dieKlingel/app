@@ -1,0 +1,94 @@
+name: "Run Tests and Build for Web/Android/iOS"
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  flutter-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.7.3'
+          channel: 'stable'
+      
+      - name: Install Pubs
+        run: flutter pub get
+
+      - name: Run Build Runner
+        run: flutter pub run build_runner build
+
+      - name: Run Tests
+        run: flutter test
+
+  flutter-build-webapp:
+    runs-on: ubuntu-latest
+    needs: [flutter-test]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.7.3'
+          channel: 'stable'
+      
+      - name: Install Pubs
+        run: flutter pub get
+
+      - name: Run Build Runner
+        run: flutter pub run build_runner build
+
+      - name: Build web in release mode
+        run: flutter build web --release
+
+  flutter-build-apk:
+    runs-on: ubuntu-latest
+    needs: [flutter-test]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.7.3'
+          channel: 'stable'
+      
+      - name: Install Pubs
+        run: flutter pub get
+
+      - name: Run Build Runner
+        run: flutter pub run build_runner build
+
+      - name: Build apk in release mode
+        run: flutter build apk --release
+
+  flutter-build-ipa:
+    runs-on: macos-latest
+    needs: [flutter-test]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.7.3'
+          channel: 'stable'
+      
+      - name: Install Pubs
+        run: flutter pub get
+
+      - name: Run Build Runner
+        run: flutter pub run build_runner build
+
+      - name: Build ipa in release mode
+        run: flutter build ios --release --no-codesign

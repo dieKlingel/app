@@ -1,51 +1,50 @@
 import 'dart:convert';
 
-import 'components/notifyable_value.dart';
-import 'messaging/mclient_topic_message.dart';
-import 'rtc/rtc_client.dart';
-import 'components/app_settings.dart';
-import 'messaging/mclient.dart';
-import 'signaling/signaling_client.dart';
-import 'views/home_view_page.dart';
-import 'components/connection_configuration.dart';
+import 'package:dieklingel_app/blocs/homes_view_bloc.dart';
+import 'package:dieklingel_app/handlers/notification_handler.dart';
+import 'package:dieklingel_core_shared/flutter_shared.dart';
+import 'package:get_it/get_it.dart';
+import 'package:uuid/uuid.dart';
+
+import './models/home.dart';
+import './views/homes_view.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mqtt_client/mqtt_client.dart';
-import 'package:provider/provider.dart';
-
-import './views/settings/connection_configuration_view.dart';
-import 'globals.dart' as app;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'hive/hive_home_adapter.dart';
+import 'hive/hive_ice_server_adapter.dart';
+import 'hive/mqtt_uri_adapter.dart';
+import 'models/hive_home.dart';
+import 'models/hive_ice_server.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  GetIt.I.registerSingleton(MqttClientBloc());
+
+  await Hive.initFlutter();
+  Hive
+    ..registerAdapter(MqttUriAdapter())
+    ..registerAdapter(HiveHomeAdapter())
+    ..registerAdapter(HiveIceServerAdapter());
+
+  await Future.wait([
+    Hive.openBox<MqttUri>((MqttUri).toString()),
+    Hive.openBox<HiveHome>((Home).toString()),
+    Hive.openBox<HiveIceServer>((IceServer).toString()),
+    Hive.openBox("settings"),
+  ]);
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await app.init();
-  MClient mClient = MClient();
-  mClient.prefix = "com.dieklingel/mayer/kai/";
-  SignalingClient signalingClient = SignalingClient.fromMessagingClient(
-    mClient,
-    signalingTopic: "rtc/signaling",
-  );
-  AppSettings appSettings = AppSettings();
-  NotifyableValue<RtcClient?> rtcClient = NotifyableValue(value: null);
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => mClient),
-        ChangeNotifierProvider(create: (context) => signalingClient),
-        ChangeNotifierProvider(create: (context) => appSettings),
-        ChangeNotifierProvider(create: (context) => rtcClient),
-      ],
-      child: const App(),
-    ),
-  );
+
+  runApp(const App());
 }
 
 class App extends StatefulWidget {
@@ -56,20 +55,6 @@ class App extends StatefulWidget {
 }
 
 class _App extends State<App> {
-  bool get isInitialzied {
-    return app.connectionConfigurations.isNotEmpty;
-  }
-
-  ConnectionConfiguration? getDefaultConnectionConfiguration() {
-    return context.read<AppSettings>().connectionConfigurations.isEmpty
-        ? null
-        : context.read<AppSettings>().connectionConfigurations.firstWhere(
-              (element) => element.isDefault,
-              orElse: () =>
-                  context.read<AppSettings>().connectionConfigurations.first,
-            );
-  }
-
   @override
   void initState() {
     super.initState();
@@ -78,6 +63,7 @@ class _App extends State<App> {
 
   void registerFcmPushNotifications() async {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
+    await NotificationHandler.init();
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       announcement: false,
@@ -92,28 +78,25 @@ class _App extends State<App> {
     if (null == token) return;
     print("Token: $token");
     if (!mounted) return;
-    context.read<AppSettings>().firebaseToken.addListener(publishFirebaseToken);
-    context.read<AppSettings>().firebaseToken.value = token;
-  }
 
-  void publishFirebaseToken() {
-    String? firebaseToken = context.read<AppSettings>().firebaseToken.value;
-    if (context.read<MClient>().connectionState !=
-            MqttConnectionState.connected ||
-        null == firebaseToken) {
-      return;
+    Box<HiveHome> box = Hive.box<HiveHome>((Home).toString());
+    MqttClientBloc bloc = MqttClientBloc();
+    for (HiveHome home in box.values) {
+      // TODO: register to sign
+      Map<String, dynamic> payload = {
+        "token": token,
+        "identifier": "default",
+      };
+      await bloc.disconnect();
+      bloc.uri.add(home.uri);
+      await bloc.state
+          .firstWhere((element) => element == MqttClientState.connected);
+      await bloc.request(
+        "request/apn/register/${const Uuid().v4()}",
+        jsonEncode(payload),
+        timeout: const Duration(seconds: 2),
+      );
     }
-    Map<String, dynamic> message = {
-      "hash": "#default",
-      "token": firebaseToken,
-    };
-    print("publish");
-    context.read<MClient>().publish(
-          MClientTopicMessage(
-            topic: "firebase/notification/token/add",
-            message: jsonEncode(message),
-          ),
-        );
   }
 
   void initialize() {
@@ -122,54 +105,15 @@ class _App extends State<App> {
     } else {
       registerFcmPushNotifications();
     }
-    context.read<AppSettings>().connectionConfigurations.addListener(
-      () async {
-        ConnectionConfiguration? defaultConfig =
-            getDefaultConnectionConfiguration();
-        if (defaultConfig == null) return;
-        context.read<MClient>().host =
-            "${kIsWeb ? "${defaultConfig.uri?.scheme}://" : ""}${defaultConfig.uri?.host}";
-        context.read<MClient>().port = defaultConfig.uri?.port;
-        context.read<MClient>().prefix = defaultConfig.channelPrefix ?? "";
-        context.read<MClient>().disconnect();
-        await context.read<MClient>().connect(
-              username: defaultConfig.username,
-              password: defaultConfig.password,
-            );
-        if (!mounted) return;
-        publishFirebaseToken();
-        /* context
-            .read<MClient>()
-            .listen("rtc/signaling")
-            .listen("io/camera/snapshot");*/
-      },
-    );
-
-    context
-        .read<AppSettings>()
-        .iceConfigurations
-        .replace(app.iceConfigurations);
-    context.read<AppSettings>().iceConfigurations.addListener(() {
-      app.iceConfigurations =
-          context.read<AppSettings>().iceConfigurations.asList();
-    });
-
-    context
-        .read<AppSettings>()
-        .connectionConfigurations
-        .replace(app.connectionConfigurations);
-    context.read<AppSettings>().connectionConfigurations.addListener(() {
-      app.connectionConfigurations =
-          context.read<AppSettings>().connectionConfigurations.asList();
-    });
   }
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      home:
-          isInitialzied ? const HomeViewPage() : ConnectionConfigurationView(),
+      home: BlocProvider(
+        bloc: HomesViewBloc(),
+        child: const HomesView(),
+      ),
     );
   }
 }

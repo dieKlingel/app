@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>destination</key>
+	<string>export</string>
+	<key>manageAppVersionAndBuildNumber</key>
+	<true/>
+	<key>method</key>
+	<string>app-store</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>com.dieklingel.app</key>
+		<string>com dieklingel app</string>
+		<key>com.dieklingel.app.ImageNotification</key>
+		<string>com dieklingel app ImageNotification</string>
+	</dict>
+	<key>signingCertificate</key>
+	<string>1641A8502F4F6B63BBB21C7F8CA735E6FE0A2C39</string>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>stripSwiftSymbols</key>
+	<true/>
+	<key>teamID</key>
+	<string>3QLZPMLJ3W</string>
+	<key>uploadSymbols</key>
+	<true/>
+</dict>
+</plist>
