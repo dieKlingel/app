@@ -5,6 +5,7 @@
 //  Created by Kai Mayer on 02.10.22.
 //
 
+#import <AudioToolbox/AudioToolbox.h>
 #import "NotificationService.h"
 #import "FirebaseMessaging.h"
 
@@ -21,6 +22,14 @@
     self.contentHandler = contentHandler;
     self.bestAttemptContent = [request.content mutableCopy];
     
+    
+    AudioServicesPlaySystemSoundWithCompletion(kSystemSoundID_Vibrate, ^{
+        AudioServicesPlaySystemSoundWithCompletion(kSystemSoundID_Vibrate, ^{
+            AudioServicesPlaySystemSoundWithCompletion(kSystemSoundID_Vibrate, ^{
+                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+            });
+        });
+    });
     // Modify the notification content here...
     // self.bestAttemptContent.title = [NSString stringWithFormat:@"%@ [modified]", self.bestAttemptContent.title];
     //

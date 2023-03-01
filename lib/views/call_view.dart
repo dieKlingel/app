@@ -8,6 +8,7 @@ import 'package:dieklingel_app/utils/rtc_client_wrapper.dart';
 import 'package:dieklingel_app/utils/rtc_transceiver.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
@@ -26,7 +27,9 @@ class CallView extends StatefulWidget {
 }
 
 class _CallView extends State<CallView> {
-  RtcClientWrapper? wrapper;
+  RtcClientWrapper? _wrapper;
+  bool _muted = true;
+  bool _speaker = true;
 
   void _onMessagePressed(BuildContext context) {
     Navigator.push(
@@ -55,7 +58,7 @@ class _CallView extends State<CallView> {
       ],
     );
     setState(() {
-      wrapper = client;
+      _wrapper = client;
     });
     String uuid = const Uuid().v4();
     MqttChannel channel = MqttChannel("rtc/$uuid");
@@ -105,7 +108,7 @@ class _CallView extends State<CallView> {
     if (result != "OK") {
       client.close();
       setState(() {
-        wrapper = null;
+        _wrapper = null;
       });
       return;
     }
@@ -114,26 +117,26 @@ class _CallView extends State<CallView> {
   }
 
   Future<void> _onHangupPressed(BuildContext context) async {
-    await wrapper?.close();
+    await _wrapper?.close();
     setState(() {
-      wrapper = null;
+      _wrapper = null;
     });
   }
 
   Widget _video(BuildContext context) {
-    RTCVideoRenderer? renderer = wrapper?.renderer;
+    RTCVideoRenderer? renderer = _wrapper?.renderer;
     if (renderer == null) {
       return Container();
     }
 
     return ValueListenableBuilder(
-      valueListenable: wrapper!.state,
+      valueListenable: _wrapper!.state,
       builder: (
         BuildContext context,
         RTCPeerConnectionState state,
         Widget? child,
       ) {
-        if (wrapper?.connection.connectionState !=
+        if (_wrapper?.connection.connectionState !=
             RTCPeerConnectionState.RTCPeerConnectionStateConnected) {
           return const Center(
             child: CupertinoActivityIndicator(),
@@ -164,11 +167,11 @@ class _CallView extends State<CallView> {
         }
 
         return CupertinoButton(
-          onPressed: wrapper == null
+          onPressed: _wrapper == null
               ? () => _onCallPressed(context)
               : () => _onHangupPressed(context),
           child: Icon(
-            wrapper == null
+            _wrapper == null
                 ? CupertinoIcons.phone
                 : CupertinoIcons.phone_arrow_down_left,
             size: 35,
@@ -179,7 +182,7 @@ class _CallView extends State<CallView> {
   }
 
   Widget _micButton(BuildContext context) {
-    if (wrapper == null) {
+    if (_wrapper == null) {
       return const CupertinoButton(
         onPressed: null,
         child: Icon(
@@ -191,10 +194,44 @@ class _CallView extends State<CallView> {
 
     return CupertinoButton(
       onPressed: () {
-        // TODO: toogle mic
+        setState(() {
+          _muted = !_muted;
+        });
+        _wrapper?.ressource.stream?.getAudioTracks().forEach((track) {
+          track.enabled = _muted;
+        });
       },
-      child: const Icon(
-        CupertinoIcons.mic_off,
+      child: Icon(
+        _muted ? CupertinoIcons.mic_off : CupertinoIcons.mic,
+        size: 35,
+      ),
+    );
+  }
+
+  Widget _speakerButton(BuildContext context) {
+    if (_wrapper == null) {
+      return const CupertinoButton(
+        onPressed: null,
+        child: Icon(
+          CupertinoIcons.speaker_2,
+          size: 35,
+        ),
+      );
+    }
+
+    return CupertinoButton(
+      onPressed: () {
+        setState(() {
+          _speaker = !_speaker;
+        });
+        if (!kIsWeb) {
+          _wrapper?.renderer.srcObject?.getAudioTracks().forEach((track) {
+            track.enableSpeakerphone(_speaker);
+          });
+        }
+      },
+      child: Icon(
+        _speaker ? CupertinoIcons.speaker_3 : CupertinoIcons.speaker_1,
         size: 35,
       ),
     );
@@ -212,13 +249,7 @@ class _CallView extends State<CallView> {
             children: [
               _callButton(context),
               _micButton(context),
-              const CupertinoButton(
-                onPressed: null,
-                child: Icon(
-                  CupertinoIcons.speaker_2,
-                  size: 35,
-                ),
-              ),
+              if (!kIsWeb) _speakerButton(context),
               const CupertinoButton(
                 onPressed: null,
                 child: Icon(
@@ -289,7 +320,7 @@ class _CallView extends State<CallView> {
 
   @override
   void dispose() {
-    wrapper?.close();
+    _wrapper?.close();
     super.dispose();
   }
 }
