@@ -1,4 +1,5 @@
 import 'package:dieklingel_core_shared/flutter_shared.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -180,7 +181,11 @@ class RtcClientWrapper {
     if (event.streams.isEmpty) {
       return;
     }
-
+    if (!kIsWeb) {
+      event.streams.first.getAudioTracks().forEach((track) {
+        track.enableSpeakerphone(true);
+      });
+    }
     renderer.srcObject = event.streams.first;
   }
 }
