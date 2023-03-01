@@ -28,6 +28,7 @@ class CallView extends StatefulWidget {
 class _CallView extends State<CallView> {
   RtcClientWrapper? _wrapper;
   bool _muted = true;
+  bool _speaker = true;
 
   void _onMessagePressed(BuildContext context) {
     Navigator.push(
@@ -206,6 +207,33 @@ class _CallView extends State<CallView> {
     );
   }
 
+  Widget _speakerButton(BuildContext context) {
+    if (_wrapper == null) {
+      return const CupertinoButton(
+        onPressed: null,
+        child: Icon(
+          CupertinoIcons.speaker_2,
+          size: 35,
+        ),
+      );
+    }
+
+    return CupertinoButton(
+      onPressed: () {
+        setState(() {
+          _speaker = !_speaker;
+        });
+        _wrapper?.renderer.srcObject?.getAudioTracks().forEach((track) {
+          track.enableSpeakerphone(_speaker);
+        });
+      },
+      child: Icon(
+        _speaker ? CupertinoIcons.speaker_3 : CupertinoIcons.speaker_1,
+        size: 35,
+      ),
+    );
+  }
+
   Widget _toolbar(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -218,13 +246,7 @@ class _CallView extends State<CallView> {
             children: [
               _callButton(context),
               _micButton(context),
-              const CupertinoButton(
-                onPressed: null,
-                child: Icon(
-                  CupertinoIcons.speaker_2,
-                  size: 35,
-                ),
-              ),
+              _speakerButton(context),
               const CupertinoButton(
                 onPressed: null,
                 child: Icon(
