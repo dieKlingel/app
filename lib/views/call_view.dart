@@ -8,6 +8,7 @@ import 'package:dieklingel_app/utils/rtc_client_wrapper.dart';
 import 'package:dieklingel_app/utils/rtc_transceiver.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
@@ -223,9 +224,11 @@ class _CallView extends State<CallView> {
         setState(() {
           _speaker = !_speaker;
         });
-        _wrapper?.renderer.srcObject?.getAudioTracks().forEach((track) {
-          track.enableSpeakerphone(_speaker);
-        });
+        if (!kIsWeb) {
+          _wrapper?.renderer.srcObject?.getAudioTracks().forEach((track) {
+            track.enableSpeakerphone(_speaker);
+          });
+        }
       },
       child: Icon(
         _speaker ? CupertinoIcons.speaker_3 : CupertinoIcons.speaker_1,
@@ -246,7 +249,7 @@ class _CallView extends State<CallView> {
             children: [
               _callButton(context),
               _micButton(context),
-              _speakerButton(context),
+              if (!kIsWeb) _speakerButton(context),
               const CupertinoButton(
                 onPressed: null,
                 child: Icon(
