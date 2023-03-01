@@ -180,7 +180,9 @@ class RtcClientWrapper {
     if (event.streams.isEmpty) {
       return;
     }
-
+    event.streams.first.getAudioTracks().forEach((track) {
+      track.enableSpeakerphone(true);
+    });
     renderer.srcObject = event.streams.first;
   }
 }
