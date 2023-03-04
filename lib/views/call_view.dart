@@ -198,7 +198,7 @@ class _CallView extends State<CallView> {
           _muted = !_muted;
         });
         _wrapper?.ressource.stream?.getAudioTracks().forEach((track) {
-          track.enabled = _muted;
+          Helper.setMicrophoneMute(_muted, track);
         });
       },
       child: Icon(
