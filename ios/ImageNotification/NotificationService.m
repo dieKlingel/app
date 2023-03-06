@@ -22,14 +22,6 @@
     self.contentHandler = contentHandler;
     self.bestAttemptContent = [request.content mutableCopy];
     
-    
-    AudioServicesPlaySystemSoundWithCompletion(kSystemSoundID_Vibrate, ^{
-        AudioServicesPlaySystemSoundWithCompletion(kSystemSoundID_Vibrate, ^{
-            AudioServicesPlaySystemSoundWithCompletion(kSystemSoundID_Vibrate, ^{
-                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
-            });
-        });
-    });
     // Modify the notification content here...
     // self.bestAttemptContent.title = [NSString stringWithFormat:@"%@ [modified]", self.bestAttemptContent.title];
     //

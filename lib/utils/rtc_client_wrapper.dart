@@ -130,6 +130,14 @@ class RtcClientWrapper {
     RTCSessionDescription offer = await connection.createOffer();
     await connection.setLocalDescription(offer);
 
+    MediaStream? stream = ressource.stream;
+    if (null != stream) {
+      for (MediaStreamTrack track in stream.getTracks()) {
+        connection.addTrack(track, stream);
+        Helper.setMicrophoneMute(true, track);
+      }
+    }
+
     SignalingMessage message = SignalingMessage();
     message.type = SignalingMessageType.offer;
     message.data = offer.toMap();
@@ -186,6 +194,7 @@ class RtcClientWrapper {
         track.enableSpeakerphone(true);
       });
     }
+
     renderer.srcObject = event.streams.first;
   }
 }
