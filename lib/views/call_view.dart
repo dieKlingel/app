@@ -101,7 +101,7 @@ class _CallView extends State<CallView> {
 
     MqttUri rtcUri = home.uri.copyWith(channel: rtcChannel.toString());
 
-    MqttResponse? result = await mqtt.request(
+    MqttResponse result = await mqtt.request(
       "request/rtc/connect/${const Uuid().v4()}",
       jsonEncode(rtcUri.toMap()),
     );
