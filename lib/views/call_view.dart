@@ -7,6 +7,7 @@ import 'package:dieklingel_app/utils/mqtt_channel.dart';
 import 'package:dieklingel_app/utils/rtc_client_wrapper.dart';
 import 'package:dieklingel_app/utils/rtc_transceiver.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
+import 'package:dieklingel_core_shared/mqtt/mqtt_response.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -100,12 +101,12 @@ class _CallView extends State<CallView> {
 
     MqttUri rtcUri = home.uri.copyWith(channel: rtcChannel.toString());
 
-    String? result = await mqtt.request(
-      "request/rtc/${const Uuid().v4()}",
+    MqttResponse result = await mqtt.request(
+      "request/rtc/connect/${const Uuid().v4()}",
       jsonEncode(rtcUri.toMap()),
     );
 
-    if (result != "OK") {
+    if (result.status != 200) {
       client.close();
       setState(() {
         _wrapper = null;

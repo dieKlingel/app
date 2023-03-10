@@ -150,7 +150,7 @@ packages:
     description:
       path: "packages/shared"
       ref: main
-      resolved-ref: "1afa1473f479fff17480c4c48ac79455277709e8"
+      resolved-ref: "2a0457f611bd0695ae62a99b79ecb3afaa8aeca8"
       url: "https://github.com/KoiFresh/dieklingel-core.git"
     source: git
     version: "0.0.1"

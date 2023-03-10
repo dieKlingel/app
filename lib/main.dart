@@ -18,7 +18,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'hive/hive_home_adapter.dart';
 import 'hive/hive_ice_server_adapter.dart';
-import 'hive/mqtt_uri_adapter.dart';
 import 'models/hive_home.dart';
 import 'models/hive_ice_server.dart';
 
@@ -29,12 +28,10 @@ void main() async {
 
   await Hive.initFlutter();
   Hive
-    ..registerAdapter(MqttUriAdapter())
     ..registerAdapter(HiveHomeAdapter())
     ..registerAdapter(HiveIceServerAdapter());
 
   await Future.wait([
-    Hive.openBox<MqttUri>((MqttUri).toString()),
     Hive.openBox<HiveHome>((Home).toString()),
     Hive.openBox<HiveIceServer>((IceServer).toString()),
     Hive.openBox("settings"),
@@ -77,15 +74,16 @@ class _App extends State<App> {
     String? token = await FirebaseMessaging.instance.getToken();
     if (null == token) return;
     print("Token: $token");
-    if (!mounted) return;
+
+    Box settingsBox = Hive.box("settings");
+    settingsBox.put("token", token);
 
     Box<HiveHome> box = Hive.box<HiveHome>((Home).toString());
     MqttClientBloc bloc = MqttClientBloc();
     for (HiveHome home in box.values) {
-      // TODO: register to sign
       Map<String, dynamic> payload = {
         "token": token,
-        "identifier": "default",
+        "identifier": home.uri.section.isEmpty ? "default" : home.uri.section,
       };
       await bloc.disconnect();
       bloc.uri.add(home.uri);
