@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:get_it/get_it.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
 import '../models/hive_home.dart';
 
 class HomeAddView extends StatefulWidget {
@@ -17,6 +22,7 @@ class _HomeConfigSheet extends State<HomeAddView> {
   final TextEditingController _username = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _channel = TextEditingController();
+  final TextEditingController _section = TextEditingController();
 
   bool _valid = false;
 
@@ -29,6 +35,7 @@ class _HomeConfigSheet extends State<HomeAddView> {
       _username.text = widget.home!.username ?? "";
       _password.text = widget.home!.password ?? "";
       _channel.text = uri.path.substring(1);
+      _section.text = uri.fragment;
     }
     super.initState();
   }
@@ -41,7 +48,7 @@ class _HomeConfigSheet extends State<HomeAddView> {
     Uri serverUrl = Uri.parse(_url.text);
     MqttUri uri = MqttUri.fromUri(
       Uri.parse(
-        "${serverUrl.scheme}://${serverUrl.authority}/${_channel.text}",
+        "${serverUrl.scheme}://${serverUrl.authority}/${_channel.text}#${_section.text}",
       ),
     );
 
@@ -53,6 +60,23 @@ class _HomeConfigSheet extends State<HomeAddView> {
     home.save();
 
     Navigator.pop(context);
+
+    Box settings = Hive.box("settings");
+    String? token = settings.get("token", defaultValue: null);
+    if (token == null) {
+      return;
+    }
+
+    Map<String, dynamic> payload = {
+      "token": token,
+      "identifier": home.uri.section.isEmpty ? "default" : home.uri.section,
+    };
+
+    await GetIt.I<MqttClientBloc>().request(
+      "request/apn/register/${const Uuid().v4()}",
+      jsonEncode(payload),
+      timeout: const Duration(seconds: 2),
+    );
   }
 
   void _validate() {
@@ -67,6 +91,11 @@ class _HomeConfigSheet extends State<HomeAddView> {
       r'^(([a-z]+)([a-z\.+])([a-z]+)\/)+$',
     );
     valid = valid && channelExp.hasMatch(_channel.text);
+
+    RegExp sectionExp = RegExp(
+      r'^([a-zA-Z]+)$',
+    );
+    valid = valid && sectionExp.hasMatch(_section.text);
 
     setState(() {
       _valid = valid;
@@ -135,6 +164,12 @@ class _HomeConfigSheet extends State<HomeAddView> {
                       prefix: const Text("Channel Prefix"),
                       placeholder: "com.dieklingel/name/main/",
                       controller: _channel,
+                      onChanged: (value) => _validate(),
+                    ),
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Sign"),
+                      placeholder: "default",
+                      controller: _section,
                       onChanged: (value) => _validate(),
                     ),
                   ],
