@@ -42,7 +42,7 @@ class _CallView extends State<CallView> {
   }
 
   Future<void> _onCallPressed(BuildContext context) async {
-    HomeViewBloc homebloc = context.bloc<HomeViewBloc>();
+    /* HomeViewBloc homebloc = context.bloc<HomeViewBloc>();
     MqttClientBloc mqtt = GetIt.I<MqttClientBloc>();
     Box<HiveIceServer> box = Hive.box<HiveIceServer>((IceServer).toString());
     RtcClientWrapper client = await RtcClientWrapper.create(
@@ -114,7 +114,7 @@ class _CallView extends State<CallView> {
       return;
     }
 
-    await client.open();
+    await client.open();*/
   }
 
   Future<void> _onHangupPressed(BuildContext context) async {
@@ -288,7 +288,8 @@ class _CallView extends State<CallView> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
+    throw UnimplementedError();
+    /* return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: StreamBuilder(
           stream: context.bloc<HomeViewBloc>().home.stream,
@@ -316,7 +317,7 @@ class _CallView extends State<CallView> {
           ],
         ),
       ),
-    );
+    );*/
   }
 
   @override

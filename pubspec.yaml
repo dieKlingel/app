@@ -51,6 +51,8 @@ dependencies:
       path: packages/shared
   rxdart: ^0.27.7
   get_it: ^7.2.0
+  flutter_bloc: ^8.1.2
+  pull_down_button: ^0.8.1
 
 dev_dependencies:
   flutter_test:

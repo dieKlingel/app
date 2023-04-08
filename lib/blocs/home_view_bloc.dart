@@ -1,17 +1,39 @@
 import 'dart:async';
 
 import 'package:dieklingel_app/models/hive_home.dart';
-import 'package:dieklingel_app/models/home.dart';
-import 'package:dieklingel_core_shared/flutter_shared.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:dieklingel_app/repositories/home_repository.dart';
+import 'package:dieklingel_app/states/home_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class HomeViewBloc extends Bloc {
-  final _home = BehaviorSubject<HiveHome>();
+class HomeViewBloc extends Bloc<HomeEvent, HomeState> {
+  final HomeRepository homeRepository;
 
-  StreamController<Home> get home => _home;
+  HomeViewBloc(this.homeRepository) : super(HomeState()) {
+    on<HomeSelected>(_onSelected);
+    on<HomeRefresh>(_onRefresh);
 
-  @override
-  void dispose() {
-    _home.close();
+    homeRepository.addListener(() {
+      add(HomeRefresh());
+    });
+
+    add(HomeRefresh());
+  }
+
+  Future<void> _onSelected(HomeSelected event, Emitter<HomeState> emit) async {
+    await homeRepository.select(event.home);
+  }
+
+  Future<void> _onRefresh(HomeRefresh event, Emitter<HomeState> emit) async {
+    HiveHome? selected = homeRepository.selected;
+
+    if (selected == null) {
+      emit(HomeState(
+        homes: homeRepository.homes,
+      ));
+    } else {
+      emit(
+        HomeSelectedState(home: selected, homes: homeRepository.homes),
+      );
+    }
   }
 }

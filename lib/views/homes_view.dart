@@ -34,7 +34,7 @@ class HomesView extends StatelessWidget {
   }
 
   void _onHomePressed(BuildContext context, Home home) async {
-    MqttClientBloc mqttbloc = GetIt.I<MqttClientBloc>();
+    /* MqttClientBloc mqttbloc = GetIt.I<MqttClientBloc>();
     mqttbloc.usernanme.add(home.username ?? "");
     mqttbloc.password.add(home.password ?? "");
     mqttbloc.uri.add(home.uri);
@@ -60,7 +60,7 @@ class HomesView extends StatelessWidget {
           child: const HomeView(),
         ),
       ),
-    );
+    );*/
   }
 
   Widget _body(BuildContext context) {

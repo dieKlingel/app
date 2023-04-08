@@ -1,13 +1,17 @@
 import 'dart:convert';
 
-import 'package:dieklingel_app/blocs/homes_view_bloc.dart';
+import 'package:dieklingel_app/blocs/home_view_bloc.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
-import 'package:dieklingel_core_shared/flutter_shared.dart';
+import 'package:dieklingel_app/repositories/home_repository.dart';
+import 'package:dieklingel_app/views/home_view.dart';
+import 'package:dieklingel_core_shared/blocs/mqtt_client_bloc.dart';
+import 'package:dieklingel_core_shared/models/ice_server.dart';
+import 'package:dieklingel_core_shared/mqtt/mqtt_client_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
 
 import './models/home.dart';
-import './views/homes_view.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -109,8 +113,8 @@ class _App extends State<App> {
   Widget build(BuildContext context) {
     return CupertinoApp(
       home: BlocProvider(
-        bloc: HomesViewBloc(),
-        child: const HomesView(),
+        create: (_) => HomeViewBloc(HomeRepository()),
+        child: const HomeView(),
       ),
     );
   }

@@ -1,36 +1,136 @@
+import 'package:dieklingel_app/blocs/home_view_bloc.dart';
+import 'package:dieklingel_app/states/home_state.dart';
+import 'package:dieklingel_app/views/home_add_view.dart';
+import 'package:dieklingel_app/views/ice_server_add_view.dart';
+import 'package:dieklingel_app/views/settings_view.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pull_down_button/pull_down_button.dart';
 
-import 'call_view.dart';
-import 'history_view.dart';
+import '../models/hive_home.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoTabScaffold(
-      tabBar: CupertinoTabBar(items: const [
-        BottomNavigationBarItem(
-          label: "Home",
-          icon: Icon(CupertinoIcons.home),
-        ),
-        BottomNavigationBarItem(
-          label: "History",
-          icon: Icon(CupertinoIcons.collections),
-        ),
-      ]),
-      tabBuilder: (context, index) {
-        switch (index) {
-          case 0:
-            return const CallView();
-          case 1:
-            return const HistoryView();
-        }
-
-        return const Center(
-          child: Text("Ooops :("),
+  void _onAddHome(BuildContext context) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (context) {
+        return const CupertinoPopupSurface(
+          child: HomeAddView(),
         );
       },
+    );
+  }
+
+  void _onAddIceServer(BuildContext context) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (context) {
+        return const CupertinoPopupSurface(
+          child: IceServerAddView(),
+        );
+      },
+    );
+  }
+
+  void _onSettingsTap(BuildContext context) {
+    Navigator.of(context).push(
+      CupertinoPageRoute(
+        builder: (context) => SettingsView(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<HomeViewBloc, HomeState>(
+      builder: (context, state) {
+        return CupertinoPageScaffold(
+          navigationBar: CupertinoNavigationBar(
+            middle: Text(state is HomeSelectedState ? state.home.name : "Home"),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PullDownButton(
+                  itemBuilder: (context) => [
+                    PullDownMenuItem(
+                      onTap: () => _onAddHome(context),
+                      title: "add Home",
+                      icon: CupertinoIcons.home,
+                    ),
+                    const PullDownMenuDivider(),
+                    PullDownMenuItem(
+                      onTap: () => _onAddIceServer(context),
+                      title: "add ICE Server",
+                      icon: CupertinoIcons.cloud,
+                    )
+                  ],
+                  buttonBuilder: (context, showMenu) => CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: showMenu,
+                    child: const Icon(CupertinoIcons.plus),
+                  ),
+                ),
+                PullDownButton(
+                  itemBuilder: (context) => [
+                    PullDownMenuItem(
+                      onTap: () => _onSettingsTap(context),
+                      title: "Settings",
+                      icon: CupertinoIcons.settings,
+                    ),
+                    if (state.homes.isNotEmpty) ...[
+                      const PullDownMenuDivider.large(),
+                    ],
+                    for (HiveHome home in state.homes) ...[
+                      PullDownMenuItem.selectable(
+                        selected:
+                            state is HomeSelectedState && home == state.home,
+                        onTap: () {
+                          context
+                              .read<HomeViewBloc>()
+                              .add(HomeSelected(home: home));
+                        },
+                        title: home.name,
+                      ),
+                      if (home != state.homes.last) ...[
+                        const PullDownMenuDivider()
+                      ],
+                    ]
+                  ],
+                  buttonBuilder: (context, showMenu) => CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: showMenu,
+                    child: const Icon(CupertinoIcons.ellipsis_circle),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          child: const Center(
+            child: Text("Hello :)"),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _Content extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<HomeViewBloc, HomeState>(
+      builder: ((context, state) {
+        if (state is! HomeSelectedState)
+          return Center(
+            child: CupertinoButton.filled(
+                child: Text("add a Home"), onPressed: () {}),
+          );
+
+        return Center(
+          child: Text(state.home.name),
+        );
+      }),
     );
   }
 }
