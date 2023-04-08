@@ -1,5 +1,9 @@
+import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
 import 'package:dieklingel_app/blocs/home_view_bloc.dart';
+import 'package:dieklingel_app/repositories/home_repository.dart';
+import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/states/home_state.dart';
+import 'package:dieklingel_app/views/call_view.dart';
 import 'package:dieklingel_app/views/home_add_view.dart';
 import 'package:dieklingel_app/views/ice_server_add_view.dart';
 import 'package:dieklingel_app/views/settings_view.dart';
@@ -7,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 
+import '../blocs/call_view_bloc.dart';
 import '../models/hive_home.dart';
 
 class HomeView extends StatelessWidget {
@@ -16,8 +21,11 @@ class HomeView extends StatelessWidget {
     showCupertinoModalPopup(
       context: context,
       builder: (context) {
-        return const CupertinoPopupSurface(
-          child: HomeAddView(),
+        return CupertinoPopupSurface(
+          child: BlocProvider(
+            create: (_) => HomeAddViewBloc(context.read<HomeRepository>()),
+            child: const HomeAddView(),
+          ),
         );
       },
     );
@@ -107,9 +115,7 @@ class HomeView extends StatelessWidget {
               ],
             ),
           ),
-          child: const Center(
-            child: Text("Hello :)"),
-          ),
+          child: _Content(),
         );
       },
     );
@@ -117,18 +123,43 @@ class HomeView extends StatelessWidget {
 }
 
 class _Content extends StatelessWidget {
+  void _onAddHome(BuildContext context) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (context) {
+        return const CupertinoPopupSurface(
+          child: HomeAddView(),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeViewBloc, HomeState>(
       builder: ((context, state) {
-        if (state is! HomeSelectedState)
+        if (state is! HomeSelectedState) {
           return Center(
-            child: CupertinoButton.filled(
-                child: Text("add a Home"), onPressed: () {}),
+            child: CupertinoButton(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(CupertinoIcons.add),
+                  Text("add your first Home"),
+                ],
+              ),
+              onPressed: () => _onAddHome(context),
+            ),
           );
-
-        return Center(
-          child: Text(state.home.name),
+        }
+        return BlocProvider(
+          create: (context) {
+            return CallViewBloc(
+              context.read<HomeRepository>(),
+              context.read<IceServerRepository>(),
+            );
+          },
+          child: const CallView(),
         );
       }),
     );

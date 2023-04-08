@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dieklingel_app/blocs/call_view_bloc.dart';
 import 'package:dieklingel_app/blocs/home_view_bloc.dart';
 import 'package:dieklingel_app/models/hive_ice_server.dart';
+import 'package:dieklingel_app/states/call_state.dart';
 import 'package:dieklingel_app/utils/mqtt_channel.dart';
 import 'package:dieklingel_app/utils/rtc_client_wrapper.dart';
 import 'package:dieklingel_app/utils/rtc_transceiver.dart';
@@ -10,6 +12,8 @@ import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:dieklingel_core_shared/mqtt/mqtt_response.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
@@ -288,7 +292,14 @@ class _CallView extends State<CallView> {
 
   @override
   Widget build(BuildContext context) {
-    throw UnimplementedError();
+    return SafeArea(
+        child: Stack(
+      children: [
+        _Video(),
+        _Toolbar(),
+      ],
+    ));
+
     /* return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: StreamBuilder(
@@ -324,5 +335,133 @@ class _CallView extends State<CallView> {
   void dispose() {
     _wrapper?.close();
     super.dispose();
+  }
+}
+
+class _Toolbar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: BlocBuilder<CallViewBloc, CallState>(
+        builder: (context, state) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              _ToolbarButton(
+                icon: const Icon(
+                  CupertinoIcons.phone_fill,
+                  color: Colors.white,
+                ),
+                color: state is CallActiveState || state is CallInitatedState
+                    ? Colors.red
+                    : Colors.green,
+                onPressed: () {
+                  context.read<CallViewBloc>().add(
+                        state is CallActiveState || state is CallInitatedState
+                            ? CallHangup()
+                            : CallStart(),
+                      );
+                },
+              ),
+              _ToolbarButton(
+                icon: Icon(
+                  state is CallActiveState && !state.isMuted
+                      ? CupertinoIcons.mic_fill
+                      : CupertinoIcons.mic_slash_fill,
+                  color: Colors.white,
+                ),
+                color: state is CallActiveState && !state.isMuted
+                    ? Colors.red
+                    : Colors.green,
+                onPressed: state is CallActiveState
+                    ? () {
+                        context
+                            .read<CallViewBloc>()
+                            .add(CallMute(isMuted: !state.isMuted));
+                      }
+                    : null,
+              ),
+              _ToolbarButton(
+                icon: Icon(
+                  state is CallActiveState && state.speakerIsEarphone
+                      ? CupertinoIcons.speaker_1_fill
+                      : CupertinoIcons.speaker_3_fill,
+                  color: Colors.white,
+                ),
+                color: Colors.green,
+                onPressed: state is CallActiveState
+                    ? () {
+                        context.read<CallViewBloc>().add(
+                              CallSpeaker(
+                                isEarphone: !state.speakerIsEarphone,
+                              ),
+                            );
+                      }
+                    : null,
+              ),
+              const _ToolbarButton(
+                icon: Icon(
+                  CupertinoIcons.lock_fill,
+                  color: Colors.white,
+                ),
+                color: Colors.amber,
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ToolbarButton extends StatelessWidget {
+  final Icon icon;
+  final Color color;
+  final void Function()? onPressed;
+
+  const _ToolbarButton({
+    required this.icon,
+    required this.color,
+    this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      onPressed: onPressed,
+      child: Container(
+        padding: const EdgeInsets.all(10.0),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: onPressed == null ? Colors.black26 : color,
+        ),
+        child: icon,
+      ),
+    );
+  }
+}
+
+class _Video extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CallViewBloc, CallState>(
+      builder: (context, state) {
+        if (state is CallInitatedState) {
+          return const Center(
+            child: CupertinoActivityIndicator(),
+          );
+        }
+
+        if (state is CallActiveState) {
+          return Center(
+            child: RTCVideoView(state.renderer),
+          );
+        }
+
+        return Container();
+      },
+    );
   }
 }

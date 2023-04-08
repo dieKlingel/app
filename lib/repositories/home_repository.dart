@@ -23,6 +23,11 @@ class HomeRepository extends ChangeNotifier {
   }
 
   Future<void> add(HiveHome home) async {
+    if (home.isInBox) {
+      await home.save();
+      notifyListeners();
+      return;
+    }
     await _homebox.add(home);
     notifyListeners();
   }

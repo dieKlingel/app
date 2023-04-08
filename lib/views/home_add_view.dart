@@ -1,13 +1,163 @@
 import 'dart:convert';
 
+import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
+import 'package:dieklingel_app/states/home_add_state.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/hive_home.dart';
 
-class HomeAddView extends StatefulWidget {
+class HomeAddView extends StatelessWidget {
+  final HiveHome? home;
+
+  const HomeAddView({super.key, this.home});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<HomeAddViewBloc, HomeAddState>(
+      listener: (context, state) {
+        if (state is HomeAddSuccessfulState) {
+          Navigator.of(context).pop();
+        }
+      },
+      builder: (context, state) {
+        return CupertinoPageScaffold(
+          navigationBar: CupertinoNavigationBar(
+            trailing: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                context.read<HomeAddViewBloc>().add(
+                      HomeAddSubmit(
+                        home: home,
+                      ),
+                    );
+              },
+              child: const Text("Save"),
+            ),
+          ),
+          backgroundColor: CupertinoColors.systemGroupedBackground,
+          child: SafeArea(
+            child: _Form(
+              home: home,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _Form extends StatelessWidget {
+  final HiveHome? home;
+
+  const _Form({this.home});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<HomeAddViewBloc, HomeAddState>(
+      builder: (context, state) {
+        return ListView(
+          clipBehavior: Clip.none,
+          children: [
+            CupertinoFormSection.insetGrouped(
+              header: const Text("Configuration"),
+              children: [
+                CupertinoTextFormFieldRow(
+                  prefix: const Text("Name"),
+                  initialValue: home?.name,
+                  validator: (value) =>
+                      state is HomeAddFormErrorState ? state.nameError : null,
+                  autovalidateMode: AutovalidateMode.always,
+                  onChanged: (value) {
+                    context
+                        .read<HomeAddViewBloc>()
+                        .add(HomeAddName(name: value));
+                  },
+                ),
+              ],
+            ),
+            CupertinoFormSection.insetGrouped(
+              header: const Text("Server"),
+              children: [
+                CupertinoTextFormFieldRow(
+                  prefix: const Text("Server URL"),
+                  initialValue: home == null
+                      ? ""
+                      : (home?.uri.toUri().replace(
+                            path: "",
+                            fragment: "",
+                          )).toString(),
+                  validator: (value) =>
+                      state is HomeAddFormErrorState ? state.serverError : null,
+                  autovalidateMode: AutovalidateMode.always,
+                  onChanged: (value) {
+                    context
+                        .read<HomeAddViewBloc>()
+                        .add(HomeAddServer(server: value));
+                  },
+                ),
+                CupertinoTextFormFieldRow(
+                  prefix: const Text("Username"),
+                  initialValue: home?.username,
+                  onChanged: (value) {
+                    context
+                        .read<HomeAddViewBloc>()
+                        .add(HomeAddUsername(username: value));
+                  },
+                ),
+                CupertinoTextFormFieldRow(
+                  prefix: const Text("Password"),
+                  initialValue: home?.password,
+                  onChanged: (value) {
+                    context
+                        .read<HomeAddViewBloc>()
+                        .add(HomeAddPassword(password: value));
+                  },
+                ),
+              ],
+            ),
+            CupertinoFormSection.insetGrouped(
+              header: const Text("Channel"),
+              children: [
+                CupertinoTextFormFieldRow(
+                  prefix: const Text("Channel Prefix"),
+                  initialValue: home?.uri.channel,
+                  validator: (value) => state is HomeAddFormErrorState
+                      ? state.channelError
+                      : null,
+                  autovalidateMode: AutovalidateMode.always,
+                  onChanged: (value) {
+                    context
+                        .read<HomeAddViewBloc>()
+                        .add(HomeAddChannel(channel: value));
+                  },
+                ),
+                CupertinoTextFormFieldRow(
+                  prefix: const Text("Sign"),
+                  initialValue: home?.uri.section,
+                  validator: (value) =>
+                      state is HomeAddFormErrorState ? state.signError : null,
+                  autovalidateMode: AutovalidateMode.always,
+                  onChanged: (value) {
+                    context
+                        .read<HomeAddViewBloc>()
+                        .add(HomeAddSign(sign: value));
+                  },
+                )
+              ],
+            )
+          ],
+        );
+      },
+    );
+  }
+}
+
+/* class HomeAddView extends StatefulWidget {
   final HiveHome? home;
 
   const HomeAddView({super.key, this.home});
@@ -181,4 +331,4 @@ class _HomeConfigSheet extends State<HomeAddView> {
       ),
     );
   }
-}
+}*/
