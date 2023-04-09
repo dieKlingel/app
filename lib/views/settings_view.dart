@@ -1,5 +1,7 @@
 import 'package:dieklingel_app/blocs/home_list_view_bloc.dart';
+import 'package:dieklingel_app/blocs/ice_server_list_view_bloc.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
+import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'about_view.dart';
 
 import '../components/cupertino_form_row_prefix.dart';
 import '../views/home_list_view.dart';
+import 'ice_server_list_view.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -50,15 +53,17 @@ class SettingsView extends StatelessWidget {
               ),
               CupertinoInkWell(
                 onTap: () {
-                  /* Navigator.push(
+                  Navigator.push(
                     context,
                     CupertinoPageRoute(
                       builder: (context) => BlocProvider(
-                        bloc: IceServerListViewBloc(),
+                        create: (_) => IceServerListViewBloc(
+                          context.read<IceServerRepository>(),
+                        ),
                         child: const IceServerListView(),
                       ),
                     ),
-                  );*/
+                  );
                 },
                 child: const CupertinoFormRow(
                   prefix: CupertinoFormRowPrefix(

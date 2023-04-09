@@ -63,6 +63,12 @@ class _IceServerAddView extends State<IceServerAddView> {
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.systemGroupedBackground,
       navigationBar: CupertinoNavigationBar(
+          leading: CupertinoButton(
+              padding: EdgeInsets.zero,
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              }),
           middle: const Text("Stun/Turn Server"),
           trailing: CupertinoButton(
             padding: EdgeInsets.zero,
