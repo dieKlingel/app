@@ -1,27 +1,33 @@
 import 'dart:async';
 
-import 'package:dieklingel_app/models/hive_ice_server.dart';
-import 'package:dieklingel_core_shared/flutter_shared.dart';
-import 'package:hive/hive.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:dieklingel_app/repositories/ice_server_repository.dart';
+import 'package:dieklingel_app/states/icer_server_list_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class IceServerListViewBloc extends Bloc {
-  late final StreamSubscription _subscription;
-  final _servers = BehaviorSubject<List<HiveIceServer>>();
+class IceServerListViewBloc
+    extends Bloc<IceServerListEvent, IceServerListState> {
+  final IceServerRepository iceServerRepository;
 
-  Stream<List<HiveIceServer>> get servers => _servers.stream;
+  IceServerListViewBloc(this.iceServerRepository)
+      : super(IceServerListState()) {
+    on<IceServerListRefresh>(_onRefresh);
+    on<IceServerListDeleted>(_onDeleted);
 
-  IceServerListViewBloc() {
-    Box<HiveIceServer> box = Hive.box((IceServer).toString());
-    _subscription = box.watch().listen((event) {
-      _servers.add(box.values.toList());
-    });
-    _servers.add(box.values.toList());
+    add(IceServerListRefresh());
   }
 
-  @override
-  void dispose() {
-    _subscription.cancel();
-    _servers.close();
+  Future<void> _onDeleted(
+    IceServerListDeleted event,
+    Emitter<IceServerListState> emit,
+  ) async {
+    await iceServerRepository.delete(event.server);
+    emit(IceServerListState(servers: iceServerRepository.servers));
+  }
+
+  Future<void> _onRefresh(
+    IceServerListRefresh event,
+    Emitter<IceServerListState> emit,
+  ) async {
+    emit(IceServerListState(servers: iceServerRepository.servers));
   }
 }

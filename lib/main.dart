@@ -1,13 +1,19 @@
 import 'dart:convert';
 
-import 'package:dieklingel_app/blocs/homes_view_bloc.dart';
+import 'package:dieklingel_app/blocs/call_view_bloc.dart';
+import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
+import 'package:dieklingel_app/blocs/home_view_bloc.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
-import 'package:dieklingel_core_shared/flutter_shared.dart';
-import 'package:get_it/get_it.dart';
+import 'package:dieklingel_app/repositories/home_repository.dart';
+import 'package:dieklingel_app/repositories/ice_server_repository.dart';
+import 'package:dieklingel_app/views/home_view.dart';
+import 'package:dieklingel_core_shared/blocs/mqtt_client_bloc.dart';
+import 'package:dieklingel_core_shared/models/ice_server.dart';
+import 'package:dieklingel_core_shared/mqtt/mqtt_client_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 import './models/home.dart';
-import './views/homes_view.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -15,6 +21,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'blocs/ice_server_add_view_bloc.dart';
 import 'firebase_options.dart';
 import 'hive/hive_home_adapter.dart';
 import 'hive/hive_ice_server_adapter.dart';
@@ -23,8 +30,6 @@ import 'models/hive_ice_server.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  GetIt.I.registerSingleton(MqttClientBloc());
 
   await Hive.initFlutter();
   Hive
@@ -40,8 +45,29 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  HomeRepository homeRepository = HomeRepository();
+  IceServerRepository iceServerRepository = IceServerRepository();
 
-  runApp(const App());
+  runApp(
+    MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider(create: (_) => homeRepository),
+        RepositoryProvider(create: (_) => iceServerRepository),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => HomeViewBloc(homeRepository)),
+          BlocProvider(create: (_) => HomeAddViewBloc(homeRepository)),
+          BlocProvider(
+              create: (_) => IceServerAddViewBloc(iceServerRepository)),
+          BlocProvider(
+            create: (_) => CallViewBloc(homeRepository, iceServerRepository),
+          ),
+        ],
+        child: const App(),
+      ),
+    ),
+  );
 }
 
 class App extends StatefulWidget {
@@ -109,8 +135,8 @@ class _App extends State<App> {
   Widget build(BuildContext context) {
     return CupertinoApp(
       home: BlocProvider(
-        bloc: HomesViewBloc(),
-        child: const HomesView(),
+        create: (_) => HomeViewBloc(context.read<HomeRepository>()),
+        child: const HomeView(),
       ),
     );
   }

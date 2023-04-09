@@ -49,6 +49,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.13"
+  bloc:
+    dependency: transitive
+    description:
+      name: bloc
+      sha256: "658a5ae59edcf1e58aac98b000a71c762ad8f46f1394c34a52050cafb3e11a80"
+      url: "https://pub.dev"
+    source: hosted
+    version: "8.1.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -113,22 +121,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
-  cupertino_progress_bar:
-    dependency: transitive
-    description:
-      name: cupertino_progress_bar
-      sha256: "4962a7c6db9b94d1c19462ad6036fdf20db43defa4114c908a3c4cbef1b3a2e0"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
-  cupertino_stepper:
-    dependency: transitive
-    description:
-      name: cupertino_stepper
-      sha256: "124690b8b23db7b43fc6d547688e42a9f3d73c8f46d0b210568e98a04b5645b2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.1"
   dart_webrtc:
     dependency: transitive
     description:
@@ -154,14 +146,6 @@ packages:
       url: "https://github.com/KoiFresh/dieklingel-core.git"
     source: git
     version: "0.0.1"
-  enough_platform_widgets:
-    dependency: "direct main"
-    description:
-      name: enough_platform_widgets
-      sha256: "13ca98cc448937416d2d91c1fbce90f6302096794df1c8a5891baf81bd493035"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.7.1"
   event_bus:
     dependency: transitive
     description:
@@ -247,6 +231,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_bloc:
+    dependency: "direct main"
+    description:
+      name: flutter_bloc
+      sha256: "434951eea948dbe87f737b674281465f610b8259c16c097b8163ce138749a775"
+      url: "https://pub.dev"
+    source: hosted
+    version: "8.1.2"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -279,14 +271,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
-  flutter_platform_widgets:
-    dependency: transitive
-    description:
-      name: flutter_platform_widgets
-      sha256: "654379d0b1c74011b0a440140d7445d472d9ea319aebab91217b88790341552d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -313,14 +297,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.0"
-  get_it:
-    dependency: "direct main"
-    description:
-      name: get_it
-      sha256: "290fde3a86072e4b37dbb03c07bec6126f0ecc28dad403c12ffe2e5a2d751ab7"
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.2.0"
   glob:
     dependency: transitive
     description:
@@ -330,7 +306,7 @@ packages:
     source: hosted
     version: "2.1.1"
   hive:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: hive
       sha256: "8dcf6db979d7933da8217edcec84e9df1bdb4e4edc7fc77dbd5aa74356d6d941"
@@ -429,10 +405,10 @@ packages:
     dependency: transitive
     description:
       name: mqtt_client
-      sha256: f9c8f9179031f34e6ec2b07485e9f4db5921d6b32d83462618fa1e93ad1c6743
+      sha256: ba10ec490ded55dc4e77bbc992529d823fb15d0d5ec68c2895f960312060c541
       url: "https://pub.dev"
     source: hosted
-    version: "9.7.4"
+    version: "9.8.1"
   nested:
     dependency: transitive
     description:
@@ -561,6 +537,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.4"
+  provider:
+    dependency: transitive
+    description:
+      name: provider
+      sha256: cdbe7530b12ecd9eb455bdaa2fcb8d4dad22e80b8afb4798b41479d5ce26847f
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.5"
   pub_semver:
     dependency: transitive
     description:
@@ -569,8 +553,16 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.3"
-  rxdart:
+  pull_down_button:
     dependency: "direct main"
+    description:
+      name: pull_down_button
+      sha256: a520b53b612e283dd079a93ae0fcffe0a4e2bd1ec494a167eaaae490f7f923dd
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.1"
+  rxdart:
+    dependency: transitive
     description:
       name: rxdart
       sha256: "0c7c0cedd93788d996e33041ffecda924cc54389199cde4e6a34b440f50044cb"
@@ -863,5 +855,5 @@ packages:
     source: hosted
     version: "3.1.1"
 sdks:
-  dart: ">=2.19.0-0 <3.0.0"
-  flutter: ">=3.7.0"
+  dart: ">=2.18.6 <3.0.0"
+  flutter: ">=3.3.0"
