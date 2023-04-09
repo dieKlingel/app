@@ -1,6 +1,6 @@
 import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class HiveHome extends Home with HiveObjectMixin {
   HiveHome({

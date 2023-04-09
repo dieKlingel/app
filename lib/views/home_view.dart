@@ -1,11 +1,5 @@
-import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
-import 'package:dieklingel_app/blocs/home_list_view_bloc.dart';
 import 'package:dieklingel_app/blocs/home_view_bloc.dart';
-import 'package:dieklingel_app/repositories/home_repository.dart';
-import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/states/call_state.dart';
-import 'package:dieklingel_app/states/home_add_state.dart';
-import 'package:dieklingel_app/states/home_list_state.dart';
 import 'package:dieklingel_app/states/home_state.dart';
 import 'package:dieklingel_app/views/call_view.dart';
 import 'package:dieklingel_app/views/home_add_view.dart';
@@ -51,7 +45,7 @@ class HomeView extends StatelessWidget {
     final bloc = context.read<HomeViewBloc>();
     await Navigator.of(context).push(
       CupertinoPageRoute(
-        builder: (context) => SettingsView(),
+        builder: (context) => const SettingsView(),
       ),
     );
     bloc.add(HomeRefresh());

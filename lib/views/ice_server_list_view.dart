@@ -1,8 +1,6 @@
 import 'package:dieklingel_app/blocs/ice_server_list_view_bloc.dart';
 import 'package:dieklingel_app/models/hive_ice_server.dart';
 import 'package:dieklingel_app/states/icer_server_list_state.dart';
-import 'package:dieklingel_core_shared/flutter_shared.dart';
-import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

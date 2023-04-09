@@ -1,4 +1,3 @@
-import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -18,29 +17,23 @@ class AboutView extends StatelessWidget {
             CupertinoFormSection.insetGrouped(
               header: const Text("Legal Notice & Privacy Policy"),
               children: [
-                CupertinoInkWell(
+                CupertinoListTile(
+                  title: const Text("Legal Notice"),
+                  trailing: const Icon(CupertinoIcons.forward),
                   onTap: () {
                     launchUrl(
                       Uri.parse("https://dieklingel.de/credit-notes"),
                     );
                   },
-                  child: const CupertinoFormRow(
-                    padding: EdgeInsets.all(12.0),
-                    prefix: Text("Legal Notice"),
-                    child: Icon(CupertinoIcons.forward),
-                  ),
                 ),
-                CupertinoInkWell(
+                CupertinoListTile(
+                  title: const Text("Privacy Policy"),
+                  trailing: const Icon(CupertinoIcons.forward),
                   onTap: () {
                     launchUrl(
                       Uri.parse("https://dieklingel.de/privacy-policy"),
                     );
                   },
-                  child: const CupertinoFormRow(
-                    padding: EdgeInsets.all(12.0),
-                    prefix: Text("Privacy Policy"),
-                    child: Icon(CupertinoIcons.forward),
-                  ),
                 ),
               ],
             ),

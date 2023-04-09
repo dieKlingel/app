@@ -2,14 +2,12 @@ import 'package:dieklingel_app/blocs/home_list_view_bloc.dart';
 import 'package:dieklingel_app/blocs/ice_server_list_view_bloc.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
-import 'package:enough_platform_widgets/enough_platform_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'about_view.dart';
 
-import '../components/cupertino_form_row_prefix.dart';
 import '../views/home_list_view.dart';
 import 'ice_server_list_view.dart';
 
@@ -28,7 +26,7 @@ class SettingsView extends StatelessWidget {
           CupertinoFormSection.insetGrouped(
             header: const Text("Connections"),
             children: [
-              CupertinoInkWell(
+              CupertinoListTile(
                 onTap: () {
                   Navigator.push(
                     context,
@@ -42,16 +40,14 @@ class SettingsView extends StatelessWidget {
                     ),
                   );
                 },
-                child: const CupertinoFormRow(
-                  prefix: CupertinoFormRowPrefix(
-                    title: "Homes",
-                    icon: CupertinoIcons.home,
-                    color: Colors.orange,
-                  ),
-                  child: Icon(CupertinoIcons.forward),
+                leading: const Icon(
+                  CupertinoIcons.home,
+                  color: Colors.orange,
                 ),
+                title: const Text("Homes"),
+                trailing: const Icon(CupertinoIcons.forward),
               ),
-              CupertinoInkWell(
+              CupertinoListTile(
                 onTap: () {
                   Navigator.push(
                     context,
@@ -65,21 +61,19 @@ class SettingsView extends StatelessWidget {
                     ),
                   );
                 },
-                child: const CupertinoFormRow(
-                  prefix: CupertinoFormRowPrefix(
-                    title: "ICE Servers",
-                    icon: CupertinoIcons.cloud,
-                    color: Colors.blue,
-                  ),
-                  child: Icon(CupertinoIcons.forward),
+                leading: const Icon(
+                  CupertinoIcons.cloud,
+                  color: Colors.blue,
                 ),
+                title: const Text("ICE Servers"),
+                trailing: const Icon(CupertinoIcons.forward),
               ),
             ],
           ),
           CupertinoFormSection.insetGrouped(
             header: const Text("Information"),
             children: [
-              CupertinoInkWell(
+              CupertinoListTile(
                 onTap: () {
                   Navigator.push(
                     context,
@@ -88,14 +82,12 @@ class SettingsView extends StatelessWidget {
                     ),
                   );
                 },
-                child: const CupertinoFormRow(
-                  prefix: CupertinoFormRowPrefix(
-                    title: "About",
-                    icon: CupertinoIcons.info_circle,
-                    color: Colors.green,
-                  ),
-                  child: Icon(CupertinoIcons.forward),
+                leading: const Icon(
+                  CupertinoIcons.info_circle,
+                  color: Colors.green,
                 ),
+                title: const Text("About"),
+                trailing: const Icon(CupertinoIcons.forward),
               ),
             ],
           ),

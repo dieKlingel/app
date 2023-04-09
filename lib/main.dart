@@ -11,7 +11,6 @@ import 'package:dieklingel_core_shared/blocs/mqtt_client_bloc.dart';
 import 'package:dieklingel_core_shared/models/ice_server.dart';
 import 'package:dieklingel_core_shared/mqtt/mqtt_client_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
 
 import './models/home.dart';
@@ -31,8 +30,6 @@ import 'models/hive_ice_server.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  GetIt.I.registerSingleton(MqttClientBloc());
 
   await Hive.initFlutter();
   Hive

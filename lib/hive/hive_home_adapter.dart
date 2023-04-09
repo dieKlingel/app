@@ -1,5 +1,5 @@
 import 'package:dieklingel_app/models/home.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/hive_home.dart';
 
