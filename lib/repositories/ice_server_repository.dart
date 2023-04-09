@@ -8,6 +8,10 @@ class IceServerRepository {
   List<HiveIceServer> get servers => _serverbox.values.toList();
 
   Future<void> add(HiveIceServer server) async {
+    if (server.isInBox) {
+      await server.save();
+      return;
+    }
     await _serverbox.add(server);
   }
 

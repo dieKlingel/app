@@ -2,6 +2,12 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 class CallState {}
 
+class CallErrorState extends CallState {
+  final String errorMessage;
+
+  CallErrorState({required this.errorMessage});
+}
+
 class CallInitatedState extends CallState {}
 
 class CallActiveState extends CallState {

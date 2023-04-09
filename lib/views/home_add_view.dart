@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
+import 'package:dieklingel_app/extensions/mqtt_uri.dart';
 import 'package:dieklingel_app/states/home_add_state.dart';
 import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,10 +12,24 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/hive_home.dart';
 
-class HomeAddView extends StatelessWidget {
+class HomeAddView extends StatefulWidget {
   final HiveHome? home;
 
   const HomeAddView({super.key, this.home});
+
+  @override
+  State<StatefulWidget> createState() => _HomeAddView();
+}
+
+class _HomeAddView extends State<HomeAddView> {
+  late final _name = TextEditingController(text: widget.home?.name);
+  late final _server = TextEditingController(
+    text: widget.home?.uri.toHostOnlyString(),
+  );
+  late final _username = TextEditingController(text: widget.home?.username);
+  late final _password = TextEditingController(text: widget.home?.password);
+  late final _channel = TextEditingController(text: widget.home?.uri.channel);
+  late final _sign = TextEditingController(text: widget.home?.uri.section);
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +54,13 @@ class HomeAddView extends StatelessWidget {
               onPressed: () {
                 context.read<HomeAddViewBloc>().add(
                       HomeAddSubmit(
-                        home: home,
+                        home: widget.home,
+                        name: _name.text,
+                        server: _server.text,
+                        username: _username.text,
+                        password: _password.text,
+                        channel: _channel.text,
+                        sign: _sign.text,
                       ),
                     );
               },
@@ -48,116 +69,67 @@ class HomeAddView extends StatelessWidget {
           ),
           backgroundColor: CupertinoColors.systemGroupedBackground,
           child: SafeArea(
-            child: _Form(
-              home: home,
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _Form extends StatelessWidget {
-  final HiveHome? home;
-
-  const _Form({this.home});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<HomeAddViewBloc, HomeAddState>(
-      builder: (context, state) {
-        return ListView(
-          clipBehavior: Clip.none,
-          children: [
-            CupertinoFormSection.insetGrouped(
-              header: const Text("Configuration"),
+            child: ListView(
+              clipBehavior: Clip.none,
               children: [
-                CupertinoTextFormFieldRow(
-                  prefix: const Text("Name"),
-                  initialValue: home?.name,
-                  validator: (value) =>
-                      state is HomeAddFormErrorState ? state.nameError : null,
-                  autovalidateMode: AutovalidateMode.always,
-                  onChanged: (value) {
-                    context
-                        .read<HomeAddViewBloc>()
-                        .add(HomeAddName(name: value));
-                  },
+                CupertinoFormSection.insetGrouped(
+                  header: const Text("Configuration"),
+                  children: [
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Name"),
+                      controller: _name,
+                      validator: (value) => state is HomeAddFormErrorState
+                          ? state.nameError
+                          : null,
+                      autovalidateMode: AutovalidateMode.always,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            CupertinoFormSection.insetGrouped(
-              header: const Text("Server"),
-              children: [
-                CupertinoTextFormFieldRow(
-                  prefix: const Text("Server URL"),
-                  initialValue: home == null
-                      ? ""
-                      : (home?.uri.toUri().replace(
-                            path: "",
-                            fragment: "",
-                          )).toString(),
-                  validator: (value) =>
-                      state is HomeAddFormErrorState ? state.serverError : null,
-                  autovalidateMode: AutovalidateMode.always,
-                  onChanged: (value) {
-                    context
-                        .read<HomeAddViewBloc>()
-                        .add(HomeAddServer(server: value));
-                  },
+                CupertinoFormSection.insetGrouped(
+                  header: const Text("Server"),
+                  children: [
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Server URL"),
+                      controller: _server,
+                      validator: (value) => state is HomeAddFormErrorState
+                          ? state.serverError
+                          : null,
+                      autovalidateMode: AutovalidateMode.always,
+                    ),
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Username"),
+                      controller: _username,
+                    ),
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Password"),
+                      controller: _password,
+                    ),
+                  ],
                 ),
-                CupertinoTextFormFieldRow(
-                  prefix: const Text("Username"),
-                  initialValue: home?.username,
-                  onChanged: (value) {
-                    context
-                        .read<HomeAddViewBloc>()
-                        .add(HomeAddUsername(username: value));
-                  },
-                ),
-                CupertinoTextFormFieldRow(
-                  prefix: const Text("Password"),
-                  initialValue: home?.password,
-                  onChanged: (value) {
-                    context
-                        .read<HomeAddViewBloc>()
-                        .add(HomeAddPassword(password: value));
-                  },
-                ),
-              ],
-            ),
-            CupertinoFormSection.insetGrouped(
-              header: const Text("Channel"),
-              children: [
-                CupertinoTextFormFieldRow(
-                  prefix: const Text("Channel Prefix"),
-                  initialValue: home?.uri.channel,
-                  validator: (value) => state is HomeAddFormErrorState
-                      ? state.channelError
-                      : null,
-                  autovalidateMode: AutovalidateMode.always,
-                  onChanged: (value) {
-                    context
-                        .read<HomeAddViewBloc>()
-                        .add(HomeAddChannel(channel: value));
-                  },
-                ),
-                CupertinoTextFormFieldRow(
-                  prefix: const Text("Sign"),
-                  initialValue: home?.uri.section,
-                  validator: (value) =>
-                      state is HomeAddFormErrorState ? state.signError : null,
-                  autovalidateMode: AutovalidateMode.always,
-                  onChanged: (value) {
-                    context
-                        .read<HomeAddViewBloc>()
-                        .add(HomeAddSign(sign: value));
-                  },
+                CupertinoFormSection.insetGrouped(
+                  header: const Text("Channel"),
+                  children: [
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Channel Prefix"),
+                      validator: (value) => state is HomeAddFormErrorState
+                          ? state.channelError
+                          : null,
+                      autovalidateMode: AutovalidateMode.always,
+                      controller: _channel,
+                    ),
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Sign"),
+                      validator: (value) => state is HomeAddFormErrorState
+                          ? state.signError
+                          : null,
+                      autovalidateMode: AutovalidateMode.always,
+                      controller: _sign,
+                    )
+                  ],
                 )
               ],
-            )
-          ],
+            ),
+          ),
         );
       },
     );

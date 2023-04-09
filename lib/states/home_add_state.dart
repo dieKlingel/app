@@ -2,6 +2,24 @@ import 'package:dieklingel_app/models/hive_home.dart';
 
 class HomeAddState {}
 
+class HomeAddInitialState extends HomeAddState {
+  final String name;
+  final String server;
+  final String username;
+  final String password;
+  final String channel;
+  final String sign;
+
+  HomeAddInitialState({
+    required this.name,
+    required this.server,
+    required this.username,
+    required this.password,
+    required this.channel,
+    required this.sign,
+  });
+}
+
 class HomeAddFormErrorState extends HomeAddState {
   final String? nameError;
   final String? serverError;
@@ -26,6 +44,12 @@ class HomeAddFormErrorState extends HomeAddState {
 class HomeAddSuccessfulState extends HomeAddState {}
 
 class HomeAddEvent {}
+
+class HomeAddInitialize extends HomeAddEvent {
+  final HiveHome? home;
+
+  HomeAddInitialize({this.home});
+}
 
 class HomeAdd extends HomeAddEvent {
   final HiveHome home;
@@ -70,7 +94,21 @@ class HomeAddSign extends HomeAddEvent {
 }
 
 class HomeAddSubmit extends HomeAddEvent {
-  HiveHome? home;
+  final HiveHome? home;
+  final String name;
+  final String server;
+  final String username;
+  final String password;
+  final String channel;
+  final String sign;
 
-  HomeAddSubmit({this.home});
+  HomeAddSubmit({
+    required this.name,
+    required this.server,
+    required this.username,
+    required this.password,
+    required this.channel,
+    required this.sign,
+    this.home,
+  });
 }

@@ -15,20 +15,7 @@ import 'home_add_view.dart';
 class HomeListView extends StatelessWidget {
   const HomeListView({super.key});
 
-  void _onAddHome(BuildContext context) async {
-    final bloc = context.read<HomeListViewBloc>();
-    await Navigator.push(
-      context,
-      CupertinoModalPopupRoute(
-        builder: (context) => const CupertinoPopupSurface(
-          child: HomeAddView(),
-        ),
-      ),
-    );
-    bloc.add(HomeListRefresh());
-  }
-
-  void _onEditHome(BuildContext context, HiveHome home) async {
+  void _onEditHome(BuildContext context, [HiveHome? home]) async {
     final bloc = context.read<HomeListViewBloc>();
 
     await Navigator.push(
@@ -47,12 +34,13 @@ class HomeListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.systemGroupedBackground,
       navigationBar: CupertinoNavigationBar(
         middle: const Text("Home"),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           child: const Icon(CupertinoIcons.add),
-          onPressed: () => _onAddHome(context),
+          onPressed: () => _onEditHome(context),
         ),
       ),
       child: SafeArea(child: BlocBuilder<HomeListViewBloc, HomeListState>(
@@ -67,41 +55,45 @@ class HomeListView extends StatelessWidget {
                     Text("add your first Home"),
                   ],
                 ),
-                onPressed: () => _onAddHome(context),
+                onPressed: () => _onEditHome(context),
               ),
             );
           }
 
-          return CupertinoListSection.insetGrouped(
+          return ListView(
             children: [
-              for (HiveHome home in state.homes) ...[
-                Dismissible(
-                  key: UniqueKey(),
-                  background: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerRight,
-                    child: const Padding(
-                      padding: EdgeInsets.only(right: 8.0),
-                      child: Icon(
-                        CupertinoIcons.trash,
-                        color: Colors.white,
+              CupertinoListSection.insetGrouped(
+                children: [
+                  for (HiveHome home in state.homes) ...[
+                    Dismissible(
+                      key: UniqueKey(),
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        child: const Padding(
+                          padding: EdgeInsets.only(right: 8.0),
+                          child: Icon(
+                            CupertinoIcons.trash,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (direction) async {
+                        context
+                            .read<HomeListViewBloc>()
+                            .add(HomeListDeleted(home: home));
+                      },
+                      child: CupertinoListTile(
+                        title: Text(home.name),
+                        onTap: () => _onEditHome(context, home),
+                        leading: const Icon(CupertinoIcons.home),
+                        trailing: const Icon(CupertinoIcons.chevron_forward),
                       ),
                     ),
-                  ),
-                  direction: DismissDirection.endToStart,
-                  onDismissed: (direction) async {
-                    context
-                        .read<HomeListViewBloc>()
-                        .add(HomeListDeleted(home: home));
-                  },
-                  child: CupertinoListTile(
-                    title: Text(home.name),
-                    onTap: () => _onEditHome(context, home),
-                    leading: const Icon(CupertinoIcons.home),
-                    trailing: const Icon(CupertinoIcons.chevron_forward),
-                  ),
-                ),
-              ],
+                  ],
+                ],
+              ),
             ],
           );
         },

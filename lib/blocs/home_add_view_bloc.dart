@@ -1,64 +1,15 @@
+import 'package:dieklingel_app/extensions/mqtt_uri.dart';
 import 'package:dieklingel_app/models/hive_home.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/states/home_add_state.dart';
 import 'package:dieklingel_core_shared/models/mqtt_uri.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
   final HomeRepository homeRepository;
 
-  String _name = "";
-  String _server = "";
-  String _username = "";
-  String _password = "";
-  String _channel = "";
-  String _sign = "";
-
   HomeAddViewBloc(this.homeRepository) : super(HomeAddState()) {
-    on<HomeAddName>(_onAddName);
-    on<HomeAddServer>(_onAddServer);
-    on<HomeAddUsername>(_onAddUsername);
-    on<HomeAddPassword>(_onAddPassword);
-    on<HomeAddChannel>(_onAddChannel);
-    on<HomeAddSign>(_onAddSign);
     on<HomeAddSubmit>(_onSubmit);
-  }
-
-  Future<void> _onAddName(HomeAddName event, Emitter<HomeAddState> emit) async {
-    _name = event.name;
-  }
-
-  Future<void> _onAddServer(
-    HomeAddServer event,
-    Emitter<HomeAddState> emit,
-  ) async {
-    _server = event.server;
-  }
-
-  Future<void> _onAddUsername(
-    HomeAddUsername event,
-    Emitter<HomeAddState> emit,
-  ) async {
-    _username = event.username;
-  }
-
-  Future<void> _onAddPassword(
-    HomeAddPassword event,
-    Emitter<HomeAddState> emit,
-  ) async {
-    _password = event.password;
-  }
-
-  Future<void> _onAddChannel(
-    HomeAddChannel event,
-    Emitter<HomeAddState> emit,
-  ) async {
-    _channel = event.channel;
-  }
-
-  Future<void> _onAddSign(HomeAddSign event, Emitter<HomeAddState> emit) async {
-    _sign = event.sign;
   }
 
   Future<void> _onSubmit(
@@ -66,7 +17,7 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     Emitter<HomeAddState> emit,
   ) async {
     String? nameError;
-    if (_name.isEmpty) {
+    if (event.name.isEmpty) {
       nameError = "Please enter a name";
     }
 
@@ -74,7 +25,7 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     RegExp serverRegex = RegExp(
       r'^(mqtt|mqtts|ws|wss):\/\/(?:[A-Za-z0-9]+\.)+[A-Za-z0-9]{2,3}:\d{1,5}(\/?)$',
     );
-    if (!serverRegex.hasMatch(_server)) {
+    if (!serverRegex.hasMatch(event.server)) {
       serverError =
           "Please enter a server url within the format 'mqtt://server.org:1883/'";
     }
@@ -83,7 +34,7 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     RegExp channelRegex = RegExp(
       r'^(([a-z]+)([a-z\.+])([a-z]+)\/)+$',
     );
-    if (!channelRegex.hasMatch(_channel)) {
+    if (!channelRegex.hasMatch(event.channel)) {
       channelError =
           "Please enter a channel prefix within format 'com.dieklingel/main/prefix/'";
     }
@@ -92,7 +43,7 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     RegExp signRegex = RegExp(
       r'^[A-Za-z]+$',
     );
-    if (!signRegex.hasMatch(_sign)) {
+    if (!signRegex.hasMatch(event.sign)) {
       signError = "Please enter a sign within the format 'mysign'";
     }
 
@@ -107,18 +58,18 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
       return;
     }
 
-    Uri url = Uri.parse(_server);
+    Uri url = Uri.parse(event.server);
     MqttUri uri = MqttUri.fromUri(
       Uri.parse(
-        "${url.scheme}://${url.authority}/$_channel#$_sign",
+        "${url.scheme}://${url.authority}/${event.channel}#${event.sign}",
       ),
     );
 
-    HiveHome home = event.home ?? HiveHome(name: _name, uri: uri);
-    home.name = _name;
+    HiveHome home = event.home ?? HiveHome(name: event.name, uri: uri);
+    home.name = event.name;
     home.uri = uri;
-    home.username = _username;
-    home.password = _password;
+    home.username = event.username;
+    home.password = event.password;
 
     homeRepository.add(home);
 

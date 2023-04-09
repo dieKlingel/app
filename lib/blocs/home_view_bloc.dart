@@ -24,6 +24,10 @@ class HomeViewBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<void> _onRefresh(HomeRefresh event, Emitter<HomeState> emit) async {
     HiveHome? selected = homeRepository.selected;
+    if (selected == null && homeRepository.homes.isNotEmpty) {
+      await homeRepository.select(homeRepository.homes.first);
+      selected = homeRepository.selected;
+    }
 
     if (selected == null) {
       emit(HomeState(

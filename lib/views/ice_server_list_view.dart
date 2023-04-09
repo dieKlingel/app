@@ -12,8 +12,6 @@ import 'ice_server_add_view.dart';
 class IceServerListView extends StatelessWidget {
   const IceServerListView({super.key});
 
-  void _onIceServerAdd(BuildContext context) {}
-
   void _onIceServerEdit(BuildContext context, [HiveIceServer? server]) async {
     final bloc = context.read<IceServerListViewBloc>();
 
@@ -33,6 +31,7 @@ class IceServerListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.systemGroupedBackground,
       navigationBar: CupertinoNavigationBar(
         middle: const Text("ICE Server's"),
         trailing: CupertinoButton(
@@ -59,36 +58,40 @@ class IceServerListView extends StatelessWidget {
               );
             }
 
-            return CupertinoListSection.insetGrouped(
+            return ListView(
               children: [
-                for (HiveIceServer server in state.servers) ...[
-                  Dismissible(
-                    key: UniqueKey(),
-                    background: Container(
-                      color: Colors.red,
-                      alignment: Alignment.centerRight,
-                      child: const Padding(
-                        padding: EdgeInsets.only(right: 8.0),
-                        child: Icon(
-                          CupertinoIcons.trash,
-                          color: Colors.white,
+                CupertinoListSection.insetGrouped(
+                  children: [
+                    for (HiveIceServer server in state.servers) ...[
+                      Dismissible(
+                        key: UniqueKey(),
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerRight,
+                          child: const Padding(
+                            padding: EdgeInsets.only(right: 8.0),
+                            child: Icon(
+                              CupertinoIcons.trash,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        direction: DismissDirection.endToStart,
+                        onDismissed: (direction) async {
+                          context
+                              .read<IceServerListViewBloc>()
+                              .add(IceServerListDeleted(server: server));
+                        },
+                        child: CupertinoListTile(
+                          title: Text(server.urls),
+                          onTap: () => _onIceServerEdit(context, server),
+                          leading: const Icon(CupertinoIcons.cloud),
+                          trailing: const Icon(CupertinoIcons.chevron_forward),
                         ),
                       ),
-                    ),
-                    direction: DismissDirection.endToStart,
-                    onDismissed: (direction) async {
-                      context
-                          .read<IceServerListViewBloc>()
-                          .add(IceServerListDeleted(server: server));
-                    },
-                    child: CupertinoListTile(
-                      title: Text(server.urls),
-                      onTap: () => _onIceServerEdit(context, server),
-                      leading: const Icon(CupertinoIcons.cloud),
-                      trailing: const Icon(CupertinoIcons.chevron_forward),
-                    ),
-                  ),
-                ],
+                    ],
+                  ],
+                ),
               ],
             );
           },

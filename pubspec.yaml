@@ -54,6 +54,7 @@ dependencies:
   flutter_bloc: ^8.1.2
   pull_down_button: ^0.8.1
   provider: ^6.0.5
+  mqtt_client: ^9.8.1
 
 dev_dependencies:
   flutter_test:
