@@ -455,8 +455,10 @@ class _Video extends StatelessWidget {
         }
 
         if (state is CallActiveState) {
-          return Center(
-            child: RTCVideoView(state.renderer),
+          return InteractiveViewer(
+            child: RTCVideoView(
+              state.renderer,
+            ),
           );
         }
 
