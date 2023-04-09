@@ -1,29 +1,30 @@
-import 'dart:async';
+import 'package:dieklingel_app/states/home_list_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:dieklingel_core_shared/flutter_shared.dart';
-import 'package:hive/hive.dart';
-import 'package:rxdart/rxdart.dart';
+import '../repositories/home_repository.dart';
 
-import '../models/hive_home.dart';
-import '../models/home.dart';
+class HomeListViewBloc extends Bloc<HomeListEvent, HomeListState> {
+  final HomeRepository homeRepository;
 
-class HomeListViewBloc extends Bloc {
-  late final StreamSubscription _subscription;
-  final _homes = BehaviorSubject<List<HiveHome>>();
+  HomeListViewBloc(this.homeRepository) : super(HomeListState()) {
+    on<HomeListDeleted>(_onDeleted);
+    on<HomeListRefresh>(_onRefresh);
 
-  Stream<List<HiveHome>> get homes => _homes.stream;
-
-  HomeListViewBloc() {
-    Box<HiveHome> box = Hive.box((Home).toString());
-    _subscription = box.watch().listen((event) {
-      _homes.add(box.values.toList());
-    });
-    _homes.add(box.values.toList());
+    add(HomeListRefresh());
   }
 
-  @override
-  void dispose() {
-    _subscription.cancel();
-    _homes.close();
+  Future<void> _onDeleted(
+    HomeListDeleted event,
+    Emitter<HomeListState> emit,
+  ) async {
+    await homeRepository.delete(event.home);
+    emit(HomeListState(homes: homeRepository.homes));
+  }
+
+  Future<void> _onRefresh(
+    HomeListRefresh event,
+    Emitter<HomeListState> emit,
+  ) async {
+    emit(HomeListState(homes: homeRepository.homes));
   }
 }

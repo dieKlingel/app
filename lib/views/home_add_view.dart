@@ -27,6 +27,13 @@ class HomeAddView extends StatelessWidget {
       builder: (context, state) {
         return CupertinoPageScaffold(
           navigationBar: CupertinoNavigationBar(
+            leading: CupertinoButton(
+                padding: EdgeInsets.zero,
+                child: Text("Cancel"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                }),
+            middle: const Text("Home"),
             trailing: CupertinoButton(
               padding: EdgeInsets.zero,
               onPressed: () {

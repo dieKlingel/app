@@ -23,7 +23,6 @@ import '../utils/rtc_transceiver.dart';
 class CallViewBloc extends Bloc<CallEvent, CallState> {
   final HomeRepository homeRepository;
   final IceServerRepository iceServerRepository;
-  HiveHome? _home;
   MqttClientBloc? mqtt;
   RtcClientWrapper? rtcclient;
 
@@ -38,18 +37,10 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     on<CallHangup>(_onHangup);
     on<CallMute>(_onMute);
     on<CallSpeaker>(_onSpeaker);
-
-    _home = homeRepository.selected;
-    homeRepository.addListener(() {
-      if (homeRepository.selected != _home) {
-        add(CallHangup());
-        _home = homeRepository.selected;
-      }
-    });
   }
 
   HiveHome get home {
-    HiveHome? home = _home;
+    HiveHome? home = homeRepository.selected;
     if (home == null) {
       throw Exception(
         "cannot read the selected home. Please select a Home in HomeRepository first",

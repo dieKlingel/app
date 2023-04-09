@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:dieklingel_app/blocs/call_view_bloc.dart';
+import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
+import 'package:dieklingel_app/blocs/home_list_view_bloc.dart';
 import 'package:dieklingel_app/blocs/home_view_bloc.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
@@ -46,11 +49,27 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  HomeRepository homeRepository = HomeRepository();
+  IceServerRepository iceServerRepository = IceServerRepository();
 
-  runApp(MultiRepositoryProvider(providers: [
-    ChangeNotifierProvider(create: (_) => HomeRepository()),
-    ChangeNotifierProvider(create: (_) => IceServerRepository()),
-  ], child: const App()));
+  runApp(
+    MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider(create: (_) => homeRepository),
+        RepositoryProvider(create: (_) => iceServerRepository),
+      ],
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => HomeViewBloc(homeRepository)),
+          BlocProvider(create: (_) => HomeAddViewBloc(homeRepository)),
+          BlocProvider(
+            create: (_) => CallViewBloc(homeRepository, iceServerRepository),
+          ),
+        ],
+        child: const App(),
+      ),
+    ),
+  );
 }
 
 class App extends StatefulWidget {

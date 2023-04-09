@@ -12,15 +12,14 @@ class HomeViewBloc extends Bloc<HomeEvent, HomeState> {
     on<HomeSelected>(_onSelected);
     on<HomeRefresh>(_onRefresh);
 
-    homeRepository.addListener(() {
-      add(HomeRefresh());
-    });
-
     add(HomeRefresh());
   }
 
   Future<void> _onSelected(HomeSelected event, Emitter<HomeState> emit) async {
     await homeRepository.select(event.home);
+    emit(
+      HomeSelectedState(home: event.home, homes: homeRepository.homes),
+    );
   }
 
   Future<void> _onRefresh(HomeRefresh event, Emitter<HomeState> emit) async {

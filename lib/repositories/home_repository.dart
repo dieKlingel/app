@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/home.dart';
 
-class HomeRepository extends ChangeNotifier {
+class HomeRepository {
   final Box<HiveHome> _homebox = Hive.box((Home).toString());
   final Box _settingsbox = Hive.box("settings");
 
@@ -25,11 +25,9 @@ class HomeRepository extends ChangeNotifier {
   Future<void> add(HiveHome home) async {
     if (home.isInBox) {
       await home.save();
-      notifyListeners();
       return;
     }
     await _homebox.add(home);
-    notifyListeners();
   }
 
   Future<void> delete(HiveHome home) async {
@@ -44,13 +42,11 @@ class HomeRepository extends ChangeNotifier {
     if (selected == home) {
       select(homes.first);
     }
-    notifyListeners();
   }
 
   Future<void> select(HiveHome? home) async {
     if (home == null) {
       await _settingsbox.delete("home");
-      notifyListeners();
       return;
     }
     if (!homes.contains(home)) {
@@ -59,6 +55,5 @@ class HomeRepository extends ChangeNotifier {
       );
     }
     await _settingsbox.put("home", home.key);
-    notifyListeners();
   }
 }

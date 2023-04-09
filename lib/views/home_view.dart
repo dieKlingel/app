@@ -1,7 +1,11 @@
 import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
+import 'package:dieklingel_app/blocs/home_list_view_bloc.dart';
 import 'package:dieklingel_app/blocs/home_view_bloc.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
+import 'package:dieklingel_app/states/call_state.dart';
+import 'package:dieklingel_app/states/home_add_state.dart';
+import 'package:dieklingel_app/states/home_list_state.dart';
 import 'package:dieklingel_app/states/home_state.dart';
 import 'package:dieklingel_app/views/call_view.dart';
 import 'package:dieklingel_app/views/home_add_view.dart';
@@ -17,22 +21,22 @@ import '../models/hive_home.dart';
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
-  void _onAddHome(BuildContext context) {
-    showCupertinoModalPopup(
+  void _onAddHome(BuildContext context) async {
+    final bloc = context.read<HomeViewBloc>();
+    await showCupertinoModalPopup(
       context: context,
       builder: (context) {
-        return CupertinoPopupSurface(
-          child: BlocProvider(
-            create: (_) => HomeAddViewBloc(context.read<HomeRepository>()),
-            child: const HomeAddView(),
-          ),
+        return const CupertinoPopupSurface(
+          child: HomeAddView(),
         );
       },
     );
+    bloc.add(HomeRefresh());
   }
 
-  void _onAddIceServer(BuildContext context) {
-    showCupertinoModalPopup(
+  void _onAddIceServer(BuildContext context) async {
+    final bloc = context.read<HomeViewBloc>();
+    await showCupertinoModalPopup(
       context: context,
       builder: (context) {
         return const CupertinoPopupSurface(
@@ -40,14 +44,17 @@ class HomeView extends StatelessWidget {
         );
       },
     );
+    bloc.add(HomeRefresh());
   }
 
-  void _onSettingsTap(BuildContext context) {
-    Navigator.of(context).push(
+  void _onSettingsTap(BuildContext context) async {
+    final bloc = context.read<HomeViewBloc>();
+    await Navigator.of(context).push(
       CupertinoPageRoute(
         builder: (context) => SettingsView(),
       ),
     );
+    bloc.add(HomeRefresh());
   }
 
   @override
@@ -98,6 +105,7 @@ class HomeView extends StatelessWidget {
                           context
                               .read<HomeViewBloc>()
                               .add(HomeSelected(home: home));
+                          context.read<CallViewBloc>().add(CallHangup());
                         },
                         title: home.name,
                       ),
@@ -123,8 +131,9 @@ class HomeView extends StatelessWidget {
 }
 
 class _Content extends StatelessWidget {
-  void _onAddHome(BuildContext context) {
-    showCupertinoModalPopup(
+  void _onAddHome(BuildContext context) async {
+    final bloc = context.read<HomeViewBloc>();
+    await showCupertinoModalPopup(
       context: context,
       builder: (context) {
         return const CupertinoPopupSurface(
@@ -132,6 +141,7 @@ class _Content extends StatelessWidget {
         );
       },
     );
+    bloc.add(HomeRefresh());
   }
 
   @override
@@ -152,15 +162,7 @@ class _Content extends StatelessWidget {
             ),
           );
         }
-        return BlocProvider(
-          create: (context) {
-            return CallViewBloc(
-              context.read<HomeRepository>(),
-              context.read<IceServerRepository>(),
-            );
-          },
-          child: const CallView(),
-        );
+        return const CallView();
       }),
     );
   }
