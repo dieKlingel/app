@@ -1,5 +1,5 @@
 
-name: deploy-webapp
+name: Webapp
 on:
   push:
     branches:

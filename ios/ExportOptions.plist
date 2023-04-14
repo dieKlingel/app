@@ -11,12 +11,12 @@
 	<key>provisioningProfiles</key>
 	<dict>
 		<key>com.dieklingel.app</key>
-		<string>com dieklingel app</string>
+		<string>match AppStore com.dieklingel.app</string>
 		<key>com.dieklingel.app.ImageNotification</key>
-		<string>com dieklingel app ImageNotification</string>
+		<string>match AppStore com.dieklingel.app.ImageNotification</string>
 	</dict>
 	<key>signingCertificate</key>
-	<string>1641A8502F4F6B63BBB21C7F8CA735E6FE0A2C39</string>
+	<string>8702C3CEE167260D632A1AC65DE99063A5FEC4DF</string>
 	<key>signingStyle</key>
 	<string>manual</string>
 	<key>stripSwiftSymbols</key>
