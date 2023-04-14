@@ -1,0 +1,8 @@
+app_identifier("com.dieklingel.app") # The bundle identifier of your app
+apple_id("kai.mayer@t-online.de") # Your Apple Developer Portal username
+
+itc_team_id("122603069") # App Store Connect Team ID
+team_id("3QLZPMLJ3W") # Developer Portal Team ID
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile
