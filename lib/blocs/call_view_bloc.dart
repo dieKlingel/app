@@ -5,6 +5,8 @@ import 'package:dieklingel_app/models/hive_home.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/states/call_state.dart';
+import 'package:dieklingel_app/utils/microphone_state.dart';
+import 'package:dieklingel_app/utils/speaker_state.dart';
 import 'package:dieklingel_core_shared/blocs/mqtt_client_bloc.dart';
 import 'package:dieklingel_core_shared/models/mqtt_uri.dart';
 import 'package:dieklingel_core_shared/mqtt/mqtt_client_state.dart';
@@ -26,8 +28,8 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
   MqttClientBloc? mqtt;
   RtcClientWrapper? rtcclient;
 
-  bool _isEarphone = false;
-  bool _isMuted = true;
+  SpeakerState _speakerState = SpeakerState.muted;
+  MicrophoneState _microphoneState = MicrophoneState.muted;
 
   CallViewBloc(
     this.homeRepository,
@@ -35,8 +37,8 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
   ) : super(CallState()) {
     on<CallStart>(_onStart);
     on<CallHangup>(_onHangup);
-    on<CallMute>(_onMute);
-    on<CallSpeaker>(_onSpeaker);
+    on<CallToogleMicrophone>(_onToogleMicrophone);
+    on<CallToogleSpeaker>(_onToogleSpeaker);
   }
 
   HiveHome get home {
@@ -138,59 +140,105 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     if (renderer == null) {
       return;
     }
+
+    _speakerState = SpeakerState.speaker;
+    _microphoneState = MicrophoneState.muted;
+    rtcclient?.ressource.stream?.getAudioTracks().forEach((track) {
+      Helper.setMicrophoneMute(true, track);
+    });
+
     emit(
       CallActiveState(
-        isMuted: _isMuted,
-        speakerIsEarphone: _isEarphone,
+        microphoneState: _microphoneState,
+        speakerState: _speakerState,
         renderer: renderer,
       ),
     );
   }
 
   Future<void> _onHangup(CallHangup event, Emitter<CallState> emit) async {
-    _isEarphone = false;
-    _isMuted = true;
+    _speakerState = SpeakerState.muted;
+    _microphoneState = MicrophoneState.muted;
     await rtcclient?.close();
     rtcclient = null;
     emit(CallEndedState());
   }
 
-  Future<void> _onMute(CallMute event, Emitter<CallState> emit) async {
-    _isMuted = event.isMuted;
-    rtcclient?.ressource.stream?.getAudioTracks().forEach((track) {
-      Helper.setMicrophoneMute(_isMuted, track);
-    });
+  Future<void> _onToogleMicrophone(
+    CallToogleMicrophone event,
+    Emitter<CallState> emit,
+  ) async {
+    _microphoneState = _microphoneState.next();
+
+    switch (_microphoneState) {
+      case MicrophoneState.muted:
+        rtcclient?.ressource.stream?.getAudioTracks().forEach((track) {
+          Helper.setMicrophoneMute(true, track);
+        });
+        break;
+      case MicrophoneState.unmuted:
+        rtcclient?.ressource.stream?.getAudioTracks().forEach((track) {
+          Helper.setMicrophoneMute(false, track);
+        });
+        break;
+    }
+
     RTCVideoRenderer? renderer = rtcclient?.renderer;
     if (renderer == null) {
       emit(CallEndedState());
       return;
     }
+
     emit(
       CallActiveState(
-        isMuted: _isMuted,
+        microphoneState: _microphoneState,
+        speakerState: _speakerState,
         renderer: renderer,
-        speakerIsEarphone: _isEarphone,
       ),
     );
   }
 
-  Future<void> _onSpeaker(CallSpeaker event, Emitter<CallState> emit) async {
-    _isEarphone = event.isEarphone;
-    if (!kIsWeb) {
-      rtcclient?.renderer.srcObject?.getAudioTracks().forEach((track) {
-        track.enableSpeakerphone(!_isEarphone);
-      });
+  Future<void> _onToogleSpeaker(
+      CallToogleSpeaker event, Emitter<CallState> emit) async {
+    _speakerState = _speakerState.next(
+      skip: [if (kIsWeb) SpeakerState.headphone],
+    );
+
+    switch (_speakerState) {
+      case SpeakerState.muted:
+        rtcclient?.renderer.srcObject?.getAudioTracks().forEach((track) {
+          track.enabled = false;
+        });
+        break;
+      case SpeakerState.headphone:
+        rtcclient?.renderer.srcObject?.getAudioTracks().forEach((track) {
+          track.enabled = true;
+          if (!kIsWeb) {
+            track.enableSpeakerphone(true);
+          }
+        });
+        break;
+      case SpeakerState.speaker:
+        rtcclient?.renderer.srcObject?.getAudioTracks().forEach((track) {
+          track.enabled = true;
+          if (!kIsWeb) {
+            track.enableSpeakerphone(false);
+          }
+        });
+        break;
     }
+
     RTCVideoRenderer? renderer = rtcclient?.renderer;
     if (renderer == null) {
       emit(CallEndedState());
       return;
     }
+
     emit(
       CallActiveState(
-        isMuted: _isMuted,
+        microphoneState: _microphoneState,
+        speakerState: _speakerState,
         renderer: renderer,
-        speakerIsEarphone: _isEarphone,
       ),
     );
   }

@@ -1,5 +1,9 @@
 import 'package:dieklingel_app/blocs/call_view_bloc.dart';
+import 'package:dieklingel_app/components/icon_builder.dart';
+import 'package:dieklingel_app/components/map_builder.dart';
 import 'package:dieklingel_app/states/call_state.dart';
+import 'package:dieklingel_app/utils/microphone_state.dart';
+import 'package:dieklingel_app/utils/speaker_state.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,71 +29,94 @@ class CallView extends StatelessWidget {
 }
 
 class _Toolbar extends StatelessWidget {
-  List<Widget> buttons(BuildContext context, CallState state) => [
-        _ToolbarButton(
-          icon: const Icon(
-            CupertinoIcons.phone_fill,
-            color: Colors.white,
-            size: 35,
-          ),
-          color: state is CallActiveState || state is CallInitatedState
-              ? Colors.red
-              : Colors.green,
-          onPressed: () {
-            context.read<CallViewBloc>().add(
-                  state is CallActiveState || state is CallInitatedState
-                      ? CallHangup()
-                      : CallStart(),
-                );
+  List<Widget> buttons(BuildContext context, CallState state) {
+    return [
+      _ToolbarButton(
+        icon: const Icon(
+          CupertinoIcons.phone_fill,
+          color: Colors.white,
+          size: 35,
+        ),
+        color: MapBuilder<Type, Color>(
+          values: {
+            CallActiveState: Colors.red,
+            CallInitatedState: Colors.red,
           },
+          fallback: Colors.green,
+          id: state.runtimeType,
+        ).build(),
+        onPressed: () {
+          context.read<CallViewBloc>().add(
+                state is CallActiveState || state is CallInitatedState
+                    ? CallHangup()
+                    : CallStart(),
+              );
+        },
+      ),
+      _ToolbarButton(
+        icon: IconBuilder<MicrophoneState, Icon>(
+          values: {
+            MicrophoneState.muted: const Icon(CupertinoIcons.mic_slash_fill),
+            MicrophoneState.unmuted: const Icon(CupertinoIcons.mic_fill)
+          },
+          fallback: const Icon(CupertinoIcons.mic_slash_fill),
+          id: state is CallActiveState ? state.microphoneState : null,
+        ).build(
+          color: Colors.white,
+          size: 35,
         ),
-        _ToolbarButton(
-          icon: Icon(
-            state is CallActiveState && !state.isMuted
-                ? CupertinoIcons.mic_fill
-                : CupertinoIcons.mic_slash_fill,
-            color: Colors.white,
-            size: 35,
-          ),
-          color: state is CallActiveState && !state.isMuted
-              ? Colors.red
-              : Colors.green,
-          onPressed: state is CallActiveState
-              ? () {
-                  context
-                      .read<CallViewBloc>()
-                      .add(CallMute(isMuted: !state.isMuted));
-                }
-              : null,
+        color: MapBuilder<MicrophoneState, Color>(
+          values: {
+            MicrophoneState.muted: Colors.green,
+            MicrophoneState.unmuted: Colors.red,
+          },
+          fallback: Colors.green,
+          id: state is CallActiveState ? state.microphoneState : null,
+        ).build(),
+        onPressed: state is CallActiveState
+            ? () {
+                context.read<CallViewBloc>().add(CallToogleMicrophone());
+              }
+            : null,
+      ),
+      _ToolbarButton(
+        icon: IconBuilder<SpeakerState, Icon>(
+          values: {
+            SpeakerState.muted: const Icon(CupertinoIcons.speaker_slash_fill),
+            SpeakerState.headphone: const Icon(CupertinoIcons.speaker_1_fill),
+            SpeakerState.speaker: const Icon(CupertinoIcons.speaker_3_fill),
+          },
+          fallback: const Icon(CupertinoIcons.speaker_slash_fill),
+          id: state is CallActiveState ? state.speakerState : null,
+        ).build(
+          color: Colors.white,
+          size: 35,
         ),
-        _ToolbarButton(
-          icon: Icon(
-            state is CallActiveState && state.speakerIsEarphone
-                ? CupertinoIcons.speaker_1_fill
-                : CupertinoIcons.speaker_3_fill,
-            color: Colors.white,
-            size: 35,
-          ),
-          color: Colors.green,
-          onPressed: state is CallActiveState
-              ? () {
-                  context.read<CallViewBloc>().add(
-                        CallSpeaker(
-                          isEarphone: !state.speakerIsEarphone,
-                        ),
-                      );
-                }
-              : null,
+        color: MapBuilder<SpeakerState, Color>(
+          values: {
+            SpeakerState.muted: Colors.green,
+            SpeakerState.headphone: Colors.orange,
+            SpeakerState.speaker: Colors.red,
+          },
+          fallback: Colors.green,
+          id: state is CallActiveState ? state.speakerState : null,
+        ).build(),
+        onPressed: state is CallActiveState
+            ? () {
+                context.read<CallViewBloc>().add(CallToogleSpeaker());
+              }
+            : null,
+      ),
+      const _ToolbarButton(
+        icon: Icon(
+          CupertinoIcons.lock_fill,
+          color: Colors.white,
+          size: 35,
         ),
-        const _ToolbarButton(
-          icon: Icon(
-            CupertinoIcons.lock_fill,
-            color: Colors.white,
-            size: 35,
-          ),
-          color: Colors.amber,
-        ),
-      ];
+        color: Colors.amber,
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
