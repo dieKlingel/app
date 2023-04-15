@@ -74,9 +74,11 @@ jobs:
         with:
           flutter-version: '3.7.3'
           channel: 'stable'
-      
-      - name: Install Pubs
-        run: flutter pub get
 
-      - name: Build ipa in release mode
-        run: flutter build ios --release --no-codesign
+      - name: Build and sign IPA package
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+        run: |
+          cd ios
+          fastlane build

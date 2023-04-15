@@ -1,9 +1,10 @@
 
-name: Build, sign and deploy the ios app to TestFlight.
+name: TestFlight
 on:
   push:
     branches:
       - main
+
 jobs:
   deploy-ios-app:
     runs-on: macos-latest
@@ -15,55 +16,13 @@ jobs:
           flutter-version: '3.7.3'
           channel: 'stable'
 
-      - name: Install the signing certificate and provisioning profile
+      - name: Build and Publish IPA to Testflight
         env:
-          APPLE_DISTRIBUTION_CERTIFICATE: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE }}
-          APPLE_DISTRIBUTION_CERTIFICATE_PW: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PW }}
-          PROVISIONING_PROFILE: ${{ secrets.PROVISIONING_PROFILE }}
-          PROVISIONING_PROFILE_IMAGE_NOTIFICATION: ${{ secrets.PROVISIONING_PROFILE_IMAGE_NOTIFICATION }}
-          KEYCHAIN_PW: ${{ secrets.KEYCHAIN_PW }}
-        run: |
-          # import certificates
-          echo $APPLE_DISTRIBUTION_CERTIFICATE | base64 --decode --output certificate.p12
-          echo $PROVISIONING_PROFILE | base64 --decode --output pp.mobileprovision
-          echo $PROVISIONING_PROFILE_IMAGE_NOTIFICATION | base64 --decode --output pp_ext.mobileprovision
-          # create keychain
-          security create-keychain -p $KEYCHAIN_PW build.keychain-db
-          security default-keychain -s build.keychain-db
-          # unlock keychain
-          security unlock-keychain -p $KEYCHAIN_PW build.keychain-db
-          # import certificate to keychain
-          security import certificate.p12 -k build.keychain-db -P $APPLE_DISTRIBUTION_CERTIFICATE_PW -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PW build.keychain-db
-          # provisioning profile
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp pp.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles
-          cp pp_ext.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles
-          ls -a ~/Library/MobileDevice/Provisioning\ Profiles
-
-      - name: Install pubs
-        run: flutter pub get
-
-      - name: Build and export ipa
-        run: flutter build ipa --export-options-plist=ios/ExportOptions.plist
-
-      - name: Upload ipa to App Store Connect
-        env:
-          ISSUER_ID: ${{ secrets.ISSUER_ID }}
-          API_KEY_ID: ${{ secrets.API_KEY_ID }}
           API_KEY: ${{ secrets.API_KEY }}
-        run: |
-          mkdir -p ~/private_keys
-          echo $API_KEY | base64 --decode --output ~/private_keys/AuthKey_$API_KEY_ID.p8
-          xcrun altool --upload-app --type ios -f build/ios/ipa/dieklingel_app.ipa --apiKey $API_KEY_ID --apiIssuer $ISSUER_ID
-
-
-      - name: Clean up keychain and provisioning profile
-        if: ${{ always() }}
-        env:
           API_KEY_ID: ${{ secrets.API_KEY_ID }}
+          ISSUER_ID: ${{ secrets.ISSUER_ID }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
         run: |
-          security delete-keychain build.keychain-db
-          rm ~/Library/MobileDevice/Provisioning\ Profiles/pp.mobileprovision
-          rm ~/Library/MobileDevice/Provisioning\ Profiles/pp_ext.mobileprovision
-          rm ~/private_keys/AuthKey_$API_KEY_ID.p8
+          cd ios
+          fastlane beta
