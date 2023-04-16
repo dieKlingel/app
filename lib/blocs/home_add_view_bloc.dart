@@ -31,7 +31,7 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
 
     String? channelError;
     RegExp channelRegex = RegExp(
-      r'^(([a-z]+)([a-z\.+])([a-z]+)\/)+$',
+      r'^\/?(([a-z])+([a-z.])+([a-z])+(\/?))+$',
     );
     if (!channelRegex.hasMatch(event.channel)) {
       channelError =
