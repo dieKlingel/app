@@ -381,10 +381,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_webrtc
-      sha256: f8904369f3ad57945a797481bf079c281f4944ad4635e9d412529141d81c9c76
+      sha256: d68be9b5dda75ff3a29d11241b4396f375a94690b671315b3a65f6b221e460c4
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.25"
+    version: "0.9.26"
   frontend_server_client:
     dependency: transitive
     description:
@@ -518,7 +518,7 @@ packages:
     description:
       path: "libraries/mqtt"
       ref: "feature/lib/mqtt"
-      resolved-ref: "87f47d03772de3804f050c0a8656fe098e7de371"
+      resolved-ref: "4de4346e25f30124d619f7340fa3eaa11c7d3f89"
       url: "https://github.com/KoiFresh/dieklingel-core.git"
     source: git
     version: "0.0.1"
@@ -574,10 +574,10 @@ packages:
     dependency: transitive
     description:
       name: path_provider_android
-      sha256: "019f18c9c10ae370b08dce1f3e3b73bc9f58e7f087bb5e921f06529438ac0ae7"
+      sha256: da97262be945a72270513700a92b39dd2f4a54dad55d061687e2e37a6390366a
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.24"
+    version: "2.0.25"
   path_provider_foundation:
     dependency: transitive
     description:
@@ -963,10 +963,10 @@ packages:
     dependency: transitive
     description:
       name: webrtc_interface
-      sha256: "5fdd616bc2937194402298f3024e81c74f68f44f6d73de31aaea69ee7d156b12"
+      sha256: "0ac4693f921c81005edefd2f43b9fe84b0ed54481474fe1ee16b789b0c84a77c"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.12"
+    version: "1.0.13"
   win32:
     dependency: transitive
     description:
