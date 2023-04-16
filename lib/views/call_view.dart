@@ -14,16 +14,36 @@ class CallView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _Video(),
-        SafeArea(
+    return BlocListener<CallViewBloc, CallState>(
+      listener: (context, state) {
+        if (state is CallCancelState) {
+          showCupertinoDialog(
+            context: context,
+            builder: (_) => CupertinoAlertDialog(
+              title: const Text("Error"),
+              content: Text(state.reason),
+              actions: [
+                CupertinoDialogAction(
+                  child: const Text("Ok"),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          );
+        }
+      },
+      child: Stack(
+        children: [
+          _Video(),
+          SafeArea(
             child: Stack(
-          children: [
-            _Toolbar(),
-          ],
-        )),
-      ],
+              children: [
+                _Toolbar(),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

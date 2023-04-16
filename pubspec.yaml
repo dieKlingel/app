@@ -47,6 +47,11 @@ dependencies:
       url: https://github.com/KoiFresh/dieklingel-core.git
       ref: main
       path: packages/shared
+  mqtt:
+    git:
+      url: https://github.com/KoiFresh/dieklingel-core.git
+      ref: feature/lib/mqtt
+      path: libraries/mqtt
   flutter_bloc: ^8.1.2
   pull_down_button: ^0.8.1
 

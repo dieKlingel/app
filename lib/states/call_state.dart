@@ -26,6 +26,12 @@ class CallActiveState extends CallState {
 
 class CallEndedState extends CallState {}
 
+class CallCancelState extends CallEndedState {
+  final String reason;
+
+  CallCancelState(this.reason);
+}
+
 abstract class CallEvent {}
 
 class CallStart extends CallEvent {}
