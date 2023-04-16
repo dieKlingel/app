@@ -6,9 +6,13 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../signaling/signaling_message.dart';
 import '../signaling/signaling_message_type.dart';
 import 'media_ressource.dart';
+import 'microphone_state.dart';
 import 'rtc_transceiver.dart';
+import 'speaker_state.dart';
 
 class RtcClientWrapper {
+  MicrophoneState _microphoneState = MicrophoneState.muted;
+  SpeakerState _speakerState = SpeakerState.muted;
   final MediaRessource ressource = MediaRessource();
   final RTCVideoRenderer renderer = RTCVideoRenderer();
   final List<IceServer> servers;
@@ -20,6 +24,20 @@ class RtcClientWrapper {
   bool _isDisposed = false;
 
   void Function(SignalingMessage)? _onMessage;
+
+  MicrophoneState get microphoneState => _microphoneState;
+
+  set microphoneState(MicrophoneState state) {
+    _microphoneState = state;
+    _applyMicrophoneSettings();
+  }
+
+  SpeakerState get speakerState => _speakerState;
+
+  set speakerState(SpeakerState state) {
+    _speakerState = state;
+    _applySpeakerSettings();
+  }
 
   RtcClientWrapper._(this.servers, this.transceivers);
 
@@ -138,6 +156,9 @@ class RtcClientWrapper {
       }
     }
 
+    _applyMicrophoneSettings();
+    _applySpeakerSettings();
+
     SignalingMessage message = SignalingMessage();
     message.type = SignalingMessageType.offer;
     message.data = offer.toMap();
@@ -189,12 +210,50 @@ class RtcClientWrapper {
     if (event.streams.isEmpty) {
       return;
     }
-    if (!kIsWeb) {
-      event.streams.first.getAudioTracks().forEach((track) {
-        track.enableSpeakerphone(true);
-      });
-    }
+    _applyMicrophoneSettings();
+    _applySpeakerSettings();
 
     renderer.srcObject = event.streams.first;
+  }
+
+  void _applyMicrophoneSettings() {
+    switch (_microphoneState) {
+      case MicrophoneState.muted:
+        ressource.stream?.getAudioTracks().forEach((track) {
+          Helper.setMicrophoneMute(true, track);
+        });
+        break;
+      case MicrophoneState.unmuted:
+        ressource.stream?.getAudioTracks().forEach((track) {
+          Helper.setMicrophoneMute(false, track);
+        });
+        break;
+    }
+  }
+
+  void _applySpeakerSettings() {
+    switch (_speakerState) {
+      case SpeakerState.muted:
+        renderer.srcObject?.getAudioTracks().forEach((track) {
+          track.enabled = false;
+        });
+        break;
+      case SpeakerState.headphone:
+        renderer.srcObject?.getAudioTracks().forEach((track) {
+          track.enabled = true;
+          if (!kIsWeb) {
+            track.enableSpeakerphone(true);
+          }
+        });
+        break;
+      case SpeakerState.speaker:
+        renderer.srcObject?.getAudioTracks().forEach((track) {
+          track.enabled = true;
+          if (!kIsWeb) {
+            track.enableSpeakerphone(false);
+          }
+        });
+        break;
+    }
   }
 }

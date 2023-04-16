@@ -26,9 +26,6 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
   mqtt.Client? mqttclient;
   RtcClientWrapper? rtcclient;
 
-  SpeakerState _speakerState = SpeakerState.muted;
-  MicrophoneState _microphoneState = MicrophoneState.muted;
-
   CallViewBloc(
     this.homeRepository,
     this.iceServerRepository,
@@ -140,24 +137,16 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
       return;
     }
 
-    _speakerState = SpeakerState.speaker;
-    _microphoneState = MicrophoneState.muted;
-    rtcclient?.ressource.stream?.getAudioTracks().forEach((track) {
-      Helper.setMicrophoneMute(true, track);
-    });
-
     emit(
       CallActiveState(
-        microphoneState: _microphoneState,
-        speakerState: _speakerState,
+        microphoneState: rtcclient!.microphoneState,
+        speakerState: rtcclient!.speakerState,
         renderer: renderer,
       ),
     );
   }
 
   Future<void> _onHangup(CallHangup event, Emitter<CallState> emit) async {
-    _speakerState = SpeakerState.muted;
-    _microphoneState = MicrophoneState.muted;
     await rtcclient?.close();
     rtcclient = null;
     emit(CallEndedState());
@@ -167,20 +156,11 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     CallToogleMicrophone event,
     Emitter<CallState> emit,
   ) async {
-    _microphoneState = _microphoneState.next();
-
-    switch (_microphoneState) {
-      case MicrophoneState.muted:
-        rtcclient?.ressource.stream?.getAudioTracks().forEach((track) {
-          Helper.setMicrophoneMute(true, track);
-        });
-        break;
-      case MicrophoneState.unmuted:
-        rtcclient?.ressource.stream?.getAudioTracks().forEach((track) {
-          Helper.setMicrophoneMute(false, track);
-        });
-        break;
+    if (rtcclient == null) {
+      return;
     }
+
+    rtcclient!.microphoneState = rtcclient!.microphoneState.next();
 
     RTCVideoRenderer? renderer = rtcclient?.renderer;
     if (renderer == null) {
@@ -190,42 +170,24 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
 
     emit(
       CallActiveState(
-        microphoneState: _microphoneState,
-        speakerState: _speakerState,
+        microphoneState: rtcclient!.microphoneState,
+        speakerState: rtcclient!.speakerState,
         renderer: renderer,
       ),
     );
   }
 
   Future<void> _onToogleSpeaker(
-      CallToogleSpeaker event, Emitter<CallState> emit) async {
-    _speakerState = _speakerState.next(
+    CallToogleSpeaker event,
+    Emitter<CallState> emit,
+  ) async {
+    if (rtcclient == null) {
+      return;
+    }
+
+    rtcclient!.speakerState = rtcclient!.speakerState.next(
       skip: [if (kIsWeb) SpeakerState.headphone],
     );
-
-    switch (_speakerState) {
-      case SpeakerState.muted:
-        rtcclient?.renderer.srcObject?.getAudioTracks().forEach((track) {
-          track.enabled = false;
-        });
-        break;
-      case SpeakerState.headphone:
-        rtcclient?.renderer.srcObject?.getAudioTracks().forEach((track) {
-          track.enabled = true;
-          if (!kIsWeb) {
-            track.enableSpeakerphone(true);
-          }
-        });
-        break;
-      case SpeakerState.speaker:
-        rtcclient?.renderer.srcObject?.getAudioTracks().forEach((track) {
-          track.enabled = true;
-          if (!kIsWeb) {
-            track.enableSpeakerphone(false);
-          }
-        });
-        break;
-    }
 
     RTCVideoRenderer? renderer = rtcclient?.renderer;
     if (renderer == null) {
@@ -235,8 +197,8 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
 
     emit(
       CallActiveState(
-        microphoneState: _microphoneState,
-        speakerState: _speakerState,
+        microphoneState: rtcclient!.microphoneState,
+        speakerState: rtcclient!.speakerState,
         renderer: renderer,
       ),
     );
