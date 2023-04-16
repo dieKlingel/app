@@ -55,7 +55,7 @@ class _Toolbar extends StatelessWidget {
         icon: const Icon(
           CupertinoIcons.phone_fill,
           color: Colors.white,
-          size: 35,
+          size: 30,
         ),
         color: MapBuilder<Type, Color>(
           values: {
@@ -83,7 +83,7 @@ class _Toolbar extends StatelessWidget {
           id: state is CallActiveState ? state.microphoneState : null,
         ).build(
           color: Colors.white,
-          size: 35,
+          size: 30,
         ),
         color: MapBuilder<MicrophoneState, Color>(
           values: {
@@ -110,7 +110,7 @@ class _Toolbar extends StatelessWidget {
           id: state is CallActiveState ? state.speakerState : null,
         ).build(
           color: Colors.white,
-          size: 35,
+          size: 30,
         ),
         color: MapBuilder<SpeakerState, Color>(
           values: {
@@ -131,7 +131,7 @@ class _Toolbar extends StatelessWidget {
         icon: Icon(
           CupertinoIcons.lock_fill,
           color: Colors.white,
-          size: 35,
+          size: 30,
         ),
         color: Colors.amber,
       ),
@@ -171,7 +171,7 @@ class _ToolbarButton extends StatelessWidget {
     return CupertinoButton(
       onPressed: onPressed,
       child: Container(
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(15.0),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: onPressed == null ? Colors.black26 : color,
