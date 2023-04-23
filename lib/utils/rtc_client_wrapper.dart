@@ -242,7 +242,7 @@ class RtcClientWrapper {
         renderer.srcObject?.getAudioTracks().forEach((track) {
           track.enabled = true;
           if (!kIsWeb) {
-            track.enableSpeakerphone(true);
+            track.enableSpeakerphone(false);
           }
         });
         break;
@@ -250,7 +250,7 @@ class RtcClientWrapper {
         renderer.srcObject?.getAudioTracks().forEach((track) {
           track.enabled = true;
           if (!kIsWeb) {
-            track.enableSpeakerphone(false);
+            track.enableSpeakerphone(true);
           }
         });
         break;
