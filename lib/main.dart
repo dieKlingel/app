@@ -7,10 +7,9 @@ import 'package:dieklingel_app/handlers/notification_handler.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/views/home_view.dart';
-import 'package:dieklingel_core_shared/blocs/mqtt_client_bloc.dart';
 import 'package:dieklingel_core_shared/models/ice_server.dart';
-import 'package:dieklingel_core_shared/mqtt/mqtt_client_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:uuid/uuid.dart';
 
 import './models/home.dart';
@@ -105,19 +104,23 @@ class _App extends State<App> {
     settingsBox.put("token", token);
 
     Box<HiveHome> box = Hive.box<HiveHome>((Home).toString());
-    MqttClientBloc bloc = MqttClientBloc();
+    mqtt.Client mqttclient = mqtt.Client();
     for (HiveHome home in box.values) {
       Map<String, dynamic> payload = {
         "token": token,
         "identifier": home.uri.section.isEmpty ? "default" : home.uri.section,
       };
-      await bloc.disconnect();
-      bloc.uri.add(home.uri);
-      await bloc.state
-          .firstWhere((element) => element == MqttClientState.connected);
-      await bloc.request(
-        "request/apn/register/${const Uuid().v4()}",
-        jsonEncode(payload),
+      await mqttclient.disconnect();
+      await mqttclient.connect(
+        home.uri,
+        username: home.username,
+        password: home.password,
+      );
+      await mqttclient.request(
+        mqtt.Message(
+          "request/apn/register/${const Uuid().v4()}",
+          jsonEncode(payload),
+        ),
         timeout: const Duration(seconds: 2),
       );
     }

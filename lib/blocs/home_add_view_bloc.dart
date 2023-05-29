@@ -1,8 +1,8 @@
 import 'package:dieklingel_app/models/hive_home.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/states/home_add_state.dart';
-import 'package:dieklingel_core_shared/models/mqtt_uri.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mqtt/models/mqtt_uri.dart';
 
 class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
   final HomeRepository homeRepository;
@@ -31,7 +31,7 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
 
     String? channelError;
     RegExp channelRegex = RegExp(
-      r'^(([a-z]+)([a-z\.+])([a-z]+)\/)+$',
+      r'^\/?(([a-z])+([a-z.])+([a-z])+(\/?))+$',
     );
     if (!channelRegex.hasMatch(event.channel)) {
       channelError =

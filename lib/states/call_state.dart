@@ -1,3 +1,5 @@
+import 'package:dieklingel_app/utils/microphone_state.dart';
+import 'package:dieklingel_app/utils/speaker_state.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 class CallState {}
@@ -11,18 +13,24 @@ class CallErrorState extends CallState {
 class CallInitatedState extends CallState {}
 
 class CallActiveState extends CallState {
-  final bool isMuted;
-  final bool speakerIsEarphone;
+  final MicrophoneState microphoneState;
+  final SpeakerState speakerState;
   final RTCVideoRenderer renderer;
 
   CallActiveState({
-    required this.isMuted,
+    required this.microphoneState,
+    required this.speakerState,
     required this.renderer,
-    required this.speakerIsEarphone,
   });
 }
 
 class CallEndedState extends CallState {}
+
+class CallCancelState extends CallEndedState {
+  final String reason;
+
+  CallCancelState(this.reason);
+}
 
 abstract class CallEvent {}
 
@@ -30,14 +38,6 @@ class CallStart extends CallEvent {}
 
 class CallHangup extends CallEvent {}
 
-class CallMute extends CallEvent {
-  final bool isMuted;
+class CallToogleMicrophone extends CallEvent {}
 
-  CallMute({required this.isMuted});
-}
-
-class CallSpeaker extends CallEvent {
-  final bool isEarphone;
-
-  CallSpeaker({required this.isEarphone});
-}
+class CallToogleSpeaker extends CallEvent {}

@@ -1,5 +1,5 @@
-import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mqtt/models/mqtt_uri.dart';
 
 class MqttUriAdapter extends TypeAdapter<MqttUri> {
   @override

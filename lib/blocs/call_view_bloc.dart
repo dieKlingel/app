@@ -5,29 +5,25 @@ import 'package:dieklingel_app/models/hive_home.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/states/call_state.dart';
-import 'package:dieklingel_core_shared/blocs/mqtt_client_bloc.dart';
-import 'package:dieklingel_core_shared/models/mqtt_uri.dart';
-import 'package:dieklingel_core_shared/mqtt/mqtt_client_state.dart';
-import 'package:dieklingel_core_shared/mqtt/mqtt_response.dart';
+import 'package:dieklingel_app/utils/speaker_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:mqtt/models/mqtt_uri.dart';
 import 'package:uuid/uuid.dart';
+
+import 'package:mqtt/mqtt.dart' as mqtt;
 
 import '../signaling/signaling_message.dart';
 import '../signaling/signaling_message_type.dart';
-import '../utils/mqtt_channel.dart';
 import '../utils/rtc_client_wrapper.dart';
 import '../utils/rtc_transceiver.dart';
 
 class CallViewBloc extends Bloc<CallEvent, CallState> {
   final HomeRepository homeRepository;
   final IceServerRepository iceServerRepository;
-  MqttClientBloc? mqtt;
+  mqtt.Client? mqttclient;
   RtcClientWrapper? rtcclient;
-
-  bool _isEarphone = false;
-  bool _isMuted = true;
 
   CallViewBloc(
     this.homeRepository,
@@ -35,8 +31,8 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
   ) : super(CallState()) {
     on<CallStart>(_onStart);
     on<CallHangup>(_onHangup);
-    on<CallMute>(_onMute);
-    on<CallSpeaker>(_onSpeaker);
+    on<CallToogleMicrophone>(_onToogleMicrophone);
+    on<CallToogleSpeaker>(_onToogleSpeaker);
   }
 
   HiveHome get home {
@@ -51,19 +47,21 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
 
   Future<void> _onStart(CallStart event, Emitter<CallState> emit) async {
     emit(CallInitatedState());
-    await mqtt?.disconnect();
-    mqtt = MqttClientBloc();
-    mqtt?.uri.add(home.uri);
-    MqttClientState? state = await mqtt?.state
-        .firstWhere((element) => element == MqttClientState.connected)
-        .timeout(
-          const Duration(seconds: 10),
-          onTimeout: () => MqttClientState.disconnected,
-        );
-    if (state != MqttClientState.connected) {
-      emit(CallEndedState());
+    await mqttclient?.disconnect();
+    mqttclient = mqtt.Client();
+
+    try {
+      await mqttclient?.connect(
+        home.uri,
+        username: home.username,
+        password: home.password,
+      );
+    } catch (e) {
+      emit(CallCancelState("Could not connect to the given Server!"));
+      add(CallHangup());
       return;
     }
+
     // create rtc connection
     rtcclient = await RtcClientWrapper.create(
       iceServers: iceServerRepository.servers,
@@ -80,14 +78,14 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     );
 
     String uuid = const Uuid().v4();
-    MqttChannel channel = MqttChannel("rtc/$uuid");
-    String invite = channel.append("invite").toString();
-    String answer = channel.append("answer").toString();
+    MqttUri channel = MqttUri(channel: "rtc/$uuid");
+    String invite = MqttUri(channel: "rtc/$uuid/invite").channel;
+    String answer = MqttUri(channel: "rtc/$uuid/answer").channel;
 
-    StreamSubscription? subscription = mqtt?.watch(answer).listen(
+    StreamSubscription? subscription = mqttclient?.watch(answer).listen(
       (event) {
         SignalingMessage message = SignalingMessage.fromJson(
-          jsonDecode(event.value),
+          jsonDecode(event.payload),
         );
 
         rtcclient?.addMessage(message);
@@ -102,8 +100,8 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
           rtcclient?.dispose();
         }
 
-        mqtt?.message.add(
-          ChannelMessage(
+        mqttclient?.publish(
+          mqtt.Message(
             invite,
             jsonEncode(message.toJson()),
           ),
@@ -112,19 +110,18 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     );
 
     await rtcclient?.ressource.open(true, false);
-    if (mqtt == null) {
+    if (mqttclient == null) {
       rtcclient?.ressource.close();
       return;
     }
-    MqttChannel rtcChannel = MqttChannel(
-      home.uri.channel,
-    ).append(channel.toString());
 
-    MqttUri rtcUri = home.uri.copyWith(channel: rtcChannel.toString());
+    MqttUri rtcUri = home.uri.copyWith(channel: channel.channel);
 
-    MqttResponse? result = await mqtt?.request(
-      "request/rtc/connect/${const Uuid().v4()}",
-      jsonEncode(rtcUri.toMap()),
+    mqtt.Response? result = await mqttclient?.request(
+      mqtt.Message(
+        "request/rtc/connect/${const Uuid().v4()}",
+        jsonEncode(rtcUri.toMap()),
+      ),
     );
 
     if (result?.status != 200) {
@@ -138,59 +135,70 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     if (renderer == null) {
       return;
     }
+
     emit(
       CallActiveState(
-        isMuted: _isMuted,
-        speakerIsEarphone: _isEarphone,
+        microphoneState: rtcclient!.microphoneState,
+        speakerState: rtcclient!.speakerState,
         renderer: renderer,
       ),
     );
   }
 
   Future<void> _onHangup(CallHangup event, Emitter<CallState> emit) async {
-    _isEarphone = false;
-    _isMuted = true;
     await rtcclient?.close();
     rtcclient = null;
     emit(CallEndedState());
   }
 
-  Future<void> _onMute(CallMute event, Emitter<CallState> emit) async {
-    _isMuted = event.isMuted;
-    rtcclient?.ressource.stream?.getAudioTracks().forEach((track) {
-      Helper.setMicrophoneMute(_isMuted, track);
-    });
+  Future<void> _onToogleMicrophone(
+    CallToogleMicrophone event,
+    Emitter<CallState> emit,
+  ) async {
+    if (rtcclient == null) {
+      return;
+    }
+
+    rtcclient!.microphoneState = rtcclient!.microphoneState.next();
+
     RTCVideoRenderer? renderer = rtcclient?.renderer;
     if (renderer == null) {
       emit(CallEndedState());
       return;
     }
+
     emit(
       CallActiveState(
-        isMuted: _isMuted,
+        microphoneState: rtcclient!.microphoneState,
+        speakerState: rtcclient!.speakerState,
         renderer: renderer,
-        speakerIsEarphone: _isEarphone,
       ),
     );
   }
 
-  Future<void> _onSpeaker(CallSpeaker event, Emitter<CallState> emit) async {
-    _isEarphone = event.isEarphone;
-    if (!kIsWeb) {
-      rtcclient?.renderer.srcObject?.getAudioTracks().forEach((track) {
-        track.enableSpeakerphone(!_isEarphone);
-      });
+  Future<void> _onToogleSpeaker(
+    CallToogleSpeaker event,
+    Emitter<CallState> emit,
+  ) async {
+    if (rtcclient == null) {
+      return;
     }
+
+    rtcclient!.speakerState = rtcclient!.speakerState.next(
+      skip: [if (kIsWeb) SpeakerState.headphone],
+    );
+
     RTCVideoRenderer? renderer = rtcclient?.renderer;
     if (renderer == null) {
       emit(CallEndedState());
       return;
     }
+
     emit(
       CallActiveState(
-        isMuted: _isMuted,
+        microphoneState: rtcclient!.microphoneState,
+        speakerState: rtcclient!.speakerState,
         renderer: renderer,
-        speakerIsEarphone: _isEarphone,
       ),
     );
   }
@@ -198,7 +206,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
   @override
   Future<void> close() async {
     await rtcclient?.close();
-    await mqtt?.disconnect();
+    await mqttclient?.disconnect();
     return super.close();
   }
 }

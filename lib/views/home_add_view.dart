@@ -1,5 +1,5 @@
 import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
-import 'package:dieklingel_app/extensions/mqtt_uri.dart';
+import '../extensions/mqtt_uri.dart';
 import 'package:dieklingel_app/states/home_add_state.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

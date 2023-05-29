@@ -1,4 +1,4 @@
-import 'package:dieklingel_core_shared/flutter_shared.dart';
+import 'package:mqtt/models/mqtt_uri.dart';
 
 extension HostOnly on MqttUri {
   Uri toHostOnlyUri() {
