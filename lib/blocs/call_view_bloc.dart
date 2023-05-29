@@ -5,7 +5,6 @@ import 'package:dieklingel_app/models/hive_home.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/states/call_state.dart';
-import 'package:dieklingel_app/utils/microphone_state.dart';
 import 'package:dieklingel_app/utils/speaker_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
