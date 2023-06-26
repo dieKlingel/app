@@ -7,7 +7,6 @@ import 'package:dieklingel_app/handlers/notification_handler.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/views/home_view.dart';
-import 'package:dieklingel_core_shared/models/ice_server.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:uuid/uuid.dart';
@@ -26,6 +25,7 @@ import 'hive/hive_home_adapter.dart';
 import 'hive/hive_ice_server_adapter.dart';
 import 'models/hive_home.dart';
 import 'models/hive_ice_server.dart';
+import 'models/ice_server.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
