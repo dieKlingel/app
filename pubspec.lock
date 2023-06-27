@@ -225,15 +225,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.8"
-  dieklingel_core_shared:
-    dependency: "direct main"
-    description:
-      path: "packages/shared"
-      ref: main
-      resolved-ref: a3d8a66daa03ede3e594693b57a012bef21bfc2e
-      url: "https://github.com/KoiFresh/dieklingel-core.git"
-    source: git
-    version: "0.0.1"
   event_bus:
     dependency: transitive
     description:
@@ -425,6 +416,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  http:
+    dependency: "direct main"
+    description:
+      name: http
+      sha256: "5895291c13fa8a3bd82e76d5627f69e0d85ca6a30dcac95c4ea19a5d555879c2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.13.6"
+  http_methods:
+    dependency: transitive
+    description:
+      name: http_methods
+      sha256: "6bccce8f1ec7b5d701e7921dca35e202d425b57e317ba1a37f2638590e29e566"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   http_multi_server:
     dependency: transitive
     description:
@@ -517,8 +524,8 @@ packages:
     dependency: "direct main"
     description:
       path: "libraries/mqtt"
-      ref: "feature/lib/mqtt"
-      resolved-ref: "4de4346e25f30124d619f7340fa3eaa11c7d3f89"
+      ref: main
+      resolved-ref: "6950c9e415c1fd0e6748497b867bd6e425ff844e"
       url: "https://github.com/KoiFresh/dieklingel-core.git"
     source: git
     version: "0.0.1"
@@ -699,13 +706,13 @@ packages:
     source: hosted
     version: "0.27.7"
   shelf:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: shelf
-      sha256: c24a96135a2ccd62c64b69315a14adc5c3419df63b4d7c05832a346fdb73682c
+      sha256: ad29c505aee705f41a4d8963641f91ac4cee3c8fad5947e033390a7bd8180fa4
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.0"
+    version: "1.4.1"
   shelf_packages_handler:
     dependency: transitive
     description:
@@ -714,6 +721,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
+  shelf_router:
+    dependency: "direct main"
+    description:
+      name: shelf_router
+      sha256: f5e5d492440a7fb165fe1e2e1a623f31f734d3370900070b2b1e0d0428d59864
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.4"
   shelf_static:
     dependency: transitive
     description:

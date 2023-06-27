@@ -1,6 +1,7 @@
-import 'package:dieklingel_app/models/hive_ice_server.dart';
-import 'package:dieklingel_core_shared/models/ice_server.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
+import '../models/hive_ice_server.dart';
+import '../models/ice_server.dart';
 
 class IceServerRepository {
   final Box<HiveIceServer> _serverbox = Hive.box((IceServer).toString());

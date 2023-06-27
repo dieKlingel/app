@@ -1,7 +1,7 @@
-import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/hive_ice_server.dart';
+import '../models/ice_server.dart';
 
 class HiveIceServerAdapter extends TypeAdapter<HiveIceServer> {
   @override

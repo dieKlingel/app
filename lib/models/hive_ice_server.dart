@@ -1,4 +1,5 @@
-import 'package:dieklingel_core_shared/flutter_shared.dart';
+import 'ice_server.dart';
+
 import 'package:hive_flutter/hive_flutter.dart';
 
 class HiveIceServer extends IceServer with HiveObjectMixin {

@@ -1,8 +1,8 @@
-import 'package:dieklingel_core_shared/flutter_shared.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
+import '../models/ice_server.dart';
 import '../signaling/signaling_message.dart';
 import '../signaling/signaling_message_type.dart';
 import 'media_ressource.dart';
@@ -22,6 +22,8 @@ class RtcClientWrapper {
     RTCPeerConnectionState.RTCPeerConnectionStateDisconnected,
   );
   bool _isDisposed = false;
+  final List<RTCIceCandidate> _candiateBuffer = [];
+  bool _remoteDescriptionSet = false;
 
   void Function(SignalingMessage)? _onMessage;
 
@@ -116,6 +118,10 @@ class RtcClientWrapper {
         );
 
         await connection.setRemoteDescription(description);
+        _remoteDescriptionSet = true;
+        for (RTCIceCandidate candidate in _candiateBuffer) {
+          connection.addCandidate(candidate);
+        }
         break;
       case SignalingMessageType.candidate:
         final candidate = RTCIceCandidate(
@@ -124,7 +130,11 @@ class RtcClientWrapper {
           message.data["sdpMLineIndex"],
         );
 
-        await connection.addCandidate(candidate);
+        if (_remoteDescriptionSet) {
+          await connection.addCandidate(candidate);
+        } else {
+          _candiateBuffer.add(candidate);
+        }
         break;
       case SignalingMessageType.leave:
       case SignalingMessageType.busy:
