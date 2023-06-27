@@ -524,8 +524,8 @@ packages:
     dependency: "direct main"
     description:
       path: "libraries/mqtt"
-      ref: "fix/mqtt-lib-body-parser"
-      resolved-ref: f7539702d3918d523cc7b8a76442d2027fba94ee
+      ref: main
+      resolved-ref: "6950c9e415c1fd0e6748497b867bd6e425ff844e"
       url: "https://github.com/KoiFresh/dieklingel-core.git"
     source: git
     version: "0.0.1"
