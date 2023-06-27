@@ -8,8 +8,7 @@ import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/views/home_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mqtt/mqtt.dart' as mqtt;
-import 'package:uuid/uuid.dart';
+import 'package:mqtt/mqtt_http_client.dart';
 
 import './models/home.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -104,24 +103,19 @@ class _App extends State<App> {
     settingsBox.put("token", token);
 
     Box<HiveHome> box = Hive.box<HiveHome>((Home).toString());
-    mqtt.Client mqttclient = mqtt.Client();
     for (HiveHome home in box.values) {
       Map<String, dynamic> payload = {
         "token": token,
         "identifier": home.uri.section.isEmpty ? "default" : home.uri.section,
       };
-      await mqttclient.disconnect();
-      await mqttclient.connect(
-        home.uri,
-        username: home.username,
-        password: home.password,
-      );
-      await mqttclient.request(
-        mqtt.Message(
-          "request/apn/register/${const Uuid().v4()}",
-          jsonEncode(payload),
-        ),
-        timeout: const Duration(seconds: 2),
+      MqttHttpClient().patch(
+        // TODO(KoiFresh): use correct uri
+        home.uri.toUri(),
+        headers: {
+          "username": home.username ?? "",
+          "password": home.password ?? "",
+        },
+        body: jsonEncode(payload),
       );
     }
   }

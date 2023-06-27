@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dieklingel_app/extensions/uri.dart';
 import 'package:dieklingel_app/models/hive_home.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
@@ -9,10 +10,11 @@ import 'package:dieklingel_app/utils/speaker_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mqtt/models/mqtt_uri.dart';
+import 'package:mqtt/mqtt.dart';
+import 'package:shelf/shelf.dart';
+import 'package:http/http.dart' as http;
+import 'package:shelf_router/shelf_router.dart';
 import 'package:uuid/uuid.dart';
-
-import 'package:mqtt/mqtt.dart' as mqtt;
 
 import '../signaling/signaling_message.dart';
 import '../signaling/signaling_message_type.dart';
@@ -22,7 +24,6 @@ import '../utils/rtc_transceiver.dart';
 class CallViewBloc extends Bloc<CallEvent, CallState> {
   final HomeRepository homeRepository;
   final IceServerRepository iceServerRepository;
-  mqtt.Client? mqttclient;
   RtcClientWrapper? rtcclient;
 
   CallViewBloc(
@@ -47,20 +48,8 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
 
   Future<void> _onStart(CallStart event, Emitter<CallState> emit) async {
     emit(CallInitatedState());
-    await mqttclient?.disconnect();
-    mqttclient = mqtt.Client();
 
-    try {
-      await mqttclient?.connect(
-        home.uri,
-        username: home.username,
-        password: home.password,
-      );
-    } catch (e) {
-      emit(CallCancelState("Could not connect to the given Server!"));
-      add(CallHangup());
-      return;
-    }
+    String uuid = const Uuid().v4();
 
     // create rtc connection
     rtcclient = await RtcClientWrapper.create(
@@ -77,56 +66,64 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
       ],
     );
 
-    String uuid = const Uuid().v4();
-    MqttUri channel = MqttUri(channel: "rtc/$uuid");
-    String invite = MqttUri(channel: "rtc/$uuid/invite").channel;
-    String answer = MqttUri(channel: "rtc/$uuid/answer").channel;
+    Router router = Router();
+    router.connect("/connection", (Request request) async {
+      String body = await request.readAsString();
+      SignalingMessage message = SignalingMessage.fromJson(
+        jsonDecode(body),
+      );
+      // rtcclient could be null, if the connection as already closed on this side
+      rtcclient?.addMessage(message);
 
-    StreamSubscription? subscription = mqttclient?.watch(answer).listen(
-      (event) {
-        SignalingMessage message = SignalingMessage.fromJson(
-          jsonDecode(event.payload),
-        );
+      return Response.ok("Ok");
+    });
 
-        rtcclient?.addMessage(message);
-      },
+    MqttHttpServer server = MqttHttpServer();
+    await server.serve(
+      router,
+      home.uri.toUri().replace(fragment: "", path: uuid),
+      powerdBy: "com.dieklingel.app.$uuid",
     );
 
     rtcclient?.onMessage(
       (SignalingMessage message) {
         if (message.type == SignalingMessageType.leave ||
             message.type == SignalingMessageType.error) {
-          subscription?.cancel();
           rtcclient?.dispose();
         }
 
-        mqttclient?.publish(
-          mqtt.Message(
-            invite,
-            jsonEncode(message.toJson()),
-          ),
+        MqttHttpClient().socket(
+          home.uri.toUri().append(path: "/rtc/connections/$uuid"),
+          body: jsonEncode(message.toJson()),
         );
       },
     );
 
     await rtcclient?.ressource.open(true, false);
-    if (mqttclient == null) {
-      rtcclient?.ressource.close();
+
+    if (rtcclient == null) {
       return;
     }
 
-    MqttUri rtcUri = home.uri.copyWith(channel: channel.channel);
-
-    mqtt.Response? result = await mqttclient?.request(
-      mqtt.Message(
-        "request/rtc/connect/${const Uuid().v4()}",
-        jsonEncode(rtcUri.toMap()),
-      ),
-    );
-
-    if (result?.status != 200) {
-      rtcclient?.close();
-      emit(CallEndedState());
+    http.Response response;
+    try {
+      response = await MqttHttpClient().post(
+        home.uri
+            .toUri()
+            .append(path: "/rtc/connections/$uuid")
+            .replace(fragment: ""),
+      );
+      if (response.statusCode != 201) {
+        add(CallHangup());
+        return;
+      }
+    } on TimeoutException catch (exception) {
+      emit(
+        CallCancelState(
+          "Could not connect to the given Server! ${exception.message}",
+        ),
+      );
+      add(CallHangup());
       return;
     }
 
@@ -206,7 +203,6 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
   @override
   Future<void> close() async {
     await rtcclient?.close();
-    await mqttclient?.disconnect();
     return super.close();
   }
 }
