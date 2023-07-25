@@ -16,8 +16,6 @@ import 'package:http/http.dart' as http;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:uuid/uuid.dart';
 
-import '../signaling/signaling_message.dart';
-import '../signaling/signaling_message_type.dart';
 import '../utils/rtc_client_wrapper.dart';
 import '../utils/rtc_transceiver.dart';
 
@@ -53,6 +51,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
 
     // create rtc connection
     rtcclient = await RtcClientWrapper.create(
+      uuid: uuid,
       iceServers: iceServerRepository.servers,
       transceivers: [
         RtcTransceiver(
@@ -61,45 +60,51 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
         ),
         RtcTransceiver(
           kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
-          direction: TransceiverDirection.RecvOnly,
+          direction: TransceiverDirection.SendRecv,
         )
       ],
     );
 
     Router router = Router();
-    router.connect("/connection", (Request request) async {
+    router.connect("/connection/candidate", (Request request) async {
       String body = await request.readAsString();
-      SignalingMessage message = SignalingMessage.fromJson(
-        jsonDecode(body),
-      );
+      Map<String, dynamic> json = jsonDecode(body);
+      print("received candidate");
+
       // rtcclient could be null, if the connection as already closed on this side
-      rtcclient?.addMessage(message);
+      rtcclient!.addIceCandidate(RTCIceCandidate(
+        json["candidate"],
+        json["sdpMid"],
+        json["sdpMLineIndex"] as int,
+      ));
 
       return Response.ok("Ok");
     });
 
     MqttHttpServer server = MqttHttpServer();
+    Uri uri = home.uri.toUri().replace(fragment: "", path: uuid);
+
     await server.serve(
       router,
-      home.uri.toUri().replace(fragment: "", path: uuid),
+      uri,
       powerdBy: "com.dieklingel.app.$uuid",
     );
 
-    rtcclient?.onMessage(
-      (SignalingMessage message) {
-        if (message.type == SignalingMessageType.leave ||
-            message.type == SignalingMessageType.error) {
-          rtcclient?.dispose();
-        }
+    rtcclient!.onIceCandidate((RTCIceCandidate candidate) {
+      MqttHttpClient().socket(
+        home.uri.toUri().append(path: "/rtc/connections/candidate/$uuid"),
+        body: jsonEncode(candidate.toMap()),
+      );
+    });
 
-        MqttHttpClient().socket(
-          home.uri.toUri().append(path: "/rtc/connections/$uuid"),
-          body: jsonEncode(message.toJson()),
-        );
-      },
-    );
-
-    await rtcclient?.ressource.open(true, false);
+    await rtcclient!.ressource.open(true, false);
+    MediaStream? stream = rtcclient!.ressource.stream;
+    if (null != stream) {
+      for (MediaStreamTrack track in stream.getTracks()) {
+        rtcclient!.connection.addTrack(track, stream);
+        // Helper.setMicrophoneMute(true, track);
+      }
+    }
 
     if (rtcclient == null) {
       return;
@@ -110,8 +115,9 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
       response = await MqttHttpClient().post(
         home.uri
             .toUri()
-            .append(path: "/rtc/connections/$uuid")
+            .append(path: "/rtc/connections/create/$uuid")
             .replace(fragment: ""),
+        body: jsonEncode((await rtcclient!.offer()).toMap()),
       );
       if (response.statusCode != 201) {
         add(CallHangup());
@@ -126,10 +132,16 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
       add(CallHangup());
       return;
     }
+    final Map<String, dynamic> answer = jsonDecode(response.body);
+    final description = RTCSessionDescription(
+      answer["sdp"],
+      answer["type"],
+    );
+    await rtcclient!.setRemoteDescription(description);
 
-    await rtcclient?.open();
     RTCVideoRenderer? renderer = rtcclient?.renderer;
     if (renderer == null) {
+      print("renderer is null");
       return;
     }
 
@@ -143,9 +155,27 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
   }
 
   Future<void> _onHangup(CallHangup event, Emitter<CallState> emit) async {
-    await rtcclient?.close();
-    rtcclient = null;
+    String? uuid = rtcclient?.uuid;
+
     emit(CallEndedState());
+    rtcclient?.ressource.close();
+    await rtcclient?.dispose();
+    rtcclient = null;
+
+    try {
+      await MqttHttpClient().post(
+        home.uri
+            .toUri()
+            .append(path: "/rtc/connections/close/$uuid")
+            .replace(fragment: ""),
+      );
+    } on TimeoutException catch (exception) {
+      emit(
+        CallCancelState(
+          "Could not connect to the given Server! ${exception.message}",
+        ),
+      );
+    }
   }
 
   Future<void> _onToogleMicrophone(
@@ -202,7 +232,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
 
   @override
   Future<void> close() async {
-    await rtcclient?.close();
+    await rtcclient?.dispose();
     return super.close();
   }
 }
