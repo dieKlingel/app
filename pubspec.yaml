@@ -36,7 +36,7 @@ dependencies:
   # use version 0.9.22 caused by ios speakerphone issue:
   # https://github.com/flutter-webrtc/flutter-webrtc/issues/1328
   # https://github.com/flutter-webrtc/flutter-webrtc/issues/1326
-  flutter_webrtc: 0.9.22
+  flutter_webrtc: ^0.9.36
   firebase_core: ^2.6.1
   firebase_messaging: ^14.4.0
   audio_session: ^0.1.13
@@ -47,8 +47,8 @@ dependencies:
   mqtt:
     git:
       url: https://github.com/KoiFresh/dieklingel-core.git
-      ref: main
-      path: libraries/mqtt
+      ref: feature/try-go
+      path: kiosk/packages/mqtt
   flutter_bloc: ^8.1.2
   pull_down_button: ^0.8.1
   shelf_router: ^1.1.4

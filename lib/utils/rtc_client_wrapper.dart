@@ -139,10 +139,8 @@ class RtcClientWrapper {
       return;
     }
     if (_remoteDescriptionSet) {
-      print("add candidate");
       await connection.addCandidate(candidate);
     } else {
-      print("buffer candidate");
       _candiateBuffer.add(candidate);
     }
   }
@@ -165,7 +163,6 @@ class RtcClientWrapper {
 
   void _onConnectionState(RTCPeerConnectionState state) {
     _state.value = state;
-    print(state);
     switch (state) {
       case RTCPeerConnectionState.RTCPeerConnectionStateFailed:
       case RTCPeerConnectionState.RTCPeerConnectionStateDisconnected:
@@ -180,11 +177,10 @@ class RtcClientWrapper {
     if (event.streams.isEmpty) {
       return;
     }
+
     _applyMicrophoneSettings();
     _applySpeakerSettings();
 
-    print("add track ${event.track.kind}");
-    print(event.streams.first.getTracks());
     renderer.srcObject = event.streams.first;
   }
 
@@ -203,29 +199,35 @@ class RtcClientWrapper {
     }
   }
 
-  void _applySpeakerSettings() {
-    switch (_speakerState) {
-      case SpeakerState.muted:
-        renderer.srcObject?.getAudioTracks().forEach((track) {
-          track.enabled = false;
-        });
-        break;
-      case SpeakerState.headphone:
-        renderer.srcObject?.getAudioTracks().forEach((track) {
-          track.enabled = true;
-          if (!kIsWeb) {
-            track.enableSpeakerphone(false);
-          }
-        });
-        break;
-      case SpeakerState.speaker:
-        renderer.srcObject?.getAudioTracks().forEach((track) {
-          track.enabled = true;
-          if (!kIsWeb) {
-            track.enableSpeakerphone(true);
-          }
-        });
-        break;
+  void _applySpeakerSettings() async {
+    final streams = connection.getRemoteStreams();
+    for (final stream in streams) {
+      if (stream == null) {
+        continue;
+      }
+      switch (_speakerState) {
+        case SpeakerState.muted:
+          stream.getAudioTracks().forEach((track) {
+            track.enabled = false;
+          });
+          break;
+        case SpeakerState.headphone:
+          stream.getAudioTracks().forEach((track) {
+            track.enabled = true;
+            if (!kIsWeb) {
+              track.enableSpeakerphone(false);
+            }
+          });
+          break;
+        case SpeakerState.speaker:
+          stream.getAudioTracks().forEach((track) {
+            track.enabled = true;
+            if (!kIsWeb) {
+              track.enableSpeakerphone(false);
+            }
+          });
+          break;
+      }
     }
   }
 }

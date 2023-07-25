@@ -213,10 +213,10 @@ packages:
     dependency: transitive
     description:
       name: dart_webrtc
-      sha256: a8244b36b6b673649f489f4f13a011e6fb029de678f6c606dc3f072a088b6ea8
+      sha256: "3f581ea799829fabd6e0b99bd2210146e4d107c7b3ac8495af3510737a5c5c1a"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.15"
+    version: "1.1.1"
   dbus:
     dependency: transitive
     description:
@@ -372,10 +372,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_webrtc
-      sha256: "865005387e9385d0f81c19ad1f2ea6db7204317476141d4f4d1cbb619d6383c0"
+      sha256: f7e3ee080638db1793109a2ca4f1391413907057cbee46a7f9bd1dc2a636d1cd
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.22"
+    version: "0.9.36"
   frontend_server_client:
     dependency: transitive
     description:
@@ -480,6 +480,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.1"
+  logger:
+    dependency: transitive
+    description:
+      path: "kiosk/packages/logger"
+      ref: "feature/try-go"
+      resolved-ref: cb03bb512caf18dd472e5cf5df6ce0330725d469
+      url: "https://github.com/KoiFresh/dieklingel-core.git"
+    source: git
+    version: "0.0.1"
   logging:
     dependency: transitive
     description:
@@ -523,9 +532,9 @@ packages:
   mqtt:
     dependency: "direct main"
     description:
-      path: "libraries/mqtt"
-      ref: main
-      resolved-ref: "6950c9e415c1fd0e6748497b867bd6e425ff844e"
+      path: "kiosk/packages/mqtt"
+      ref: "feature/try-go"
+      resolved-ref: cb03bb512caf18dd472e5cf5df6ce0330725d469
       url: "https://github.com/KoiFresh/dieklingel-core.git"
     source: git
     version: "0.0.1"
@@ -978,10 +987,10 @@ packages:
     dependency: transitive
     description:
       name: webrtc_interface
-      sha256: fb79e2dbf594a61bfeed6dc52fa3209d63594ac59930043a9e98371d2d40000c
+      sha256: "0dd96f4d7fb6ba9895930644cebd3f1adb5179caa83cb1760061b2fe9cba5aad"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.11"
+    version: "1.1.0"
   win32:
     dependency: transitive
     description:
@@ -1015,5 +1024,5 @@ packages:
     source: hosted
     version: "3.1.1"
 sdks:
-  dart: ">=3.0.0-0 <3.7.11"
+  dart: ">=3.0.5 <3.7.11"
   flutter: ">=3.3.0"
