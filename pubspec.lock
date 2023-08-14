@@ -213,10 +213,10 @@ packages:
     dependency: transitive
     description:
       name: dart_webrtc
-      sha256: "3f581ea799829fabd6e0b99bd2210146e4d107c7b3ac8495af3510737a5c5c1a"
+      sha256: dfe42714abe3eb83eefec407c9da7f8e341a899aa1b8ac2484af298cdfeb74a3
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.1"
+    version: "1.1.2"
   dbus:
     dependency: transitive
     description:
@@ -372,10 +372,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_webrtc
-      sha256: f7e3ee080638db1793109a2ca4f1391413907057cbee46a7f9bd1dc2a636d1cd
+      sha256: b795e79c2c053b0559756450427c4ad4679707e50b8540b5d7921c92a3989bc9
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.36"
+    version: "0.9.39"
   frontend_server_client:
     dependency: transitive
     description:
@@ -987,10 +987,10 @@ packages:
     dependency: transitive
     description:
       name: webrtc_interface
-      sha256: "0dd96f4d7fb6ba9895930644cebd3f1adb5179caa83cb1760061b2fe9cba5aad"
+      sha256: faec2b578f7cd588766843a8c59d4a0137c44de10b83341ce7bec05e104614d7
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.1.1"
   win32:
     dependency: transitive
     description:
