@@ -1,5 +1,3 @@
-import 'package:mqtt/models/mqtt_uri.dart';
-
 class Home {
   String name;
   Uri uri;

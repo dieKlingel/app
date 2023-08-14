@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dieklingel_app/blocs/call_view_bloc.dart';
 import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
 import 'package:dieklingel_app/blocs/home_view_bloc.dart';
@@ -8,7 +6,6 @@ import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/views/home_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mqtt/mqtt_http_client.dart';
 
 import './models/home.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -108,14 +105,15 @@ class _App extends State<App> {
         "token": token,
         "identifier": home.uri.fragment.isEmpty ? "default" : home.uri.fragment,
       };
-      MqttHttpClient().patch(
+      // TODO: patch registration
+      /* MqttHttpClient().patch(
         home.uri,
         headers: {
           "username": home.username ?? "",
           "password": home.password ?? "",
         },
         body: jsonEncode(payload),
-      );
+      ); */
     }
   }
 

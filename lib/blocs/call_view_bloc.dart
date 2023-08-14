@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:async/async.dart';
-import 'package:dieklingel_app/extensions/uri.dart';
 import 'package:dieklingel_app/models/hive_home.dart';
+import 'package:dieklingel_app/models/request.dart';
+import 'package:dieklingel_app/models/response.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/states/call_state.dart';
@@ -12,9 +13,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt/mqtt.dart';
-import 'package:shelf/shelf.dart';
-import 'package:shelf_router/shelf_router.dart';
 import 'package:uuid/uuid.dart';
+import 'package:path/path.dart' as path;
 
 import '../utils/rtc_client_wrapper.dart';
 import '../utils/rtc_transceiver.dart';
@@ -24,6 +24,8 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
   final IceServerRepository iceServerRepository;
   RtcClientWrapper? rtcclient;
   CancelableOperation? _requestOperation;
+  MqttClient? client;
+  Subscription? candidateSub;
 
   CallViewBloc(
     this.homeRepository,
@@ -48,6 +50,12 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
   Future<void> _onStart(CallStart event, Emitter<CallState> emit) async {
     emit(CallInitatedState());
 
+    final MqttClient client = MqttClient(home.uri);
+    await client.connect(
+      username: home.username ?? "",
+      password: home.password ?? "",
+    );
+
     String uuid = const Uuid().v4();
 
     // create rtc connection
@@ -66,34 +74,30 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
       ],
     );
 
-    Router router = Router();
-    router.connect("/connection/candidate", (Request request) async {
-      String body = await request.readAsString();
-      Map<String, dynamic> json = jsonDecode(body);
+    candidateSub?.cancel();
+    candidateSub = client.subscribe(
+      path.normalize("./$uuid/connection/candidate"),
+      (topic, message) {
+        Map<String, dynamic> candidate = jsonDecode(
+          Request.fromMap(
+            jsonDecode(message),
+          ).body,
+        );
 
-      // rtcclient could be null, if the connection as already closed on this side
-      rtcclient!.addIceCandidate(RTCIceCandidate(
-        json["candidate"],
-        json["sdpMid"],
-        json["sdpMLineIndex"] as int,
-      ));
-
-      return Response.ok("Ok");
-    });
-
-    MqttHttpServer server = MqttHttpServer();
-    Uri uri = home.uri.replace(fragment: "", path: uuid);
-
-    await server.serve(
-      router,
-      uri,
-      powerdBy: "com.dieklingel.app.$uuid",
+        rtcclient!.addIceCandidate(
+          RTCIceCandidate(
+            candidate["candidate"],
+            candidate["sdpMid"],
+            candidate["sdpMLineIndex"] as int,
+          ),
+        );
+      },
     );
 
     rtcclient!.onIceCandidate((RTCIceCandidate candidate) {
-      MqttHttpClient().socket(
-        home.uri.append(path: "/rtc/connections/candidate/$uuid"),
-        body: jsonEncode(candidate.toMap()),
+      client.publish(
+        path.normalize("./${home.uri.path}/rtc/connections/candidate/$uuid"),
+        Request.withJsonBody("GET", candidate.toMap()).toJsonString(),
       );
     });
 
@@ -112,16 +116,26 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
 
     await _requestOperation?.cancel();
 
+    String answerChannel = const Uuid().v4();
     final operation = CancelableOperation.fromFuture(
-      MqttHttpClient().post(
-        home.uri
-            .append(path: "/rtc/connections/create/$uuid")
-            .replace(fragment: ""),
-        body: jsonEncode((await rtcclient!.offer()).toMap()),
+      client.once(
+        path.normalize(
+          "./${home.uri.path}/rtc/connections/create/$uuid/$answerChannel",
+        ),
+        timeout: const Duration(seconds: 30),
       ),
     );
+    client.publish(
+      path.normalize("./${home.uri.path}/rtc/connections/create/$uuid"),
+      Request.withJsonBody(
+        "GET",
+        (await rtcclient!.offer()).toMap(),
+      ).withAnswerChannel(answerChannel).toJsonString(),
+    );
     _requestOperation = operation;
-    await operation.value.then((response) async {
+
+    await operation.value.then((value) async {
+      Response response = Response.fromMap(jsonDecode(value));
       if (response.statusCode != 201) {
         add(CallHangup());
       }
@@ -164,13 +178,13 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     await rtcclient?.dispose();
     rtcclient = null;
 
-    try {
-      await MqttHttpClient().post(
-        home.uri
-            .append(path: "/rtc/connections/close/$uuid")
-            .replace(fragment: ""),
-      );
-    } on TimeoutException catch (_) {}
+    client?.publish(
+      path.normalize("./${home.uri.path}/rtc/connections/close/$uuid"),
+      jsonEncode(
+        Request("GET", ""),
+      ),
+    );
+    // TODO: disconnect client
   }
 
   Future<void> _onToogleMicrophone(
