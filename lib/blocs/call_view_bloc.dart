@@ -120,6 +120,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
         body: jsonEncode((await rtcclient!.offer()).toMap()),
       ),
     );
+    _requestOperation = operation;
     await operation.value.then((response) async {
       if (response.statusCode != 201) {
         add(CallHangup());
