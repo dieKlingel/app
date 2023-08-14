@@ -32,6 +32,10 @@ class MqttClient {
     return MqttClient._(client, uri);
   }
 
+  void disconnect() {
+    _client.disconnect();
+  }
+
   Future<void> connect({String username = "", String password = ""}) async {
     await _client.connect(username, password);
     _client.updates!.listen((event) {

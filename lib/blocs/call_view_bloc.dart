@@ -84,7 +84,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
           ).body,
         );
 
-        rtcclient!.addIceCandidate(
+        rtcclient?.addIceCandidate(
           RTCIceCandidate(
             candidate["candidate"],
             candidate["sdpMid"],
@@ -152,6 +152,11 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
         return;
       }
 
+      if (state is! CallInitatedState) {
+        add(CallHangup());
+        return;
+      }
+
       emit(
         CallActiveState(
           microphoneState: rtcclient!.microphoneState,
@@ -184,7 +189,10 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
         Request("GET", ""),
       ),
     );
-    // TODO: disconnect client
+    candidateSub?.cancel();
+    candidateSub = null;
+    client?.disconnect();
+    client = null;
   }
 
   Future<void> _onToogleMicrophone(
@@ -241,6 +249,9 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
 
   @override
   Future<void> close() async {
+    candidateSub?.cancel();
+    client?.disconnect();
+    client = null;
     await rtcclient?.dispose();
     return super.close();
   }
