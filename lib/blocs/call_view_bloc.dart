@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:async/async.dart';
 import 'package:dieklingel_app/extensions/uri.dart';
 import 'package:dieklingel_app/models/hive_home.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
@@ -12,7 +13,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt/mqtt.dart';
 import 'package:shelf/shelf.dart';
-import 'package:http/http.dart' as http;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:uuid/uuid.dart';
 
@@ -23,6 +23,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
   final HomeRepository homeRepository;
   final IceServerRepository iceServerRepository;
   RtcClientWrapper? rtcclient;
+  CancelableOperation? _requestOperation;
 
   CallViewBloc(
     this.homeRepository,
@@ -69,7 +70,6 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     router.connect("/connection/candidate", (Request request) async {
       String body = await request.readAsString();
       Map<String, dynamic> json = jsonDecode(body);
-      print("received candidate");
 
       // rtcclient could be null, if the connection as already closed on this side
       rtcclient!.addIceCandidate(RTCIceCandidate(
@@ -110,52 +110,54 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
       return;
     }
 
-    http.Response response;
-    try {
-      response = await MqttHttpClient().post(
+    await _requestOperation?.cancel();
+
+    final operation = CancelableOperation.fromFuture(
+      MqttHttpClient().post(
         home.uri
             .toUri()
             .append(path: "/rtc/connections/create/$uuid")
             .replace(fragment: ""),
         body: jsonEncode((await rtcclient!.offer()).toMap()),
-      );
-      if (response.statusCode != 201) {
-        add(CallHangup());
-        return;
-      }
-    } on TimeoutException catch (exception) {
-      emit(
-        CallCancelState(
-          "Could not connect to the given Server! ${exception.message}",
-        ),
-      );
-      add(CallHangup());
-      return;
-    }
-    final Map<String, dynamic> answer = jsonDecode(response.body);
-    final description = RTCSessionDescription(
-      answer["sdp"],
-      answer["type"],
-    );
-    await rtcclient!.setRemoteDescription(description);
-
-    RTCVideoRenderer? renderer = rtcclient?.renderer;
-    if (renderer == null) {
-      print("renderer is null");
-      return;
-    }
-
-    emit(
-      CallActiveState(
-        microphoneState: rtcclient!.microphoneState,
-        speakerState: rtcclient!.speakerState,
-        renderer: renderer,
       ),
     );
+    await operation.value.then((response) async {
+      if (response.statusCode != 201) {
+        add(CallHangup());
+      }
+
+      final Map<String, dynamic> answer = jsonDecode(response.body);
+      final description = RTCSessionDescription(
+        answer["sdp"],
+        answer["type"],
+      );
+      await rtcclient!.setRemoteDescription(description);
+
+      RTCVideoRenderer? renderer = rtcclient?.renderer;
+      if (renderer == null) {
+        return;
+      }
+
+      emit(
+        CallActiveState(
+          microphoneState: rtcclient!.microphoneState,
+          speakerState: rtcclient!.speakerState,
+          renderer: renderer,
+        ),
+      );
+    }).onError<TimeoutException>((exception, stackTrace) async {
+      emit(CallCancelState(
+        "Could not connect to the given Server! ${exception.message}",
+      ));
+      rtcclient?.ressource.close();
+      await rtcclient?.dispose();
+      rtcclient = null;
+    });
   }
 
   Future<void> _onHangup(CallHangup event, Emitter<CallState> emit) async {
     String? uuid = rtcclient?.uuid;
+    _requestOperation?.cancel();
 
     emit(CallEndedState());
     rtcclient?.ressource.close();
@@ -169,13 +171,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
             .append(path: "/rtc/connections/close/$uuid")
             .replace(fragment: ""),
       );
-    } on TimeoutException catch (exception) {
-      emit(
-        CallCancelState(
-          "Could not connect to the given Server! ${exception.message}",
-        ),
-      );
-    }
+    } on TimeoutException catch (_) {}
   }
 
   Future<void> _onToogleMicrophone(

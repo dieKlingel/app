@@ -44,9 +44,9 @@ class IceServerListView extends StatelessWidget {
             if (state.servers.isEmpty) {
               return Center(
                 child: CupertinoButton(
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Icon(CupertinoIcons.add),
                       Text("add your first ICE Server"),
                     ],

@@ -48,7 +48,6 @@ class RtcClientWrapper {
     _remoteDescriptionSet = true;
     await connection.setRemoteDescription(answer);
     for (var candidate in _candiateBuffer) {
-      print("add buffered candidate");
       connection.addCandidate(candidate);
     }
     _candiateBuffer.clear();
@@ -120,10 +119,6 @@ class RtcClientWrapper {
       ..onConnectionState = wrapper._onConnectionState
       ..onTrack = wrapper._onTrack;
 
-    wrapper.renderer.onFirstFrameRendered = () {
-      print("frame");
-    };
-
     for (RtcTransceiver transceiver in transceivers) {
       await wrapper.connection.addTransceiver(
         kind: transceiver.kind,
@@ -166,7 +161,6 @@ class RtcClientWrapper {
     switch (state) {
       case RTCPeerConnectionState.RTCPeerConnectionStateFailed:
       case RTCPeerConnectionState.RTCPeerConnectionStateDisconnected:
-        print("close connection");
         break;
       default:
         break;
