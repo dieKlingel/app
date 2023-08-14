@@ -2,7 +2,6 @@ import 'package:dieklingel_app/models/hive_home.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/states/home_add_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mqtt/models/mqtt_uri.dart';
 
 class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
   final HomeRepository homeRepository;
@@ -58,10 +57,8 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     }
 
     Uri url = Uri.parse(event.server);
-    MqttUri uri = MqttUri.fromUri(
-      Uri.parse(
-        "${url.scheme}://${url.authority}/${event.channel}#${event.sign}",
-      ),
+    Uri uri = Uri.parse(
+      "${url.scheme}://${url.authority}/${event.channel}#${event.sign}",
     );
 
     HiveHome home = event.home ?? HiveHome(name: event.name, uri: uri);

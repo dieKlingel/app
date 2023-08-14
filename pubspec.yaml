@@ -55,6 +55,7 @@ dependencies:
   shelf: ^1.4.1
   http: ^0.13.6
   async: ^2.11.0
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:

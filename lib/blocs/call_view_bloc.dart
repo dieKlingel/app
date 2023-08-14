@@ -82,7 +82,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     });
 
     MqttHttpServer server = MqttHttpServer();
-    Uri uri = home.uri.toUri().replace(fragment: "", path: uuid);
+    Uri uri = home.uri.replace(fragment: "", path: uuid);
 
     await server.serve(
       router,
@@ -92,7 +92,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
 
     rtcclient!.onIceCandidate((RTCIceCandidate candidate) {
       MqttHttpClient().socket(
-        home.uri.toUri().append(path: "/rtc/connections/candidate/$uuid"),
+        home.uri.append(path: "/rtc/connections/candidate/$uuid"),
         body: jsonEncode(candidate.toMap()),
       );
     });
@@ -115,7 +115,6 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     final operation = CancelableOperation.fromFuture(
       MqttHttpClient().post(
         home.uri
-            .toUri()
             .append(path: "/rtc/connections/create/$uuid")
             .replace(fragment: ""),
         body: jsonEncode((await rtcclient!.offer()).toMap()),
@@ -167,7 +166,6 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     try {
       await MqttHttpClient().post(
         home.uri
-            .toUri()
             .append(path: "/rtc/connections/close/$uuid")
             .replace(fragment: ""),
       );

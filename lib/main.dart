@@ -106,11 +106,10 @@ class _App extends State<App> {
     for (HiveHome home in box.values) {
       Map<String, dynamic> payload = {
         "token": token,
-        "identifier": home.uri.section.isEmpty ? "default" : home.uri.section,
+        "identifier": home.uri.fragment.isEmpty ? "default" : home.uri.fragment,
       };
       MqttHttpClient().patch(
-        // TODO(KoiFresh): use correct uri
-        home.uri.toUri(),
+        home.uri,
         headers: {
           "username": home.username ?? "",
           "password": home.password ?? "",

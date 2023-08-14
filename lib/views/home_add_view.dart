@@ -1,8 +1,8 @@
 import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
-import '../extensions/mqtt_uri.dart';
 import 'package:dieklingel_app/states/home_add_state.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:path/path.dart' as path;
 import '../models/hive_home.dart';
 
 class HomeAddView extends StatefulWidget {
@@ -17,12 +17,18 @@ class HomeAddView extends StatefulWidget {
 class _HomeAddView extends State<HomeAddView> {
   late final _name = TextEditingController(text: widget.home?.name);
   late final _server = TextEditingController(
-    text: widget.home?.uri.toHostOnlyString(),
+    text: widget.home == null
+        ? null
+        : "${widget.home!.uri.scheme}://${widget.home!.uri.host}:${widget.home!.uri.port}",
   );
   late final _username = TextEditingController(text: widget.home?.username);
   late final _password = TextEditingController(text: widget.home?.password);
-  late final _channel = TextEditingController(text: widget.home?.uri.channel);
-  late final _sign = TextEditingController(text: widget.home?.uri.section);
+  late final _channel = TextEditingController(
+    text: widget.home == null
+        ? null
+        : path.normalize("./${widget.home!.uri.path}"),
+  );
+  late final _sign = TextEditingController(text: widget.home?.uri.fragment);
 
   @override
   Widget build(BuildContext context) {
