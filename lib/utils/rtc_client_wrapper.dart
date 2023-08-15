@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import '../models/ice_server.dart';
-import '../signaling/signaling_message.dart';
-import '../signaling/signaling_message_type.dart';
 import 'media_ressource.dart';
 import 'microphone_state.dart';
 import 'rtc_transceiver.dart';
@@ -16,6 +14,7 @@ class RtcClientWrapper {
   final MediaRessource ressource = MediaRessource();
   final RTCVideoRenderer renderer = RTCVideoRenderer();
   final List<IceServer> servers;
+  final String uuid;
   final List<RtcTransceiver> transceivers;
   late final RTCPeerConnection connection;
   final _state = ValueNotifier<RTCPeerConnectionState>(
@@ -24,8 +23,48 @@ class RtcClientWrapper {
   bool _isDisposed = false;
   final List<RTCIceCandidate> _candiateBuffer = [];
   bool _remoteDescriptionSet = false;
+  RTCSessionDescription? _offer;
+  RTCSessionDescription? _answer;
 
-  void Function(SignalingMessage)? _onMessage;
+  void Function(RTCIceCandidate)? _onIceCandidateCallback;
+
+  Future<RTCSessionDescription> offer() async {
+    if (_isDisposed) {
+      throw Exception(
+        "cannot create an offer after the connection has been disposed",
+      );
+    }
+    if (_offer == null) {
+      _offer = await connection.createOffer();
+      await connection.setLocalDescription(_offer!);
+    }
+    return _offer!;
+  }
+
+  Future<void> setRemoteDescription(RTCSessionDescription answer) async {
+    if (_remoteDescriptionSet) {
+      throw "remote already set";
+    }
+    _remoteDescriptionSet = true;
+    await connection.setRemoteDescription(answer);
+    for (var candidate in _candiateBuffer) {
+      connection.addCandidate(candidate);
+    }
+    _candiateBuffer.clear();
+  }
+
+  Future<RTCSessionDescription> answer(RTCSessionDescription offer) async {
+    if (_isDisposed) {
+      throw Exception(
+        "cannot create an answer after the connection has been disposed",
+      );
+    }
+    if (_answer == null) {
+      await connection.setRemoteDescription(offer);
+      _answer = await connection.createAnswer();
+    }
+    return _answer!;
+  }
 
   MicrophoneState get microphoneState => _microphoneState;
 
@@ -41,16 +80,21 @@ class RtcClientWrapper {
     _applySpeakerSettings();
   }
 
-  RtcClientWrapper._(this.servers, this.transceivers);
+  RtcClientWrapper._(this.servers, this.transceivers, this.uuid);
 
   ValueNotifier<RTCPeerConnectionState> get state => _state;
 
   static Future<RtcClientWrapper> create({
     List<IceServer> iceServers = const [],
     List<RtcTransceiver> transceivers = const [],
+    required String uuid,
   }) async {
     WidgetsFlutterBinding.ensureInitialized();
-    RtcClientWrapper wrapper = RtcClientWrapper._(iceServers, transceivers);
+    RtcClientWrapper wrapper = RtcClientWrapper._(
+      iceServers,
+      transceivers,
+      uuid,
+    );
     await wrapper.renderer.initialize();
 
     List<Map<String, dynamic>> servers = iceServers
@@ -69,7 +113,9 @@ class RtcClientWrapper {
     wrapper.connection = await createPeerConnection(configuration);
 
     wrapper.connection
-      ..onIceCandidate = wrapper._onIceCandidate
+      ..onIceCandidate = (RTCIceCandidate candidate) {
+        wrapper._onIceCandidateCallback?.call(candidate);
+      }
       ..onConnectionState = wrapper._onConnectionState
       ..onTrack = wrapper._onTrack;
 
@@ -83,108 +129,22 @@ class RtcClientWrapper {
     return wrapper;
   }
 
-  void addMessage(SignalingMessage message) async {
+  void addIceCandidate(RTCIceCandidate candidate) async {
     if (_isDisposed) {
       return;
     }
-    switch (message.type) {
-      case SignalingMessageType.offer:
-        MediaStream? stream = ressource.stream;
-        if (null != stream) {
-          for (MediaStreamTrack track in stream.getTracks()) {
-            connection.addTrack(track, stream);
-          }
-        }
-
-        final remote = RTCSessionDescription(
-          message.data["sdp"],
-          message.data["type"],
-        );
-
-        await connection.setRemoteDescription(remote);
-        final local = await connection.createAnswer();
-        await connection.setLocalDescription(local);
-
-        SignalingMessage answer = SignalingMessage()
-          ..type = SignalingMessageType.answer
-          ..data = local.toMap();
-
-        _onMessage?.call(answer);
-        break;
-      case SignalingMessageType.answer:
-        final description = RTCSessionDescription(
-          message.data["sdp"],
-          message.data["type"],
-        );
-
-        await connection.setRemoteDescription(description);
-        _remoteDescriptionSet = true;
-        for (RTCIceCandidate candidate in _candiateBuffer) {
-          connection.addCandidate(candidate);
-        }
-        break;
-      case SignalingMessageType.candidate:
-        final candidate = RTCIceCandidate(
-          message.data["candidate"],
-          message.data["sdpMid"],
-          message.data["sdpMLineIndex"],
-        );
-
-        if (_remoteDescriptionSet) {
-          await connection.addCandidate(candidate);
-        } else {
-          _candiateBuffer.add(candidate);
-        }
-        break;
-      case SignalingMessageType.leave:
-      case SignalingMessageType.busy:
-      case SignalingMessageType.error:
-        close();
-        break;
+    if (_remoteDescriptionSet) {
+      await connection.addCandidate(candidate);
+    } else {
+      _candiateBuffer.add(candidate);
     }
   }
 
-  void onMessage(void Function(SignalingMessage) handler) {
+  void onIceCandidate(void Function(RTCIceCandidate) handler) {
     if (_isDisposed) {
       return;
     }
-    _onMessage = handler;
-  }
-
-  Future<void> open() async {
-    if (_isDisposed) {
-      return;
-    }
-    RTCSessionDescription offer = await connection.createOffer();
-    await connection.setLocalDescription(offer);
-
-    MediaStream? stream = ressource.stream;
-    if (null != stream) {
-      for (MediaStreamTrack track in stream.getTracks()) {
-        connection.addTrack(track, stream);
-        Helper.setMicrophoneMute(true, track);
-      }
-    }
-
-    _applyMicrophoneSettings();
-    _applySpeakerSettings();
-
-    SignalingMessage message = SignalingMessage();
-    message.type = SignalingMessageType.offer;
-    message.data = offer.toMap();
-
-    _onMessage?.call(message);
-  }
-
-  Future<void> close() async {
-    if (_isDisposed) {
-      return;
-    }
-    SignalingMessage message = SignalingMessage()
-      ..type = SignalingMessageType.leave;
-
-    await dispose();
-    _onMessage?.call(message);
+    _onIceCandidateCallback = handler;
   }
 
   Future<void> dispose() async {
@@ -196,20 +156,11 @@ class RtcClientWrapper {
     await connection.close();
   }
 
-  void _onIceCandidate(RTCIceCandidate candidate) {
-    SignalingMessage message = SignalingMessage()
-      ..type = SignalingMessageType.candidate
-      ..data = candidate.toMap();
-
-    _onMessage?.call(message);
-  }
-
   void _onConnectionState(RTCPeerConnectionState state) {
     _state.value = state;
     switch (state) {
       case RTCPeerConnectionState.RTCPeerConnectionStateFailed:
       case RTCPeerConnectionState.RTCPeerConnectionStateDisconnected:
-        close();
         break;
       default:
         break;
@@ -220,6 +171,7 @@ class RtcClientWrapper {
     if (event.streams.isEmpty) {
       return;
     }
+
     _applyMicrophoneSettings();
     _applySpeakerSettings();
 
@@ -241,29 +193,35 @@ class RtcClientWrapper {
     }
   }
 
-  void _applySpeakerSettings() {
-    switch (_speakerState) {
-      case SpeakerState.muted:
-        renderer.srcObject?.getAudioTracks().forEach((track) {
-          track.enabled = false;
-        });
-        break;
-      case SpeakerState.headphone:
-        renderer.srcObject?.getAudioTracks().forEach((track) {
-          track.enabled = true;
-          if (!kIsWeb) {
-            track.enableSpeakerphone(false);
-          }
-        });
-        break;
-      case SpeakerState.speaker:
-        renderer.srcObject?.getAudioTracks().forEach((track) {
-          track.enabled = true;
-          if (!kIsWeb) {
-            track.enableSpeakerphone(true);
-          }
-        });
-        break;
+  void _applySpeakerSettings() async {
+    final streams = connection.getRemoteStreams();
+    for (final stream in streams) {
+      if (stream == null) {
+        continue;
+      }
+      switch (_speakerState) {
+        case SpeakerState.muted:
+          stream.getAudioTracks().forEach((track) {
+            track.enabled = false;
+          });
+          break;
+        case SpeakerState.headphone:
+          stream.getAudioTracks().forEach((track) {
+            track.enabled = true;
+            if (!kIsWeb) {
+              track.enableSpeakerphone(false);
+            }
+          });
+          break;
+        case SpeakerState.speaker:
+          stream.getAudioTracks().forEach((track) {
+            track.enabled = true;
+            if (!kIsWeb) {
+              track.enableSpeakerphone(false);
+            }
+          });
+          break;
+      }
     }
   }
 }

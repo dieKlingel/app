@@ -1,4 +1,3 @@
-
 name: Webapp
 on:
   push:
@@ -8,17 +7,17 @@ jobs:
   deploy-webapp:
     runs-on: ubuntu-latest
     env:
-        REPO: self
-        BRANCH: gh-pages
-        FOLDER: build/web
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        MESSAGE: "Build: ({sha}) {msg}"
+      REPO: self
+      BRANCH: gh-pages
+      FOLDER: build/web
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MESSAGE: "Build: ({sha}) {msg}"
     steps:
       - uses: actions/checkout@v3
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.7.3'
-          channel: 'stable'
+          flutter-version: "3.10.6"
+          channel: "stable"
       - run: flutter pub get
       - run: flutter test
       - run: flutter build web

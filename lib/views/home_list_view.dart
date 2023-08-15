@@ -43,9 +43,9 @@ class HomeListView extends StatelessWidget {
           if (state.homes.isEmpty) {
             return Center(
               child: CupertinoButton(
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Icon(CupertinoIcons.add),
                     Text("add your first Home"),
                   ],

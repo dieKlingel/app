@@ -1,8 +1,6 @@
-import 'package:mqtt/models/mqtt_uri.dart';
-
 class Home {
   String name;
-  MqttUri uri;
+  Uri uri;
   String? username;
   String? password;
 
@@ -23,7 +21,7 @@ class Home {
 
     return Home(
       name: map["name"],
-      uri: MqttUri.fromMap(map["uri"]),
+      uri: Uri.parse(map["uri"]),
       username: map["username"],
       password: map["password"],
     );
@@ -32,7 +30,7 @@ class Home {
   Map<String, dynamic> toMap() {
     return {
       "name": name,
-      "uri": uri.toMap(),
+      "uri": uri.toString(),
       "username": username,
       "password": password,
     };
@@ -44,7 +42,7 @@ class Home {
 
   Home copyWith({
     String? name,
-    MqttUri? uri,
+    Uri? uri,
     String? username,
     String? password,
   }) =>

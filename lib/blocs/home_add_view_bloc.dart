@@ -1,8 +1,12 @@
+import 'package:dieklingel_app/models/device.dart';
 import 'package:dieklingel_app/models/hive_home.dart';
+import 'package:dieklingel_app/models/request.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/states/home_add_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mqtt/models/mqtt_uri.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mqtt/mqtt.dart';
+import 'package:path/path.dart' as path;
 
 class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
   final HomeRepository homeRepository;
@@ -58,10 +62,8 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     }
 
     Uri url = Uri.parse(event.server);
-    MqttUri uri = MqttUri.fromUri(
-      Uri.parse(
-        "${url.scheme}://${url.authority}/${event.channel}#${event.sign}",
-      ),
+    Uri uri = Uri.parse(
+      "${url.scheme}://${url.authority}/${event.channel}#${event.sign}",
     );
 
     HiveHome home = event.home ?? HiveHome(name: event.name, uri: uri);
@@ -70,7 +72,31 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     home.username = event.username;
     home.password = event.password;
 
-    homeRepository.add(home);
+    await homeRepository.add(home);
+
+    Box settingsBox = Hive.box("settings");
+    String? token = settingsBox.get("token");
+
+    if (token == null) {
+      emit(HomeAddSuccessfulState());
+      return;
+    }
+
+    final client = MqttClient(home.uri);
+    await client.connect(
+      username: home.username ?? "",
+      password: home.password ?? "",
+    );
+
+    client.publish(
+      path.normalize("./${home.uri.path}/devices/save"),
+      Request.fromMap(
+        Device(
+          token,
+          signs: [home.uri.fragment],
+        ).toMap(),
+      ).toJsonString(),
+    );
 
     emit(HomeAddSuccessfulState());
   }

@@ -1,6 +1,5 @@
 import 'package:dieklingel_app/models/home.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:mqtt/models/mqtt_uri.dart';
 
 class HiveHome extends Home with HiveObjectMixin {
   HiveHome({
@@ -18,11 +17,9 @@ class HiveHome extends Home with HiveObjectMixin {
       throw "Cannot create Home from Map without uri";
     }
 
-    MqttUri uri = MqttUri.fromMap((map["uri"] as Map<dynamic, dynamic>).cast());
-
     return HiveHome(
       name: map["name"],
-      uri: uri,
+      uri: Uri.parse(map["uri"]),
       username: map["username"],
       password: map["password"],
     );
