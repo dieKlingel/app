@@ -122,7 +122,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
         path.normalize(
           "./${home.uri.path}/rtc/connections/create/$uuid/$answerChannel",
         ),
-        timeout: const Duration(seconds: 30),
+        timeout: const Duration(seconds: 15),
       ),
     );
     client.publish(
@@ -166,7 +166,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
       );
     }).onError<TimeoutException>((exception, stackTrace) async {
       emit(CallCancelState(
-        "Could not connect to the given Server! ${exception.message}",
+        "could not connect to the given doorunit",
       ));
       rtcclient?.ressource.close();
       await rtcclient?.dispose();

@@ -2,10 +2,14 @@ import 'package:dieklingel_app/blocs/call_view_bloc.dart';
 import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
 import 'package:dieklingel_app/blocs/home_view_bloc.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
+import 'package:dieklingel_app/models/device.dart';
+import 'package:dieklingel_app/models/request.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/views/home_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mqtt/mqtt.dart';
+import 'package:path/path.dart' as path;
 
 import './models/home.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -101,19 +105,21 @@ class _App extends State<App> {
 
     Box<HiveHome> box = Hive.box<HiveHome>((Home).toString());
     for (HiveHome home in box.values) {
-      Map<String, dynamic> payload = {
-        "token": token,
-        "identifier": home.uri.fragment.isEmpty ? "default" : home.uri.fragment,
-      };
-      // TODO: patch registration
-      /* MqttHttpClient().patch(
-        home.uri,
-        headers: {
-          "username": home.username ?? "",
-          "password": home.password ?? "",
-        },
-        body: jsonEncode(payload),
-      ); */
+      final client = MqttClient(home.uri);
+      await client.connect(
+        username: home.username ?? "",
+        password: home.password ?? "",
+      );
+      client.publish(
+        path.normalize("./${home.uri.path}/devices/save"),
+        Request.fromMap(
+          Device(
+            token,
+            signs: [home.uri.fragment],
+          ).toMap(),
+        ).toJsonString(),
+      );
+      client.disconnect();
     }
   }
 
