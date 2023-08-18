@@ -416,7 +416,7 @@ packages:
     source: path
     version: "0.0.1"
   mqtt_client:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: mqtt_client
       sha256: "873c124f6485c17b5ca085047880068f3c5acc9db54317995d752a3253f95a72"

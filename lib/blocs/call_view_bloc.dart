@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt/mqtt.dart';
+import 'package:mqtt_client/mqtt_client.dart' as mqtt;
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 
@@ -51,10 +52,15 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     emit(CallInitatedState());
 
     final MqttClient client = MqttClient(home.uri);
-    await client.connect(
-      username: home.username ?? "",
-      password: home.password ?? "",
-    );
+    try {
+      await client.connect(
+        username: home.username ?? "",
+        password: home.password ?? "",
+      );
+    } on mqtt.NoConnectionException catch (exception) {
+      emit(CallCancelState(exception.toString()));
+      return;
+    }
 
     String uuid = const Uuid().v4();
 
@@ -166,7 +172,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
       );
     }).onError<TimeoutException>((exception, stackTrace) async {
       emit(CallCancelState(
-        "could not connect to the given doorunit",
+        "the doorunit did not respond to the message",
       ));
       rtcclient?.ressource.close();
       await rtcclient?.dispose();
