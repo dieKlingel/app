@@ -9,6 +9,7 @@ class HomeAddInitialState extends HomeAddState {
   final String password;
   final String channel;
   final String sign;
+  final String passcode;
 
   HomeAddInitialState({
     required this.name,
@@ -17,6 +18,7 @@ class HomeAddInitialState extends HomeAddState {
     required this.password,
     required this.channel,
     required this.sign,
+    required this.passcode,
   });
 }
 
@@ -32,20 +34,15 @@ class HomeAddFormErrorState extends HomeAddState {
   final String? nameError;
   final String? serverError;
   final String? channelError;
-  final String? signError;
 
   bool get hasError {
-    return nameError != null ||
-        serverError != null ||
-        channelError != null ||
-        signError != null;
+    return nameError != null || serverError != null || channelError != null;
   }
 
   HomeAddFormErrorState({
     this.nameError,
     this.serverError,
     this.channelError,
-    this.signError,
   });
 }
 
@@ -109,6 +106,7 @@ class HomeAddSubmit extends HomeAddEvent {
   final String password;
   final String channel;
   final String sign;
+  final String passcode;
 
   HomeAddSubmit({
     required this.name,
@@ -117,6 +115,7 @@ class HomeAddSubmit extends HomeAddEvent {
     required this.password,
     required this.channel,
     required this.sign,
+    required this.passcode,
     this.home,
   });
 }

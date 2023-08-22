@@ -3,12 +3,14 @@ class Home {
   Uri uri;
   String? username;
   String? password;
+  String? passcode;
 
   Home({
     required this.name,
     required this.uri,
     this.username,
     this.password,
+    this.passcode,
   });
 
   factory Home.fromMap(Map<String, dynamic> map) {
@@ -24,6 +26,7 @@ class Home {
       uri: Uri.parse(map["uri"]),
       username: map["username"],
       password: map["password"],
+      passcode: map["passcode"],
     );
   }
 
@@ -33,6 +36,7 @@ class Home {
       "uri": uri.toString(),
       "username": username,
       "password": password,
+      "passcode": passcode,
     };
   }
 
@@ -45,12 +49,14 @@ class Home {
     Uri? uri,
     String? username,
     String? password,
+    String? passcode,
   }) =>
       Home(
         name: name ?? this.name,
         uri: uri ?? this.uri,
         username: username ?? this.username,
-        password: this.password,
+        password: password ?? this.password,
+        passcode: passcode ?? this.passcode,
       );
 
   @override
@@ -61,11 +67,12 @@ class Home {
     return name == other.name &&
         uri == other.uri &&
         username == other.username &&
-        password == other.password;
+        password == other.password &&
+        passcode == other.passcode;
   }
 
   @override
-  int get hashCode => Object.hash(name, uri, username, password);
+  int get hashCode => Object.hash(name, uri, username, password, passcode);
 
   @override
   String toString() {

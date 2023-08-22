@@ -29,6 +29,7 @@ class _HomeAddView extends State<HomeAddView> {
         : path.normalize("./${widget.home!.uri.path}"),
   );
   late final _sign = TextEditingController(text: widget.home?.uri.fragment);
+  late final _passcode = TextEditingController(text: widget.home?.passcode);
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +82,7 @@ class _HomeAddView extends State<HomeAddView> {
                               password: _password.text,
                               channel: _channel.text,
                               sign: _sign.text,
+                              passcode: _passcode.text,
                             ),
                           );
                     },
@@ -140,12 +142,17 @@ class _HomeAddView extends State<HomeAddView> {
                     ),
                     CupertinoTextFormFieldRow(
                       prefix: const Text("Sign"),
-                      validator: (value) => state is HomeAddFormErrorState
-                          ? state.signError
-                          : null,
-                      autovalidateMode: AutovalidateMode.always,
                       controller: _sign,
                     )
+                  ],
+                ),
+                CupertinoFormSection.insetGrouped(
+                  header: const Text("Doorunit"),
+                  children: [
+                    CupertinoTextFormFieldRow(
+                      prefix: const Text("Passcode"),
+                      controller: _passcode,
+                    ),
                   ],
                 )
               ],

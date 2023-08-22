@@ -21,3 +21,5 @@ class HomeSelected extends HomeEvent {
 }
 
 class HomeRefresh extends HomeEvent {}
+
+class HomeUnlock extends HomeEvent {}

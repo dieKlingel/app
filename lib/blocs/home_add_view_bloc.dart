@@ -42,19 +42,10 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
           "Please enter a channel prefix within format 'com.dieklingel/main/prefix/'";
     }
 
-    String? signError;
-    RegExp signRegex = RegExp(
-      r'^[A-Za-z]+$',
-    );
-    if (!signRegex.hasMatch(event.sign)) {
-      signError = "Please enter a sign within the format 'mysign'";
-    }
-
     HomeAddFormErrorState errorState = HomeAddFormErrorState(
       nameError: nameError,
       serverError: serverError,
       channelError: channelError,
-      signError: signError,
     );
     if (errorState.hasError) {
       emit(errorState);
@@ -71,6 +62,7 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     home.uri = uri;
     home.username = event.username;
     home.password = event.password;
+    home.passcode = event.passcode;
 
     emit(HomeAddLoadingState());
     final client = MqttClient(home.uri);
