@@ -173,7 +173,7 @@ class RtcClientWrapper {
     }
 
     _applyMicrophoneSettings();
-    _applySpeakerSettings();
+    _applySpeakerSettings(media: event.streams);
 
     renderer.srcObject = event.streams.first;
   }
@@ -193,8 +193,8 @@ class RtcClientWrapper {
     }
   }
 
-  void _applySpeakerSettings() async {
-    final streams = connection.getRemoteStreams();
+  void _applySpeakerSettings({List<MediaStream> media = const []}) async {
+    final streams = [...connection.getRemoteStreams(), ...media];
     for (final stream in streams) {
       if (stream == null) {
         continue;

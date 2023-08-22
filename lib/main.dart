@@ -95,10 +95,14 @@ class _App extends State<App> {
       provisional: false,
       sound: true,
     );
-    print('User granted permission: ${settings.authorizationStatus}');
+
+    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+      return;
+    }
     String? token = await FirebaseMessaging.instance.getToken();
-    if (null == token) return;
-    print("Token: $token");
+    if (null == token) {
+      return;
+    }
 
     Box settingsBox = Hive.box("settings");
     settingsBox.put("token", token);
