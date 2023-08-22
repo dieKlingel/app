@@ -7,7 +7,7 @@ class MqttClientFactory {
   const MqttClientFactory();
 
   MqttClient create(
-    String hostname,
+    Uri hostname,
     String identifier, {
     int maxConnectionAttempts = 3,
   }) {

@@ -72,32 +72,43 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     home.username = event.username;
     home.password = event.password;
 
+    emit(HomeAddLoadingState());
+    final client = MqttClient(home.uri);
+    try {
+      await client.connect(
+        username: home.username ?? "",
+        password: home.password ?? "",
+      );
+    } catch (e) {
+      emit(
+        HomeAddErrorState(
+          "Could not conenct the the server ${uri.scheme}://${uri.host}:${uri.port} because ${e.toString()}",
+        ),
+      );
+      return;
+    }
+
     await homeRepository.add(home);
+    await homeRepository.select(home);
+    emit(HomeAddSuccessfulState());
 
     Box settingsBox = Hive.box("settings");
     String? token = settingsBox.get("token");
 
     if (token == null) {
-      emit(HomeAddSuccessfulState());
       return;
     }
 
-    final client = MqttClient(home.uri);
-    await client.connect(
-      username: home.username ?? "",
-      password: home.password ?? "",
-    );
-
-    client.publish(
+    await client.publish(
       path.normalize("./${home.uri.path}/devices/save"),
-      Request.fromMap(
+      Request.withJsonBody(
+        "GET",
         Device(
           token,
           signs: [home.uri.fragment],
         ).toMap(),
       ).toJsonString(),
     );
-
-    emit(HomeAddSuccessfulState());
+    client.disconnect();
   }
 }

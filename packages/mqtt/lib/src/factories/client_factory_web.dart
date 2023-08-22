@@ -3,10 +3,14 @@ import 'package:mqtt_client/mqtt_browser_client.dart';
 import 'package:mqtt_client/mqtt_client.dart' as mqtt;
 
 mqtt.MqttClient factory(
-  String hostname,
+  Uri host,
   String identifier, {
   int maxConnectionAttempts = 3,
 }) {
+  String hostname = host.scheme == "wss" || host.scheme == "ws"
+      ? "${host.scheme}://${host.host}"
+      : host.host;
+
   mqtt.MqttClient client = MqttBrowserClient(
     hostname,
     identifier,

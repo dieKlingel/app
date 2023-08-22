@@ -13,6 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt/mqtt.dart';
+import 'package:mqtt_client/mqtt_client.dart' as mqtt;
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 
@@ -51,10 +52,15 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     emit(CallInitatedState());
 
     final MqttClient client = MqttClient(home.uri);
-    await client.connect(
-      username: home.username ?? "",
-      password: home.password ?? "",
-    );
+    try {
+      await client.connect(
+        username: home.username ?? "",
+        password: home.password ?? "",
+      );
+    } on mqtt.NoConnectionException catch (exception) {
+      emit(CallCancelState(exception.toString()));
+      return;
+    }
 
     String uuid = const Uuid().v4();
 
@@ -118,12 +124,14 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
 
     String answerChannel = const Uuid().v4();
     final operation = CancelableOperation.fromFuture(
-      client.once(
-        path.normalize(
-          "./${home.uri.path}/rtc/connections/create/$uuid/$answerChannel",
-        ),
-        timeout: const Duration(seconds: 15),
-      ),
+      client
+          .once(
+            path.normalize(
+              "./${home.uri.path}/rtc/connections/create/$uuid/$answerChannel",
+            ),
+            timeout: const Duration(seconds: 15),
+          )
+          .catchError((error) => ""),
     );
     client.publish(
       path.normalize("./${home.uri.path}/rtc/connections/create/$uuid"),
@@ -135,9 +143,15 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     _requestOperation = operation;
 
     await operation.value.then((value) async {
+      if (value.isEmpty) {
+        emit(CallCancelState("the doorunit did not send a repsonse"));
+        return;
+      }
+
       Response response = Response.fromMap(jsonDecode(value));
       if (response.statusCode != 201) {
         add(CallHangup());
+        return;
       }
 
       final Map<String, dynamic> answer = jsonDecode(response.body);
@@ -166,7 +180,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
       );
     }).onError<TimeoutException>((exception, stackTrace) async {
       emit(CallCancelState(
-        "could not connect to the given doorunit",
+        "the doorunit did not respond to the message",
       ));
       rtcclient?.ressource.close();
       await rtcclient?.dispose();
