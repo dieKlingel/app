@@ -124,12 +124,14 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
 
     String answerChannel = const Uuid().v4();
     final operation = CancelableOperation.fromFuture(
-      client.once(
-        path.normalize(
-          "./${home.uri.path}/rtc/connections/create/$uuid/$answerChannel",
-        ),
-        timeout: const Duration(seconds: 15),
-      ),
+      client
+          .once(
+            path.normalize(
+              "./${home.uri.path}/rtc/connections/create/$uuid/$answerChannel",
+            ),
+            timeout: const Duration(seconds: 15),
+          )
+          .catchError((error) => ""),
     );
     client.publish(
       path.normalize("./${home.uri.path}/rtc/connections/create/$uuid"),
@@ -141,9 +143,15 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     _requestOperation = operation;
 
     await operation.value.then((value) async {
+      if (value.isEmpty) {
+        emit(CallCancelState("the doorunit did not send a repsonse"));
+        return;
+      }
+
       Response response = Response.fromMap(jsonDecode(value));
       if (response.statusCode != 201) {
         add(CallHangup());
+        return;
       }
 
       final Map<String, dynamic> answer = jsonDecode(response.body);

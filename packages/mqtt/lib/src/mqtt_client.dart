@@ -20,12 +20,8 @@ class MqttClient {
   }
 
   factory MqttClient(Uri uri, {String? identifier}) {
-    String host = uri.scheme == "wss" || uri.scheme == "ws"
-        ? "${uri.scheme}://${uri.host}"
-        : uri.host;
-
     final client = const MqttClientFactory().create(
-      host,
+      uri,
       identifier ?? const Uuid().v4(),
     );
 
@@ -86,16 +82,18 @@ class MqttClient {
     }
   }
 
-  void publish(
+  Future<void> publish(
     String topic,
     String message, {
     mqtt.MqttQos qosLevel = mqtt.MqttQos.exactlyOnce,
-  }) {
+  }) async {
     _client.publishMessage(
       topic,
       qosLevel,
       mqtt.MqttClientPayloadBuilder().addUTF8String(message).payload!,
     );
+    // wait until message is published
+    await Future.delayed(const Duration(seconds: 5));
   }
 
   Future<String> once(String topic, {Duration? timeout}) async {

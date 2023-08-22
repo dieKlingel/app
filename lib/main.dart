@@ -110,9 +110,10 @@ class _App extends State<App> {
         username: home.username ?? "",
         password: home.password ?? "",
       );
-      client.publish(
+      await client.publish(
         path.normalize("./${home.uri.path}/devices/save"),
-        Request.fromMap(
+        Request.withJsonBody(
+          "GET",
           Device(
             token,
             signs: [home.uri.fragment],

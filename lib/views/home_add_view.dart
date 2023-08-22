@@ -37,6 +37,25 @@ class _HomeAddView extends State<HomeAddView> {
         if (state is HomeAddSuccessfulState) {
           Navigator.of(context).pop();
         }
+        if (state is HomeAddErrorState) {
+          showCupertinoDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return CupertinoAlertDialog(
+                title: const Text("Error"),
+                content: Text(state.errorMessage),
+                actions: [
+                  CupertinoButton(
+                    child: const Text("Ok"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  )
+                ],
+              );
+            },
+          );
+        }
       },
       builder: (context, state) {
         return CupertinoPageScaffold(
@@ -48,23 +67,25 @@ class _HomeAddView extends State<HomeAddView> {
                   Navigator.of(context).pop();
                 }),
             middle: const Text("Home"),
-            trailing: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () {
-                context.read<HomeAddViewBloc>().add(
-                      HomeAddSubmit(
-                        home: widget.home,
-                        name: _name.text,
-                        server: _server.text,
-                        username: _username.text,
-                        password: _password.text,
-                        channel: _channel.text,
-                        sign: _sign.text,
-                      ),
-                    );
-              },
-              child: const Text("Save"),
-            ),
+            trailing: state is HomeAddLoadingState
+                ? const CupertinoActivityIndicator()
+                : CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      context.read<HomeAddViewBloc>().add(
+                            HomeAddSubmit(
+                              home: widget.home,
+                              name: _name.text,
+                              server: _server.text,
+                              username: _username.text,
+                              password: _password.text,
+                              channel: _channel.text,
+                              sign: _sign.text,
+                            ),
+                          );
+                    },
+                    child: const Text("Save"),
+                  ),
           ),
           backgroundColor: CupertinoColors.systemGroupedBackground,
           child: SafeArea(

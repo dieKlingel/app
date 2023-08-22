@@ -20,6 +20,14 @@ class HomeAddInitialState extends HomeAddState {
   });
 }
 
+class HomeAddErrorState extends HomeAddState {
+  final String errorMessage;
+
+  HomeAddErrorState(this.errorMessage);
+}
+
+class HomeAddLoadingState extends HomeAddState {}
+
 class HomeAddFormErrorState extends HomeAddState {
   final String? nameError;
   final String? serverError;
