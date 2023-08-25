@@ -13,7 +13,11 @@ class MediaRessource {
       'audio': audio,
       'video': video,
     };
-    _stream = await navigator.mediaDevices.getUserMedia(constraints);
+    try {
+      _stream = await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (e) {
+      // TODO: noting stream is empty
+    }
     return _stream;
   }
 
