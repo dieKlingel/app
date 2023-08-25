@@ -57,6 +57,7 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
         username: home.username ?? "",
         password: home.password ?? "",
       );
+      this.client = client;
     } on mqtt.NoConnectionException catch (exception) {
       emit(CallCancelState(exception.toString()));
       return;
@@ -197,11 +198,9 @@ class CallViewBloc extends Bloc<CallEvent, CallState> {
     await rtcclient?.dispose();
     rtcclient = null;
 
-    client?.publish(
+    await client?.publish(
       path.normalize("./${home.uri.path}/rtc/connections/close/$uuid"),
-      jsonEncode(
-        Request("GET", ""),
-      ),
+      Request("GET", "").toJsonString(),
     );
     candidateSub?.cancel();
     candidateSub = null;
