@@ -151,6 +151,7 @@ class _HomeAddView extends State<HomeAddView> {
                   children: [
                     CupertinoTextFormFieldRow(
                       prefix: const Text("Passcode"),
+                      obscureText: true,
                       controller: _passcode,
                     ),
                   ],
