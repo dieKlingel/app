@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:dieklingel_app/handlers/call.dart';
 import 'package:dieklingel_app/handlers/call_kit.dart';
@@ -35,13 +36,12 @@ class CallViewModel extends ChangeNotifier {
           _remoteSessionId = payload.header.senderSessionId;
           final call = CallKit.calls[payload.header.sessionId];
           if (call == null) {
-            print("answer without call");
             return;
           }
 
           await call.withRemoteAnswer(payload.body.sessionDescription);
         } catch (e) {
-          print(e);
+          log("could not parse the answer message; message: $message, error: $e");
         }
       },
     );
@@ -53,13 +53,12 @@ class CallViewModel extends ChangeNotifier {
           final payload = CandidateMessage.fromMap(json.decode(message));
           final call = CallKit.calls[_localSessionId];
           if (call == null) {
-            print("candidate without call");
             return;
           }
 
           call.remoteIceCandidates.add(payload.body.iceCandidate);
         } catch (e) {
-          print(e);
+          log("could not parse the candidate message; message: $message, error: $e");
         }
       },
     );
@@ -71,7 +70,6 @@ class CallViewModel extends ChangeNotifier {
           final payload = CloseMessage.fromMap(json.decode(message));
           final call = CallKit.calls[payload.header.sessionId];
           if (call == null) {
-            print("close without call");
             return;
           }
 
@@ -80,7 +78,7 @@ class CallViewModel extends ChangeNotifier {
           _localSessionId = "";
           _remoteSessionId = "";
         } catch (e) {
-          print(e);
+          log("could not parse the close message; message: $message, error: $e");
         }
       },
     );

@@ -128,7 +128,7 @@ class _Toolbar extends StatelessWidget {
                 ),
                 color: Colors.amber,
                 onPressed: () {
-                  //TODO: context.read<HomeViewModel>().add(HomeUnlock());
+                  //TODO: send unlock trigger
                   showCupertinoDialog(
                     context: context,
                     builder: (BuildContext context) {
