@@ -1,15 +1,16 @@
 import 'package:dieklingel_app/blocs/call_view_bloc.dart';
 import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
-import 'package:dieklingel_app/blocs/home_view_bloc.dart';
+import 'package:dieklingel_app/ui/view_models/home_view_model.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
 import 'package:dieklingel_app/models/device.dart';
 import 'package:dieklingel_app/models/request.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
-import 'package:dieklingel_app/views/home_view.dart';
+import 'package:dieklingel_app/ui/views/home_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mqtt/mqtt.dart';
 import 'package:path/path.dart' as path;
+import 'package:provider/provider.dart';
 
 import './models/home.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -55,7 +56,6 @@ void main() async {
       ],
       child: MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => HomeViewBloc(homeRepository)),
           BlocProvider(create: (_) => HomeAddViewBloc(homeRepository)),
           BlocProvider(
               create: (_) => IceServerAddViewBloc(iceServerRepository)),
@@ -139,8 +139,8 @@ class _App extends State<App> {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      home: BlocProvider(
-        create: (_) => HomeViewBloc(context.read<HomeRepository>()),
+      home: ChangeNotifierProvider(
+        create: (_) => HomeViewModel(context.read<HomeRepository>()),
         child: const HomeView(),
       ),
     );

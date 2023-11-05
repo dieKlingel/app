@@ -1,9 +1,7 @@
 import 'package:dieklingel_app/blocs/call_view_bloc.dart';
-import 'package:dieklingel_app/blocs/home_view_bloc.dart';
 import 'package:dieklingel_app/components/icon_builder.dart';
 import 'package:dieklingel_app/components/map_builder.dart';
 import 'package:dieklingel_app/states/call_state.dart';
-import 'package:dieklingel_app/states/home_state.dart';
 import 'package:dieklingel_app/utils/microphone_state.dart';
 import 'package:dieklingel_app/utils/speaker_state.dart';
 import 'package:flutter/cupertino.dart';
@@ -137,7 +135,7 @@ class _Toolbar extends StatelessWidget {
         ),
         color: Colors.amber,
         onPressed: () {
-          context.read<HomeViewBloc>().add(HomeUnlock());
+          //TODO: context.read<HomeViewModel>().add(HomeUnlock());
           showCupertinoDialog(
             context: context,
             builder: (BuildContext context) {
