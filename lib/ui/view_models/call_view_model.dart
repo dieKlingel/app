@@ -90,15 +90,6 @@ class CallViewModel extends ChangeNotifier {
     return CallKit.calls[_localSessionId] != null;
   }
 
-  bool get isConnecting {
-    final call = CallKit.calls[_localSessionId];
-    if (call == null) {
-      return false;
-    }
-    return call.state ==
-        RTCPeerConnectionState.RTCPeerConnectionStateConnecting;
-  }
-
   RTCVideoRenderer? get renderer {
     return CallKit.calls[_localSessionId]?.renderer;
   }

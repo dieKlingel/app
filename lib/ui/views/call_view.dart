@@ -194,7 +194,8 @@ class _Video extends StatelessWidget {
     }
 
     final videoAvailable = context.select<CallViewModel, bool>(
-      (value) => !value.isConnecting,
+      (value) =>
+          value.renderer?.srcObject?.getVideoTracks().isNotEmpty ?? false,
     );
 
     if (!videoAvailable) {
