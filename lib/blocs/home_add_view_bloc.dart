@@ -25,13 +25,13 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     }
 
     String? serverError;
-    RegExp serverRegex = RegExp(
-      r'^(mqtt|mqtts|ws|wss):\/\/(?:[A-Za-z0-9]+\.)+[A-Za-z0-9]{2,3}:\d{1,5}(\/?)$',
+    /*RegExp serverRegex = RegExp(
+      r'^(mqtt|mqtts|ws|wss):\/\/(?:[A-Za-z0-9]+\.)+[A-Za-z0-9]+:\d{1,5}(\/?)$',
     );
     if (!serverRegex.hasMatch(event.server)) {
       serverError =
           "Please enter a server url within the format 'mqtt://server.org:1883/'";
-    }
+    }*/
 
     String? channelError;
     RegExp channelRegex = RegExp(

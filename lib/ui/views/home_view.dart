@@ -1,11 +1,13 @@
+import 'package:dieklingel_app/ui/view_models/core_view_model.dart';
 import 'package:dieklingel_app/ui/view_models/home_view_model.dart';
 import 'package:dieklingel_app/states/call_state.dart';
-import 'package:dieklingel_app/views/call_view.dart';
+import 'package:dieklingel_app/ui/views/core_view.dart';
 import 'package:dieklingel_app/views/home_add_view.dart';
 import 'package:dieklingel_app/views/ice_server_add_view.dart';
 import 'package:dieklingel_app/views/settings_view.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mqtt/mqtt.dart';
+import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 
 import '../../blocs/call_view_bloc.dart';
@@ -58,6 +60,9 @@ class HomeView extends StatelessWidget {
     final homes =
         context.select<HomeViewModel, List<HiveHome>>((value) => value.homes);
 
+    final selectedHome =
+        context.select<HomeViewModel, HiveHome?>((value) => value.home);
+
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: Text(title),
@@ -80,11 +85,9 @@ class HomeView extends StatelessWidget {
                 ],
                 for (HiveHome home in homes) ...[
                   PullDownMenuItem.selectable(
-                    selected: context.select<HomeViewModel, HiveHome?>(
-                            (value) => value.home) ==
-                        home,
+                    selected: selectedHome == home,
                     onTap: () {
-                      context.read<HomeViewModel>().home = home;
+                      //context.read<HomeViewModel>().home = home;
                       context.read<CallViewBloc>().add(CallHangup());
                     },
                     title: home.name,
@@ -140,7 +143,10 @@ class _Content extends StatelessWidget {
       );
     }
 
-    return const CallView();
+    return ChangeNotifierProvider(
+      create: (context) => CoreViewModel(home, MqttClient(home.uri)),
+      child: const CoreView(),
+    );
   }
 }
 

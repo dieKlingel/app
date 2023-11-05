@@ -25,15 +25,6 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   Future<void> refresh() async {
-    HiveHome? selected = homeRepository.selected;
-    if (selected == null && homeRepository.homes.isNotEmpty) {
-      await homeRepository.select(homeRepository.homes.first);
-      selected = homeRepository.selected;
-    }
-    if (selected == home) {
-      return;
-    }
-
     notifyListeners();
   }
 }
