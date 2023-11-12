@@ -1,6 +1,9 @@
 import 'package:dieklingel_app/components/core_home_widget.dart';
+import 'package:dieklingel_app/components/fade_page_route.dart';
 import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_app/ui/view_models/home_view_model.dart';
+import 'package:dieklingel_app/ui/view_models/outgoing_call_view_model.dart';
+import 'package:dieklingel_app/ui/views/outgoing_call_view.dart';
 import 'package:dieklingel_app/views/home_add_view.dart';
 import 'package:dieklingel_app/views/ice_server_add_view.dart';
 import 'package:dieklingel_app/views/settings_view.dart';
@@ -111,6 +114,19 @@ class _Content extends StatelessWidget {
           child: CoreHomeWidget(
             home: home,
             client: client,
+            onCallPressed: () {
+              Navigator.of(context).push(
+                FadePageRoute(
+                  builder: (context) => ChangeNotifierProvider(
+                    create: (context) => OutgoingCallViewModel(
+                      home: home,
+                      connection: client,
+                    ),
+                    child: const OutgoingCallView(),
+                  ),
+                ),
+              );
+            },
           ),
         );
       },
