@@ -1,4 +1,3 @@
-import 'package:dieklingel_app/blocs/call_view_bloc.dart';
 import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
 import 'package:dieklingel_app/ui/view_models/home_view_model.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
@@ -59,9 +58,6 @@ void main() async {
           BlocProvider(create: (_) => HomeAddViewBloc(homeRepository)),
           BlocProvider(
               create: (_) => IceServerAddViewBloc(iceServerRepository)),
-          BlocProvider(
-            create: (_) => CallViewBloc(homeRepository, iceServerRepository),
-          ),
         ],
         child: const App(),
       ),
@@ -109,7 +105,7 @@ class _App extends State<App> {
 
     Box<HiveHome> box = Hive.box<HiveHome>((Home).toString());
     for (HiveHome home in box.values) {
-      final client = MqttClient(home.uri);
+      final client = Client(home.uri);
       await client.connect(
         username: home.username ?? "",
         password: home.password ?? "",

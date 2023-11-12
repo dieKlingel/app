@@ -5,7 +5,7 @@ import 'package:mqtt_client/mqtt_client.dart' as mqtt;
 
 class CoreViewModel extends ChangeNotifier {
   final HiveHome home;
-  final MqttClient client;
+  final Client client;
 
   bool _isConnected = false;
   String? _connectionErrorMessage;

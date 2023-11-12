@@ -1,23 +1,18 @@
-import 'package:dieklingel_app/ui/view_models/core_view_model.dart';
+import 'package:dieklingel_app/components/core_home_widget.dart';
+import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_app/ui/view_models/home_view_model.dart';
-import 'package:dieklingel_app/states/call_state.dart';
-import 'package:dieklingel_app/ui/views/core_view.dart';
 import 'package:dieklingel_app/views/home_add_view.dart';
 import 'package:dieklingel_app/views/ice_server_add_view.dart';
 import 'package:dieklingel_app/views/settings_view.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:mqtt/mqtt.dart';
+import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
-
-import '../../blocs/call_view_bloc.dart';
-import '../../models/hive_home.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
   void _onAddHome(BuildContext context) async {
-    final homeViewModel = context.read<HomeViewModel>();
     await showCupertinoModalPopup(
       context: context,
       builder: (context) {
@@ -26,11 +21,9 @@ class HomeView extends StatelessWidget {
         );
       },
     );
-    await homeViewModel.refresh();
   }
 
   void _onAddIceServer(BuildContext context) async {
-    final homeViewModel = context.read<HomeViewModel>();
     await showCupertinoModalPopup(
       context: context,
       builder: (context) {
@@ -39,33 +32,21 @@ class HomeView extends StatelessWidget {
         );
       },
     );
-    homeViewModel.refresh();
   }
 
   void _onSettingsTap(BuildContext context) async {
-    final homeViewModel = context.read<HomeViewModel>();
     await Navigator.of(context).push(
       CupertinoPageRoute(
         builder: (context) => const SettingsView(),
       ),
     );
-    await homeViewModel.refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    final title =
-        context.select<HomeViewModel, HiveHome?>((value) => value.home)?.name ??
-            "Home";
-    final homes =
-        context.select<HomeViewModel, List<HiveHome>>((value) => value.homes);
-
-    final selectedHome =
-        context.select<HomeViewModel, HiveHome?>((value) => value.home);
-
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text(title),
+        middle: const Text("Homes"),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -73,33 +54,10 @@ class HomeView extends StatelessWidget {
               addHomeFunc: _onAddHome,
               addIceServerFunc: _onAddIceServer,
             ),
-            PullDownButton(
-              itemBuilder: (context) => [
-                PullDownMenuItem(
-                  onTap: () => _onSettingsTap(context),
-                  title: "Settings",
-                  icon: CupertinoIcons.settings,
-                ),
-                if (homes.isNotEmpty) ...[
-                  const PullDownMenuDivider.large(),
-                ],
-                for (HiveHome home in homes) ...[
-                  PullDownMenuItem.selectable(
-                    selected: selectedHome == home,
-                    onTap: () {
-                      //context.read<HomeViewModel>().home = home;
-                      context.read<CallViewBloc>().add(CallHangup());
-                    },
-                    title: home.name,
-                  ),
-                  if (home != homes.last) ...[const PullDownMenuDivider()],
-                ]
-              ],
-              buttonBuilder: (context, showMenu) => CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: showMenu,
-                child: const Icon(CupertinoIcons.ellipsis_circle),
-              ),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () => _onSettingsTap(context),
+              child: const Icon(CupertinoIcons.settings),
             ),
           ],
         ),
@@ -111,7 +69,6 @@ class HomeView extends StatelessWidget {
 
 class _Content extends StatelessWidget {
   void _onAddHome(BuildContext context) async {
-    final homeViewModel = context.read<HomeViewModel>();
     await showCupertinoModalPopup(
       context: context,
       builder: (context) {
@@ -120,15 +77,16 @@ class _Content extends StatelessWidget {
         );
       },
     );
-    homeViewModel.refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    HiveHome? home =
-        context.select<HomeViewModel, HiveHome?>((value) => value.home);
+    List<(Home, mqtt.Client)> connections =
+        context.select<HomeViewModel, List<(Home, mqtt.Client)>>(
+      (value) => value.connections,
+    );
 
-    if (home == null) {
+    if (connections.isEmpty) {
       return Center(
         child: CupertinoButton(
           child: const Row(
@@ -143,9 +101,19 @@ class _Content extends StatelessWidget {
       );
     }
 
-    return ChangeNotifierProvider(
-      create: (context) => CoreViewModel(home, MqttClient(home.uri)),
-      child: const CoreView(),
+    return ListView.builder(
+      itemCount: connections.length,
+      itemBuilder: (context, index) {
+        final (home, client) = connections[index];
+
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: CoreHomeWidget(
+            home: home,
+            client: client,
+          ),
+        );
+      },
     );
   }
 }

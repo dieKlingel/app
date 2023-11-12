@@ -31,7 +31,7 @@ class CoreView extends StatelessWidget {
       );
     }
 
-    final client = context.select<CoreViewModel, MqttClient>(
+    final client = context.select<CoreViewModel, Client>(
       (value) => value.client,
     );
     final home = context.select<CoreViewModel, HiveHome>(

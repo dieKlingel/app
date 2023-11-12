@@ -1,39 +1,70 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:mqtt/mqtt.dart';
+
 import 'factories/mqtt_client_factory.dart';
-import 'subscription.dart';
 import 'package:uuid/uuid.dart';
 import 'package:mqtt_client/mqtt_client.dart' as mqtt;
 
-class MqttClient {
+class Client {
   final Uri _uri;
   final mqtt.MqttClient _client;
   final Map<String, List<Subscription>> _subscriptions = {};
+  Function(ConnectionState)? onConnectionStateChanged;
 
-  MqttClient._(this._client, this._uri) {
+  Client._(this._client, this._uri) {
     _client
       ..port = _uri.port
       ..keepAlivePeriod = 20
       ..setProtocolV311()
       ..autoReconnect = true;
+    _client
+      ..onDisconnected = () {
+        onConnectionStateChanged?.call(state);
+      }
+      ..onConnected = () {
+        onConnectionStateChanged?.call(state);
+      }
+      ..onAutoReconnected = () {
+        onConnectionStateChanged?.call(state);
+      }
+      ..onAutoReconnect = () {
+        onConnectionStateChanged?.call(state);
+      };
   }
 
-  factory MqttClient(Uri uri, {String? identifier}) {
+  ConnectionState get state {
+    return _client.connectionStatus?.state ?? ConnectionState.disconnected;
+  }
+
+  factory Client(Uri uri, {String? identifier}) {
     final client = const MqttClientFactory().create(
       uri,
       identifier ?? const Uuid().v4(),
     );
 
-    return MqttClient._(client, uri);
+    return Client._(client, uri);
   }
 
   void disconnect() {
     _client.disconnect();
   }
 
-  Future<void> connect({String username = "", String password = ""}) async {
-    await _client.connect(username, password);
+  Future<void> connect({
+    String username = "",
+    String password = "",
+    bool throws = true,
+  }) async {
+    try {
+      await _client.connect(username, password);
+    } catch (e) {
+      if (throws) {
+        rethrow;
+      }
+      onConnectionStateChanged?.call(state);
+      return;
+    }
     _client.updates!.listen((event) {
       mqtt.MqttPublishMessage rec = event[0].payload as mqtt.MqttPublishMessage;
       final String topic = event[0].topic;

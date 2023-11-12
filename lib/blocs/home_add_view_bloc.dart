@@ -65,7 +65,7 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     home.passcode = event.passcode;
 
     emit(HomeAddLoadingState());
-    final client = MqttClient(home.uri);
+    final client = Client(home.uri);
     try {
       await client.connect(
         username: home.username ?? "",
@@ -81,7 +81,6 @@ class HomeAddViewBloc extends Bloc<HomeAddEvent, HomeAddState> {
     }
 
     await homeRepository.add(home);
-    await homeRepository.select(home);
     emit(HomeAddSuccessfulState());
 
     Box settingsBox = Hive.box("settings");

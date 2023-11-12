@@ -18,7 +18,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.2.3+1
 
 environment:
-  sdk: ">=2.18.6 <3.7.11"
+  sdk: ">=3.0.0 <3.7.11"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -56,6 +56,7 @@ dependencies:
   mqtt_client: ^10.0.0
   provider: ^6.0.5
   blueprint: ^0.0.3
+  rxdart: ^0.27.7
 
 dev_dependencies:
   flutter_test:

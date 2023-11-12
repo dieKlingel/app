@@ -1,10 +1,10 @@
-import 'mqtt_client.dart';
+import 'client.dart';
 import 'package:mqtt_client/mqtt_client.dart' as mqtt;
 
 typedef Callback = void Function(String topic, String message);
 
 class Subscription {
-  final MqttClient client;
+  final Client client;
   final Callback callback;
   final mqtt.Subscription subscription;
 

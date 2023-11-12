@@ -21,7 +21,7 @@ import 'package:uuid/uuid.dart';
 
 class CallViewModel extends ChangeNotifier {
   final HiveHome home;
-  final MqttClient client;
+  final Client client;
   final IceServerRepository iceServerRepository;
 
   String _remoteSessionId = "";
