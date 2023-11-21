@@ -1,15 +1,15 @@
-import 'package:dieklingel_app/blocs/home_list_view_bloc.dart';
-import 'package:dieklingel_app/blocs/ice_server_list_view_bloc.dart';
-import 'package:dieklingel_app/repositories/home_repository.dart';
-import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'about_view.dart';
+import '../../blocs/home_list_view_bloc.dart';
+import '../../blocs/ice_server_list_view_bloc.dart';
+import '../../repositories/home_repository.dart';
+import '../../repositories/ice_server_repository.dart';
+import 'about/about_view.dart';
 
-import '../views/home_list_view.dart';
-import 'ice_server_list_view.dart';
+import '../../views/home_list_view.dart';
+import '../../views/ice_server_list_view.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
