@@ -8,7 +8,7 @@ import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:path/path.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../handlers/call.dart';
+import '../../../models/call/call.dart';
 import '../../../models/home.dart';
 import '../../../models/messages/answer_message.dart';
 import '../../../models/messages/candidate_message.dart';

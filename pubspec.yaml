@@ -48,15 +48,12 @@ dependencies:
     path: packages/mqtt
   flutter_bloc: ^8.1.2
   pull_down_button: ^0.8.1
-  shelf_router: ^1.1.4
-  shelf: ^1.4.1
   http: ^0.13.6
   async: ^2.11.0
   path: ^1.8.3
   mqtt_client: ^10.0.0
   provider: ^6.0.5
   blueprint: ^0.0.3
-  rxdart: ^0.27.7
   permission_handler: ^11.0.1
   permission_handler_web: ^0.0.2
 

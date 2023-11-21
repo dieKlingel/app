@@ -28,6 +28,7 @@ class Call {
     this.iceServers,
   ) {
     WidgetsFlutterBinding.ensureInitialized();
+    Helper.setAppleAudioIOMode(AppleAudioIOMode.localAndRemote);
     _remoteIceCandidates.stream.listen((event) {
       connection!.addCandidate(event);
     });
@@ -79,13 +80,13 @@ class Call {
         case SpeakerState.earphone:
           track.enabled = true;
           if (!kIsWeb) {
-            track.enableSpeakerphone(true);
+            track.enableSpeakerphone(false);
           }
           break;
         case SpeakerState.speaker:
           track.enabled = true;
           if (!kIsWeb) {
-            track.enableSpeakerphone(false);
+            track.enableSpeakerphone(true);
           }
           break;
       }
@@ -123,30 +124,25 @@ class Call {
         _localIceCandidates.add(candidate);
       }
       ..onTrack = (event) {
-        if (event.streams.isEmpty) {
-          return;
-        }
-
-        for (final track in event.streams.first.getAudioTracks()) {
+        if (event.track.kind == "audio") {
           switch (_speaker) {
             case SpeakerState.muted:
-              track.enabled = false;
+              event.track.enabled = false;
               break;
             case SpeakerState.earphone:
-              track.enabled = true;
+              event.track.enabled = true;
               if (!kIsWeb) {
-                track.enableSpeakerphone(true);
+                event.track.enableSpeakerphone(false);
               }
               break;
             case SpeakerState.speaker:
-              track.enabled = true;
+              event.track.enabled = true;
               if (!kIsWeb) {
-                track.enableSpeakerphone(false);
+                event.track.enableSpeakerphone(true);
               }
               break;
           }
         }
-
         renderer.srcObject = event.streams.first;
       }
       ..onConnectionState = (state) {
@@ -161,17 +157,6 @@ class Call {
       kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
       init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly),
     );
-    MediaStream? stream = await _media.open(true, false);
-    for (final track in stream?.getAudioTracks() ?? <MediaStreamTrack>[]) {
-      switch (_microphone) {
-        case MicrophoneState.muted:
-          track.enabled = false;
-          break;
-        case MicrophoneState.unmuted:
-          track.enabled = true;
-          break;
-      }
-    }
 
     final offer = await connection!.createOffer();
     await connection!.setLocalDescription(offer);

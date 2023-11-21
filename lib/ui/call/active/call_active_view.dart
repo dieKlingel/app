@@ -7,16 +7,27 @@ import 'call_active_view_model.dart';
 import 'widgets/microphone_button.dart';
 import 'widgets/speaker_button.dart';
 
-class CallActiveView extends StatelessWidget {
+class CallActiveView extends StatefulWidget {
   const CallActiveView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<CallActiveView> createState() => _CallActiveViewState();
+}
+
+class _CallActiveViewState extends State<CallActiveView> {
+  @override
+  void initState() {
+    super.initState();
     context.read<CallActiveViewModel>().onHangup().then((_) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pop(context);
-      });
+      Navigator.pop(context);
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final frameReceived = context.select(
+      (CallActiveViewModel vm) => vm.firstFrameRenderd,
+    );
 
     final renderer = context.select(
       (CallActiveViewModel vm) => vm.renderer,
@@ -25,9 +36,10 @@ class CallActiveView extends StatelessWidget {
     return CupertinoPageScaffold(
       child: Stack(
         children: [
-          InteractiveViewer(
-            child: RTCVideoView(renderer),
-          ),
+          if (frameReceived)
+            InteractiveViewer(
+              child: RTCVideoView(renderer),
+            ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Row(

@@ -8,8 +8,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:path/path.dart';
-import '../../../handlers/call.dart';
 import '../../../models/audio/microphone_state.dart';
+import '../../../models/call/call.dart';
 import '../../../models/home.dart';
 import '../../../models/messages/candidate_message.dart';
 import '../../../models/messages/close_message.dart';
@@ -20,6 +20,7 @@ class CallActiveViewModel extends ChangeNotifier {
   final Call call;
   final Completer<void> _onHangup = Completer();
   final String remoteSessionId;
+  bool _firstFrameRenderd = false;
 
   CallActiveViewModel({
     required this.home,
@@ -59,6 +60,11 @@ class CallActiveViewModel extends ChangeNotifier {
         }
       },
     );
+
+    call.renderer.onFirstFrameRendered = () {
+      _firstFrameRenderd = true;
+      notifyListeners();
+    };
   }
 
   set microphone(MicrophoneState state) {
@@ -81,6 +87,10 @@ class CallActiveViewModel extends ChangeNotifier {
 
   RTCVideoRenderer get renderer {
     return call.renderer;
+  }
+
+  bool get firstFrameRenderd {
+    return _firstFrameRenderd;
   }
 
   Future<void> onHangup() async {

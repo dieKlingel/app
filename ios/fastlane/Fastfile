@@ -19,7 +19,7 @@ platform :ios do
   desc "Buidl and sign the IPA package."
   lane :build do
     setup_ci
-    match(app_identifier: ["com.dieklingel.app", "com.dieklingel.app.ImageNotification"], type: "appstore", readonly: is_ci)
+    match(app_identifier: ["com.dieklingel.app"], type: "appstore", readonly: is_ci)
     Dir.chdir("../../") do
       sh("flutter pub get")
       sh("flutter build ipa --export-options-plist=ios/ExportOptions.plist")
@@ -29,7 +29,7 @@ platform :ios do
   desc "Push a new beta build to TestFlight"
   lane :beta do
     setup_ci
-    match(app_identifier: ["com.dieklingel.app", "com.dieklingel.app.ImageNotification"], type: "appstore", readonly: is_ci)
+    match(app_identifier: ["com.dieklingel.app"], type: "appstore", readonly: is_ci)
     Dir.chdir("../../") do
       sh("flutter pub get")
       sh("flutter build ipa --export-options-plist=ios/ExportOptions.plist")

@@ -27,6 +27,8 @@ class MicrophoneButton extends StatelessWidget {
             selected: microphone == MicrophoneState.muted,
           ),
           PullDownMenuItem.selectable(
+            // TODO: enable microhone
+            enabled: false,
             onTap: () {
               final vm = context.read<CallActiveViewModel>();
               vm.microphone = MicrophoneState.unmuted;
