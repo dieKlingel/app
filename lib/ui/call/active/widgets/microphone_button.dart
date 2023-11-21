@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 
@@ -41,6 +42,9 @@ class MicrophoneButton extends StatelessWidget {
       },
       buttonBuilder: (context, showMenu) {
         return CupertinoButton(
+          color: Colors.lightBlue,
+          padding: EdgeInsets.zero,
+          borderRadius: BorderRadius.circular(999),
           onPressed: showMenu,
           child: Icon(
             (() {

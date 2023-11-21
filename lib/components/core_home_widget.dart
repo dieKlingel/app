@@ -90,14 +90,16 @@ class _CoreHomeWidgetState extends State<CoreHomeWidget> {
                 ),
               ),
               const SizedBox(width: 6.0),
-              CupertinoButton(
+              const CupertinoButton(
                 padding: EdgeInsets.zero,
                 borderRadius: const BorderRadius.all(Radius.circular(999)),
                 color: Colors.amber,
-                onPressed: _connectionState == mqtt.ConnectionState.connected
+                onPressed: null,
+                // TODO: enable unlock
+                /*_connectionState == mqtt.ConnectionState.connected
                     ? () => widget.onUnlockPressed?.call()
-                    : null,
-                child: const Icon(
+                    : null,*/
+                child: Icon(
                   CupertinoIcons.lock_fill,
                 ),
               ),

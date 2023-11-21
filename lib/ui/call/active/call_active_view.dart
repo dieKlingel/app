@@ -40,30 +40,35 @@ class _CallActiveViewState extends State<CallActiveView> {
             InteractiveViewer(
               child: RTCVideoView(renderer),
             ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                const MicrophoneButton(),
-                const SpeakerButton(),
-                const CupertinoButton(
-                  onPressed: null,
-                  child: Icon(CupertinoIcons.lock_fill),
-                ),
-                Hero(
-                  tag: "call_hangup_button",
-                  child: CupertinoButton(
-                    color: Colors.red,
+          SafeArea(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  const MicrophoneButton(),
+                  const SpeakerButton(),
+                  CupertinoButton(
+                    color: Colors.amber,
+                    onPressed: null,
                     padding: EdgeInsets.zero,
                     borderRadius: BorderRadius.circular(999),
-                    onPressed: () {
-                      context.read<CallActiveViewModel>().hangup();
-                    },
-                    child: const Icon(CupertinoIcons.xmark),
+                    child: const Icon(CupertinoIcons.lock_fill),
                   ),
-                )
-              ],
+                  Hero(
+                    tag: "call_hangup_button",
+                    child: CupertinoButton(
+                      color: Colors.red,
+                      padding: EdgeInsets.zero,
+                      borderRadius: BorderRadius.circular(999),
+                      onPressed: () {
+                        context.read<CallActiveViewModel>().hangup();
+                      },
+                      child: const Icon(CupertinoIcons.xmark),
+                    ),
+                  )
+                ],
+              ),
             ),
           )
         ],
