@@ -7,7 +7,7 @@ import 'package:dieklingel_app/ui/call/outgoing/call_outgoing_view_model.dart';
 import 'package:dieklingel_app/ui/call/outgoing/call_outgoing_view.dart';
 import 'package:dieklingel_app/views/home_add_view.dart';
 import 'package:dieklingel_app/views/ice_server_add_view.dart';
-import 'package:dieklingel_app/views/settings_view.dart';
+import 'package:dieklingel_app/ui/settings/settings_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:provider/provider.dart';
