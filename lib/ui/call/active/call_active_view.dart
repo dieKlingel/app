@@ -1,13 +1,11 @@
-import 'package:dieklingel_app/ui/call/active/call_active_view_model.dart';
-import 'package:dieklingel_app/utils/microphone_state.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
-import 'package:pull_down_button/pull_down_button.dart';
 
-import '../../../models/audio/speaker_state.dart';
+import 'call_active_view_model.dart';
+import 'widgets/microphone_button.dart';
+import 'widgets/speaker_button.dart';
 
 class CallActiveView extends StatelessWidget {
   const CallActiveView({super.key});
@@ -21,7 +19,7 @@ class CallActiveView extends StatelessWidget {
     });
 
     final renderer = context.select(
-      (CallActiveViewModel value) => value.call.renderer,
+      (CallActiveViewModel vm) => vm.renderer,
     );
 
     return CupertinoPageScaffold(
@@ -35,8 +33,8 @@ class CallActiveView extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _MicrophoneButton(),
-                _SpeakerButton(),
+                const MicrophoneButton(),
+                const SpeakerButton(),
                 const CupertinoButton(
                   onPressed: null,
                   child: Icon(CupertinoIcons.lock_fill),
@@ -58,116 +56,6 @@ class CallActiveView extends StatelessWidget {
           )
         ],
       ),
-    );
-  }
-}
-
-class _MicrophoneButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final microphoneState = context.select(
-      (CallActiveViewModel value) => value.call.microphone,
-    );
-
-    return PullDownButton(
-      itemBuilder: (context) {
-        return [
-          PullDownMenuItem.selectable(
-            onTap: () {
-              final vm = context.read<CallActiveViewModel>();
-              vm.call.microphone = MicrophoneState.muted;
-            },
-            title: "Muted",
-            icon: CupertinoIcons.mic_slash_fill,
-            selected: microphoneState == MicrophoneState.muted,
-          ),
-          PullDownMenuItem.selectable(
-            onTap: () {
-              final vm = context.read<CallActiveViewModel>();
-              vm.call.microphone = MicrophoneState.unmuted;
-            },
-            title: "Unmuted",
-            icon: CupertinoIcons.mic_fill,
-            selected: microphoneState == MicrophoneState.unmuted,
-          ),
-        ];
-      },
-      buttonBuilder: (context, showMenu) {
-        return CupertinoButton(
-          onPressed: showMenu,
-          child: Icon(
-            (() {
-              switch (microphoneState) {
-                case MicrophoneState.muted:
-                  return CupertinoIcons.mic_slash_fill;
-                case MicrophoneState.unmuted:
-                  return CupertinoIcons.mic_fill;
-              }
-            })(),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _SpeakerButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final speakerState = context.select(
-      (CallActiveViewModel value) => value.call.speaker,
-    );
-
-    return PullDownButton(
-      itemBuilder: (context) {
-        return [
-          PullDownMenuItem.selectable(
-            onTap: () {
-              final vm = context.read<CallActiveViewModel>();
-              vm.call.speaker = SpeakerState.muted;
-            },
-            title: "Muted",
-            icon: CupertinoIcons.speaker_slash_fill,
-            selected: speakerState == SpeakerState.muted,
-          ),
-          if (!kIsWeb)
-            PullDownMenuItem.selectable(
-              onTap: () {
-                final vm = context.read<CallActiveViewModel>();
-                vm.call.speaker = SpeakerState.earphone;
-              },
-              title: "Earphone",
-              icon: CupertinoIcons.ear,
-              selected: speakerState == SpeakerState.earphone,
-            ),
-          PullDownMenuItem.selectable(
-            onTap: () {
-              final vm = context.read<CallActiveViewModel>();
-              vm.call.speaker = SpeakerState.speaker;
-            },
-            title: "Speaker",
-            icon: CupertinoIcons.speaker_2_fill,
-            selected: speakerState == SpeakerState.speaker,
-          ),
-        ];
-      },
-      buttonBuilder: (context, showMenu) {
-        return CupertinoButton(
-          onPressed: showMenu,
-          child: Icon(
-            (() {
-              switch (speakerState) {
-                case SpeakerState.muted:
-                  return CupertinoIcons.speaker_slash_fill;
-                case SpeakerState.earphone:
-                  return CupertinoIcons.ear;
-                case SpeakerState.speaker:
-                  return CupertinoIcons.speaker_2_fill;
-              }
-            })(),
-          ),
-        );
-      },
     );
   }
 }

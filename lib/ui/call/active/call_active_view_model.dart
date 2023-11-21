@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'package:dieklingel_app/models/audio/speaker_state.dart';
 import 'package:dieklingel_app/models/messages/session_message_header.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:path/path.dart';
 import '../../../handlers/call.dart';
+import '../../../models/audio/microphone_state.dart';
 import '../../../models/home.dart';
 import '../../../models/messages/candidate_message.dart';
 import '../../../models/messages/close_message.dart';
@@ -25,8 +27,6 @@ class CallActiveViewModel extends ChangeNotifier {
     required this.call,
     required this.remoteSessionId,
   }) {
-    call.addListener(_onCallChange);
-
     connection.subscribe(
       "${home.username}/connections/candidate",
       (topic, message) {
@@ -61,21 +61,26 @@ class CallActiveViewModel extends ChangeNotifier {
     );
   }
 
-  void _onCallChange() {
+  set microphone(MicrophoneState state) {
+    call.microphone = state;
     notifyListeners();
   }
 
-  set isMicrophoneMuted(bool value) {
-    Helper.setMicrophoneMute(
-      value,
-      call.renderer.srcObject!.getAudioTracks().first,
-    );
+  MicrophoneState get microphone {
+    return call.microphone;
+  }
 
+  set speaker(SpeakerState state) {
+    call.speaker = state;
     notifyListeners();
   }
 
-  bool get isMicrophoneMuted {
-    return false;
+  SpeakerState get speaker {
+    return call.speaker;
+  }
+
+  RTCVideoRenderer get renderer {
+    return call.renderer;
   }
 
   Future<void> onHangup() async {
@@ -83,7 +88,6 @@ class CallActiveViewModel extends ChangeNotifier {
   }
 
   void hangup() {
-    call.removeListener(_onCallChange);
     call.close();
 
     final payload = CloseMessage(

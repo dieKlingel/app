@@ -1,22 +1,21 @@
 import 'dart:async';
 
-import 'package:dieklingel_app/utils/microphone_state.dart';
 import 'package:flutter/foundation.dart';
 
+import '../models/audio/microphone_state.dart';
 import '../models/audio/speaker_state.dart';
 import '../models/ice_server.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
-class Call extends ChangeNotifier {
+class Call {
   final String id;
   final List<IceServer> iceServers;
-  final RTCVideoRenderer renderer = RTCVideoRenderer();
-  final StreamController<RTCIceCandidate> _localIceCandidates =
-      StreamController();
-  final StreamController<RTCIceCandidate> _remoteIceCandidates =
-      StreamController();
+  final renderer = RTCVideoRenderer();
+  final _localIceCandidates = StreamController<RTCIceCandidate>();
+  final _remoteIceCandidates = StreamController<RTCIceCandidate>();
+  final _connectionState = StreamController<RTCPeerConnectionState>();
 
   RTCPeerConnection? connection;
   SpeakerState _speaker = SpeakerState.muted;
@@ -70,7 +69,6 @@ class Call extends ChangeNotifier {
 
   set speaker(SpeakerState state) {
     _speaker = state;
-    notifyListeners();
     for (final track in remoteAudioTracks) {
       switch (_speaker) {
         case SpeakerState.muted:
@@ -98,7 +96,6 @@ class Call extends ChangeNotifier {
 
   set microphone(MicrophoneState state) {
     _microphone = state;
-    notifyListeners();
     for (final track in loaclAudioTracks) {
       switch (_microphone) {
         case MicrophoneState.muted:
@@ -129,14 +126,29 @@ class Call extends ChangeNotifier {
         }
 
         for (final track in event.streams.first.getAudioTracks()) {
-          // TODO:set speaker
-          // track.enabled = !_isSpeakerMuted;
+          switch (_speaker) {
+            case SpeakerState.muted:
+              track.enabled = false;
+              break;
+            case SpeakerState.earphone:
+              track.enabled = true;
+              if (!kIsWeb) {
+                track.enableSpeakerphone(true);
+              }
+              break;
+            case SpeakerState.speaker:
+              track.enabled = true;
+              if (!kIsWeb) {
+                track.enableSpeakerphone(false);
+              }
+              break;
+          }
         }
 
         renderer.srcObject = event.streams.first;
       }
       ..onConnectionState = (state) {
-        notifyListeners();
+        _connectionState.add(state);
       };
 
     await connection!.addTransceiver(
