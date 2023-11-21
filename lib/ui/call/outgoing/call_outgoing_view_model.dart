@@ -8,16 +8,16 @@ import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:path/path.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../handlers/call.dart';
-import '../../models/home.dart';
-import '../../models/messages/answer_message.dart';
-import '../../models/messages/candidate_message.dart';
-import '../../models/messages/close_message.dart';
-import '../../models/messages/message_header.dart';
-import '../../models/messages/offer_message.dart';
-import '../../models/messages/session_message_body.dart';
+import '../../../handlers/call.dart';
+import '../../../models/home.dart';
+import '../../../models/messages/answer_message.dart';
+import '../../../models/messages/candidate_message.dart';
+import '../../../models/messages/close_message.dart';
+import '../../../models/messages/message_header.dart';
+import '../../../models/messages/offer_message.dart';
+import '../../../models/messages/session_message_body.dart';
 
-class OutgoingCallViewModel extends ChangeNotifier {
+class CallOutgoingViewModel extends ChangeNotifier {
   final IceServerRepository iceServerRepository;
   final Home home;
   final mqtt.Client connection;
@@ -27,7 +27,7 @@ class OutgoingCallViewModel extends ChangeNotifier {
 
   late final Call _call = Call(const Uuid().v4(), iceServerRepository.servers);
 
-  OutgoingCallViewModel({
+  CallOutgoingViewModel({
     required this.home,
     required this.connection,
     required this.iceServerRepository,

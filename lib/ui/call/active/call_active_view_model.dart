@@ -7,19 +7,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:path/path.dart';
-import '../../handlers/call.dart';
-import '../../models/home.dart';
-import '../../models/messages/candidate_message.dart';
-import '../../models/messages/close_message.dart';
+import '../../../handlers/call.dart';
+import '../../../models/home.dart';
+import '../../../models/messages/candidate_message.dart';
+import '../../../models/messages/close_message.dart';
 
-class ActiveCallViewModel extends ChangeNotifier {
+class CallActiveViewModel extends ChangeNotifier {
   final Home home;
   final mqtt.Client connection;
   final Call call;
   final Completer<void> _onHangup = Completer();
   final String remoteSessionId;
 
-  ActiveCallViewModel({
+  CallActiveViewModel({
     required this.home,
     required this.connection,
     required this.call,

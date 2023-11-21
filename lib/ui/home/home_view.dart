@@ -2,9 +2,9 @@ import 'package:dieklingel_app/components/core_home_widget.dart';
 import 'package:dieklingel_app/components/fade_page_route.dart';
 import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
-import 'package:dieklingel_app/ui/view_models/home_view_model.dart';
-import 'package:dieklingel_app/ui/view_models/outgoing_call_view_model.dart';
-import 'package:dieklingel_app/ui/views/outgoing_call_view.dart';
+import 'package:dieklingel_app/ui/home/home_view_model.dart';
+import 'package:dieklingel_app/ui/call/outgoing/call_outgoing_view_model.dart';
+import 'package:dieklingel_app/ui/call/outgoing/call_outgoing_view.dart';
 import 'package:dieklingel_app/views/home_add_view.dart';
 import 'package:dieklingel_app/views/ice_server_add_view.dart';
 import 'package:dieklingel_app/views/settings_view.dart';
@@ -119,12 +119,12 @@ class _Content extends StatelessWidget {
               Navigator.of(context).push(
                 FadePageRoute(
                   builder: (context) => ChangeNotifierProvider(
-                    create: (context) => OutgoingCallViewModel(
+                    create: (context) => CallOutgoingViewModel(
                       iceServerRepository: context.read<IceServerRepository>(),
                       home: home,
                       connection: client,
                     ),
-                    child: const OutgoingCallView(),
+                    child: const CallOutgoingView(),
                   ),
                 ),
               );

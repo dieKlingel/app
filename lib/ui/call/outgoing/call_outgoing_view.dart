@@ -1,30 +1,30 @@
-import 'package:dieklingel_app/ui/view_models/active_call_view_model.dart';
-import 'package:dieklingel_app/ui/view_models/outgoing_call_view_model.dart';
-import 'package:dieklingel_app/ui/views/active_call_view.dart';
+import 'package:dieklingel_app/ui/call/active/call_active_view_model.dart';
+import 'package:dieklingel_app/ui/call/outgoing/call_outgoing_view_model.dart';
+import 'package:dieklingel_app/ui/call/active/call_active_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt/mqtt.dart';
 import 'package:provider/provider.dart';
 
-import '../../components/fade_page_route.dart';
-import '../../models/home.dart';
+import '../../../components/fade_page_route.dart';
+import '../../../models/home.dart';
 
-class OutgoingCallView extends StatefulWidget {
-  const OutgoingCallView({super.key});
+class CallOutgoingView extends StatefulWidget {
+  const CallOutgoingView({super.key});
 
   @override
-  State<OutgoingCallView> createState() => _OutgoingCallViewState();
+  State<CallOutgoingView> createState() => _CallOutgoingViewState();
 }
 
-class _OutgoingCallViewState extends State<OutgoingCallView> {
+class _CallOutgoingViewState extends State<CallOutgoingView> {
   @override
   void initState() {
     super.initState();
 
-    final Home home = context.read<OutgoingCallViewModel>().home;
-    final Client connection = context.read<OutgoingCallViewModel>().connection;
+    final Home home = context.read<CallOutgoingViewModel>().home;
+    final Client connection = context.read<CallOutgoingViewModel>().connection;
 
-    context.read<OutgoingCallViewModel>().onAnswer().then(
+    context.read<CallOutgoingViewModel>().onAnswer().then(
       (event) {
         final (call, remoteSessionId) = event;
 
@@ -33,13 +33,13 @@ class _OutgoingCallViewState extends State<OutgoingCallView> {
           FadePageRoute(
             builder: (context) {
               return ChangeNotifierProvider(
-                create: (context) => ActiveCallViewModel(
+                create: (context) => CallActiveViewModel(
                   home: home,
                   connection: connection,
                   call: call,
                   remoteSessionId: remoteSessionId,
                 ),
-                child: const ActiveCallView(),
+                child: const CallActiveView(),
               );
             },
           ),
@@ -47,18 +47,18 @@ class _OutgoingCallViewState extends State<OutgoingCallView> {
       },
     );
 
-    context.read<OutgoingCallViewModel>().onHangup().then(
+    context.read<CallOutgoingViewModel>().onHangup().then(
       (_) {
         Navigator.pop(context);
       },
     );
 
-    context.read<OutgoingCallViewModel>().call();
+    context.read<CallOutgoingViewModel>().call();
   }
 
   @override
   Widget build(BuildContext context) {
-    final callee = context.select<OutgoingCallViewModel, String>(
+    final callee = context.select<CallOutgoingViewModel, String>(
       (value) => value.home.name,
     );
 
@@ -95,7 +95,7 @@ class _OutgoingCallViewState extends State<OutgoingCallView> {
                     CupertinoIcons.xmark,
                   ),
                   onPressed: () {
-                    context.read<OutgoingCallViewModel>().hangup();
+                    context.read<CallOutgoingViewModel>().hangup();
                   },
                 ),
               )

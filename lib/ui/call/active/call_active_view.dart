@@ -1,4 +1,4 @@
-import 'package:dieklingel_app/ui/view_models/active_call_view_model.dart';
+import 'package:dieklingel_app/ui/call/active/call_active_view_model.dart';
 import 'package:dieklingel_app/utils/microphone_state.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -7,23 +7,23 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 
-import '../../models/audio/speaker_state.dart';
+import '../../../models/audio/speaker_state.dart';
 
-class ActiveCallView extends StatefulWidget {
-  const ActiveCallView({super.key});
+class CallActiveView extends StatefulWidget {
+  const CallActiveView({super.key});
 
   @override
-  State<ActiveCallView> createState() => _ActiveCallViewState();
+  State<CallActiveView> createState() => _CallActiveViewState();
 }
 
-class _ActiveCallViewState extends State<ActiveCallView> {
+class _CallActiveViewState extends State<CallActiveView> {
   bool isEarphone = false;
 
   @override
   void initState() {
     super.initState();
 
-    context.read<ActiveCallViewModel>().onHangup().then((_) {
+    context.read<CallActiveViewModel>().onHangup().then((_) {
       Navigator.pop(context);
     });
   }
@@ -31,7 +31,7 @@ class _ActiveCallViewState extends State<ActiveCallView> {
   @override
   Widget build(BuildContext context) {
     final renderer = context.select(
-      (ActiveCallViewModel value) => value.call.renderer,
+      (CallActiveViewModel value) => value.call.renderer,
     );
 
     return CupertinoPageScaffold(
@@ -58,7 +58,7 @@ class _ActiveCallViewState extends State<ActiveCallView> {
                     padding: EdgeInsets.zero,
                     borderRadius: BorderRadius.circular(999),
                     onPressed: () {
-                      context.read<ActiveCallViewModel>().hangup();
+                      context.read<CallActiveViewModel>().hangup();
                     },
                     child: const Icon(CupertinoIcons.xmark),
                   ),
@@ -76,7 +76,7 @@ class _MicrophoneButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final microphoneState = context.select(
-      (ActiveCallViewModel value) => value.call.microphone,
+      (CallActiveViewModel value) => value.call.microphone,
     );
 
     return PullDownButton(
@@ -84,7 +84,7 @@ class _MicrophoneButton extends StatelessWidget {
         return [
           PullDownMenuItem.selectable(
             onTap: () {
-              final vm = context.read<ActiveCallViewModel>();
+              final vm = context.read<CallActiveViewModel>();
               vm.call.microphone = MicrophoneState.muted;
             },
             title: "Muted",
@@ -93,7 +93,7 @@ class _MicrophoneButton extends StatelessWidget {
           ),
           PullDownMenuItem.selectable(
             onTap: () {
-              final vm = context.read<ActiveCallViewModel>();
+              final vm = context.read<CallActiveViewModel>();
               vm.call.microphone = MicrophoneState.unmuted;
             },
             title: "Unmuted",
@@ -125,7 +125,7 @@ class _SpeakerButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final speakerState = context.select(
-      (ActiveCallViewModel value) => value.call.speaker,
+      (CallActiveViewModel value) => value.call.speaker,
     );
 
     return PullDownButton(
@@ -133,7 +133,7 @@ class _SpeakerButton extends StatelessWidget {
         return [
           PullDownMenuItem.selectable(
             onTap: () {
-              final vm = context.read<ActiveCallViewModel>();
+              final vm = context.read<CallActiveViewModel>();
               vm.call.speaker = SpeakerState.muted;
             },
             title: "Muted",
@@ -143,7 +143,7 @@ class _SpeakerButton extends StatelessWidget {
           if (!kIsWeb)
             PullDownMenuItem.selectable(
               onTap: () {
-                final vm = context.read<ActiveCallViewModel>();
+                final vm = context.read<CallActiveViewModel>();
                 vm.call.speaker = SpeakerState.earphone;
               },
               title: "Earphone",
@@ -152,7 +152,7 @@ class _SpeakerButton extends StatelessWidget {
             ),
           PullDownMenuItem.selectable(
             onTap: () {
-              final vm = context.read<ActiveCallViewModel>();
+              final vm = context.read<CallActiveViewModel>();
               vm.call.speaker = SpeakerState.speaker;
             },
             title: "Speaker",
