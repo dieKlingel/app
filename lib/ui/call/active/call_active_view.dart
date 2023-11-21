@@ -9,27 +9,17 @@ import 'package:pull_down_button/pull_down_button.dart';
 
 import '../../../models/audio/speaker_state.dart';
 
-class CallActiveView extends StatefulWidget {
+class CallActiveView extends StatelessWidget {
   const CallActiveView({super.key});
 
   @override
-  State<CallActiveView> createState() => _CallActiveViewState();
-}
-
-class _CallActiveViewState extends State<CallActiveView> {
-  bool isEarphone = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    context.read<CallActiveViewModel>().onHangup().then((_) {
-      Navigator.pop(context);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    context.read<CallActiveViewModel>().onHangup().then((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pop(context);
+      });
+    });
+
     final renderer = context.select(
       (CallActiveViewModel value) => value.call.renderer,
     );

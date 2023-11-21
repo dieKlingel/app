@@ -1,11 +1,11 @@
 import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
-import 'package:dieklingel_app/ui/view_models/home_view_model.dart';
+import 'package:dieklingel_app/ui/home/home_view_model.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
 import 'package:dieklingel_app/models/device.dart';
 import 'package:dieklingel_app/models/request.dart';
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
-import 'package:dieklingel_app/ui/views/home_view.dart';
+import 'package:dieklingel_app/ui/home/home_view.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mqtt/mqtt.dart';
 import 'package:path/path.dart' as path;
