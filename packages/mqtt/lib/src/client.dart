@@ -56,6 +56,12 @@ class Client {
     String password = "",
     bool throws = true,
   }) async {
+    if (state == ConnectionState.connected) {
+      _client.disconnect();
+      onConnectionStateChanged?.call(state);
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+
     try {
       await _client.connect(username, password);
     } catch (e) {

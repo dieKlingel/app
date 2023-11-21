@@ -5,6 +5,8 @@ class FadePageRoute extends PageRouteBuilder {
 
   FadePageRoute({required this.builder})
       : super(
+          transitionDuration: const Duration(milliseconds: 150),
+          reverseTransitionDuration: const Duration(milliseconds: 150),
           pageBuilder: (context, animation, secAnimaton) {
             return builder(context);
           },

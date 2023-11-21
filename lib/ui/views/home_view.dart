@@ -1,6 +1,7 @@
 import 'package:dieklingel_app/components/core_home_widget.dart';
 import 'package:dieklingel_app/components/fade_page_route.dart';
 import 'package:dieklingel_app/models/home.dart';
+import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/ui/view_models/home_view_model.dart';
 import 'package:dieklingel_app/ui/view_models/outgoing_call_view_model.dart';
 import 'package:dieklingel_app/ui/views/outgoing_call_view.dart';
@@ -119,6 +120,7 @@ class _Content extends StatelessWidget {
                 FadePageRoute(
                   builder: (context) => ChangeNotifierProvider(
                     create: (context) => OutgoingCallViewModel(
+                      iceServerRepository: context.read<IceServerRepository>(),
                       home: home,
                       connection: client,
                     ),

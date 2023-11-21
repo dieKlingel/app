@@ -1,10 +1,60 @@
+import 'package:dieklingel_app/ui/view_models/active_call_view_model.dart';
 import 'package:dieklingel_app/ui/view_models/outgoing_call_view_model.dart';
+import 'package:dieklingel_app/ui/views/active_call_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mqtt/mqtt.dart';
 import 'package:provider/provider.dart';
 
-class OutgoingCallView extends StatelessWidget {
+import '../../components/fade_page_route.dart';
+import '../../models/home.dart';
+
+class OutgoingCallView extends StatefulWidget {
   const OutgoingCallView({super.key});
+
+  @override
+  State<OutgoingCallView> createState() => _OutgoingCallViewState();
+}
+
+class _OutgoingCallViewState extends State<OutgoingCallView> {
+  @override
+  void initState() {
+    super.initState();
+
+    final Home home = context.read<OutgoingCallViewModel>().home;
+    final Client connection = context.read<OutgoingCallViewModel>().connection;
+
+    context.read<OutgoingCallViewModel>().onAnswer().then(
+      (event) {
+        final (call, remoteSessionId) = event;
+
+        Navigator.pushReplacement(
+          context,
+          FadePageRoute(
+            builder: (context) {
+              return ChangeNotifierProvider(
+                create: (context) => ActiveCallViewModel(
+                  home: home,
+                  connection: connection,
+                  call: call,
+                  remoteSessionId: remoteSessionId,
+                ),
+                child: const ActiveCallView(),
+              );
+            },
+          ),
+        );
+      },
+    );
+
+    context.read<OutgoingCallViewModel>().onHangup().then(
+      (_) {
+        Navigator.pop(context);
+      },
+    );
+
+    context.read<OutgoingCallViewModel>().call();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,17 +84,20 @@ class OutgoingCallView extends StatelessWidget {
                   ),
                 ],
               ),
-              CupertinoButton(
-                color: Colors.red,
-                padding: EdgeInsets.zero,
-                minSize: kMinInteractiveDimensionCupertino * 1.2,
-                borderRadius: BorderRadius.circular(999),
-                child: const Icon(
-                  CupertinoIcons.xmark,
+              Hero(
+                tag: "call_hangup_button",
+                child: CupertinoButton(
+                  color: Colors.red,
+                  padding: EdgeInsets.zero,
+                  minSize: kMinInteractiveDimensionCupertino * 1.2,
+                  borderRadius: BorderRadius.circular(999),
+                  child: const Icon(
+                    CupertinoIcons.xmark,
+                  ),
+                  onPressed: () {
+                    context.read<OutgoingCallViewModel>().hangup();
+                  },
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
               )
             ],
           ),

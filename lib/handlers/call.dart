@@ -1,5 +1,9 @@
 import 'dart:async';
 
+import 'package:dieklingel_app/utils/microphone_state.dart';
+import 'package:flutter/foundation.dart';
+
+import '../models/audio/speaker_state.dart';
 import '../models/ice_server.dart';
 
 import 'package:flutter/material.dart';
@@ -15,6 +19,8 @@ class Call extends ChangeNotifier {
       StreamController();
 
   RTCPeerConnection? connection;
+  SpeakerState _speaker = SpeakerState.muted;
+  MicrophoneState _microphone = MicrophoneState.muted;
 
   Call(
     this.id,
@@ -24,6 +30,85 @@ class Call extends ChangeNotifier {
     _remoteIceCandidates.stream.listen((event) {
       connection!.addCandidate(event);
     });
+  }
+
+  List<MediaStreamTrack> get loaclAudioTracks {
+    final conn = connection;
+    if (conn == null) {
+      return [];
+    }
+
+    final List<MediaStreamTrack> tracks = conn
+        .getLocalStreams()
+        .whereType<MediaStream>()
+        .expand<MediaStreamTrack>(
+          (stream) => stream.getAudioTracks(),
+        )
+        .toList();
+    return tracks;
+  }
+
+  List<MediaStreamTrack> get remoteAudioTracks {
+    final conn = connection;
+    if (conn == null) {
+      return [];
+    }
+
+    final List<MediaStreamTrack> tracks = conn
+        .getRemoteStreams()
+        .whereType<MediaStream>()
+        .expand<MediaStreamTrack>(
+          (stream) => stream.getAudioTracks(),
+        )
+        .toList();
+    return tracks;
+  }
+
+  SpeakerState get speaker {
+    return _speaker;
+  }
+
+  set speaker(SpeakerState state) {
+    _speaker = state;
+    notifyListeners();
+    for (final track in remoteAudioTracks) {
+      switch (_speaker) {
+        case SpeakerState.muted:
+          track.enabled = false;
+          break;
+        case SpeakerState.earphone:
+          track.enabled = true;
+          if (!kIsWeb) {
+            track.enableSpeakerphone(true);
+          }
+          break;
+        case SpeakerState.speaker:
+          track.enabled = true;
+          if (!kIsWeb) {
+            track.enableSpeakerphone(false);
+          }
+          break;
+      }
+    }
+  }
+
+  MicrophoneState get microphone {
+    return _microphone;
+  }
+
+  set microphone(MicrophoneState state) {
+    _microphone = state;
+    notifyListeners();
+    for (final track in loaclAudioTracks) {
+      switch (_microphone) {
+        case MicrophoneState.muted:
+          track.enabled = false;
+          break;
+        case MicrophoneState.unmuted:
+          track.enabled = true;
+          break;
+      }
+    }
   }
 
   Future<RTCSessionDescription> offer() async {
@@ -41,6 +126,11 @@ class Call extends ChangeNotifier {
       ..onTrack = (event) {
         if (event.streams.isEmpty) {
           return;
+        }
+
+        for (final track in event.streams.first.getAudioTracks()) {
+          // TODO:set speaker
+          // track.enabled = !_isSpeakerMuted;
         }
 
         renderer.srcObject = event.streams.first;

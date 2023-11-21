@@ -25,7 +25,7 @@ class SessionMessageHeader {
     return SessionMessageHeader(
       senderDeviceId: map["senderDeviceId"],
       sessionId: map["sessionId"],
-      senderSessionId: map["sessionId"],
+      senderSessionId: map["senderSessionId"],
     );
   }
 
