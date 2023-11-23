@@ -26,7 +26,7 @@ class HomeRepository {
   }
 
   Future<void> delete(Home home) async {
-    _homebox.delete(home.id);
+    await _homebox.delete(home.id);
     _remove.add(home);
   }
 }

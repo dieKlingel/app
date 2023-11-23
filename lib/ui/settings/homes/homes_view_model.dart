@@ -26,8 +26,9 @@ class HomesViewModel extends ChangeNotifier with StreamHandlerMixin {
     return homeRepository.homes;
   }
 
-  void deleteHome(Home home) {
-    homeRepository.delete(home);
+  void deleteHome(Home home) async {
+    await homeRepository.delete(home);
+    notifyListeners();
   }
 
   @override
