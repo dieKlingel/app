@@ -152,16 +152,13 @@ class Call {
         _connectionState.add(state);
       };
 
-    await connection!.addTransceiver(
-      kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
-      init: RTCRtpTransceiverInit(direction: TransceiverDirection.SendRecv),
-    );
-    await connection!.addTransceiver(
-      kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
-      init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly),
-    );
-
-    final offer = await connection!.createOffer();
+    final offer = await connection!.createOffer({
+      'mandatory': {
+        'OfferToReceiveAudio': true,
+        'OfferToReceiveVideo': true,
+      },
+      'optional': [],
+    });
     await connection!.setLocalDescription(offer);
     return offer;
   }
@@ -189,8 +186,8 @@ class Call {
 
   Future<void> close() async {
     _media.close();
-    _localIceCandidates.close();
-    _remoteIceCandidates.close();
-    renderer.dispose();
+    await _localIceCandidates.close();
+    await _remoteIceCandidates.close();
+    await renderer.dispose();
   }
 }

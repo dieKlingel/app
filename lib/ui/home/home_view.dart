@@ -33,7 +33,7 @@ class _HomeViewState extends State<HomeView> {
     final homes = context.select(
       (HomeViewModel vm) => vm.homes,
     );
-    if (!homes.contains(selected)) {
+    if (homes.isNotEmpty && !homes.contains(selected)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         setState(() {
           selected = homes.first;

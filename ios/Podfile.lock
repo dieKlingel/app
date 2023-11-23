@@ -38,7 +38,7 @@ PODS:
     - Flutter
   - flutter_webrtc (0.9.36):
     - Flutter
-    - WebRTC-SDK (= 114.5735.02)
+    - WebRTC-SDK (= 114.5735.08)
   - GoogleDataTransport (9.2.5):
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30910.0, >= 2.30908.0)
@@ -73,7 +73,7 @@ PODS:
   - PromisesObjC (2.3.1)
   - url_launcher_ios (0.0.1):
     - Flutter
-  - WebRTC-SDK (114.5735.02)
+  - WebRTC-SDK (114.5735.08)
 
 DEPENDENCIES:
   - audio_session (from `.symlinks/plugins/audio_session/ios`)
@@ -130,7 +130,7 @@ SPEC CHECKSUMS:
   FirebaseMessaging: bb2c4f6422a753038fe137d90ae7c1af57251316
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   flutter_local_notifications: 0c0b1ae97e741e1521e4c1629a459d04b9aec743
-  flutter_webrtc: 1944895d4e908c4bc722929dc4b9f8620d8e1b2f
+  flutter_webrtc: 55df3aaa802114dad390191a46c2c8d535751268
   GoogleDataTransport: 54dee9d48d14580407f8f5fbf2f496e92437a2f2
   GoogleUtilities: 0759d1a57ebb953965c2dfe0ba4c82e95ccc2e34
   nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
@@ -138,7 +138,7 @@ SPEC CHECKSUMS:
   permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
   PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
   url_launcher_ios: 08a3dfac5fb39e8759aeb0abbd5d9480f30fc8b4
-  WebRTC-SDK: dd913fd31cfbf1d43b9a22d83f4c6354c960c623
+  WebRTC-SDK: c24d2a6c9f571f2ed42297cb8ffba9557093142b
 
 PODFILE CHECKSUM: cc1f88378b4bfcf93a6ce00d2c587857c6008d3b
 

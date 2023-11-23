@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
+import 'package:dieklingel_app/components/stream_subscription_mixin.dart';
 import 'package:dieklingel_app/models/audio/speaker_state.dart';
+import 'package:dieklingel_app/models/messages/candidate_message_body.dart';
 import 'package:dieklingel_app/models/messages/session_message_header.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -14,7 +16,7 @@ import '../../../models/home.dart';
 import '../../../models/messages/candidate_message.dart';
 import '../../../models/messages/close_message.dart';
 
-class CallActiveViewModel extends ChangeNotifier {
+class CallActiveViewModel extends ChangeNotifier with StreamHandlerMixin {
   final Home home;
   final mqtt.Client connection;
   final Call call;
@@ -60,6 +62,22 @@ class CallActiveViewModel extends ChangeNotifier {
         }
       },
     );
+
+    streams.subscribe(call.localIceCandidates, (candidate) {
+      final payload = CandidateMessage(
+        header: SessionMessageHeader(
+          senderDeviceId: home.username!,
+          sessionId: remoteSessionId,
+          senderSessionId: call.id,
+        ),
+        body: CandidateMessageBody(iceCandidate: candidate),
+      );
+
+      connection.publish(
+        normalize("./${home.uri.path}/connections/candidate"),
+        json.encode(payload.toMap()),
+      );
+    });
 
     call.renderer.onFirstFrameRendered = () {
       _firstFrameRenderd = true;
@@ -114,5 +132,11 @@ class CallActiveViewModel extends ChangeNotifier {
       json.encode(payload.toMap()),
     );
     _onHangup.complete(null);
+  }
+
+  @override
+  void dispose() {
+    streams.dispose();
+    super.dispose();
   }
 }

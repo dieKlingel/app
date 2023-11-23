@@ -36,7 +36,7 @@ dependencies:
   # use version 0.9.22 caused by ios speakerphone issue:
   # https://github.com/flutter-webrtc/flutter-webrtc/issues/1328
   # https://github.com/flutter-webrtc/flutter-webrtc/issues/1326
-  flutter_webrtc: ^0.9.36
+  flutter_webrtc: ^0.9.46
   firebase_core: ^2.6.1
   firebase_messaging: ^14.4.0
   audio_session: ^0.1.13
