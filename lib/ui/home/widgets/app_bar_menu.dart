@@ -42,7 +42,7 @@ class AppBarMenu extends StatelessWidget {
           ),
           const PullDownMenuDivider(),
         ],
-        if (selected != null) const PullDownMenuDivider(),
+        if (selected != null) ...[const PullDownMenuDivider.large()],
         if (selected != null)
           PullDownMenuItem(
             onTap: () => onReconnectTap(selected!),

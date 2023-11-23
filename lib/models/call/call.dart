@@ -127,7 +127,6 @@ class Call {
         _localIceCandidates.add(candidate);
       }
       ..onTrack = (event) {
-        print(event.track);
         if (event.track.kind == "audio") {
           switch (_speaker) {
             case SpeakerState.muted:
