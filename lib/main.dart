@@ -1,14 +1,12 @@
-import 'package:dieklingel_app/blocs/home_add_view_bloc.dart';
 import 'package:dieklingel_app/ui/home/home_view_model.dart';
 import 'package:dieklingel_app/handlers/notification_handler.dart';
-import 'package:dieklingel_app/models/device.dart';
-import 'package:dieklingel_app/models/request.dart';
+
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:dieklingel_app/ui/home/home_view.dart';
+import 'package:dieklingel_app/ui/settings/homes/homes_view_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mqtt/mqtt.dart';
-import 'package:path/path.dart' as path;
+
 import 'package:provider/provider.dart';
 
 import './models/home.dart';
@@ -23,7 +21,6 @@ import 'blocs/ice_server_add_view_bloc.dart';
 import 'firebase_options.dart';
 import 'hive/hive_home_adapter.dart';
 import 'hive/hive_ice_server_adapter.dart';
-import 'models/hive_home.dart';
 import 'models/hive_ice_server.dart';
 import 'models/ice_server.dart';
 
@@ -36,7 +33,7 @@ void main() async {
     ..registerAdapter(HiveIceServerAdapter());
 
   await Future.wait([
-    Hive.openBox<HiveHome>((Home).toString()),
+    Hive.openBox<Home>((Home).toString()),
     Hive.openBox<HiveIceServer>((IceServer).toString()),
     Hive.openBox("settings"),
   ]);
@@ -53,11 +50,11 @@ void main() async {
         RepositoryProvider(create: (_) => homeRepository),
         RepositoryProvider(create: (_) => iceServerRepository),
       ],
-      child: MultiBlocProvider(
+      child: MultiProvider(
         providers: [
-          BlocProvider(create: (_) => HomeAddViewBloc(homeRepository)),
           BlocProvider(
               create: (_) => IceServerAddViewBloc(iceServerRepository)),
+          ChangeNotifierProvider(create: (_) => HomesViewModel(homeRepository))
         ],
         child: const App(),
       ),
@@ -102,26 +99,6 @@ class _App extends State<App> {
 
     Box settingsBox = Hive.box("settings");
     settingsBox.put("token", token);
-
-    Box<HiveHome> box = Hive.box<HiveHome>((Home).toString());
-    for (HiveHome home in box.values) {
-      final client = Client(home.uri);
-      await client.connect(
-        username: home.username ?? "",
-        password: home.password ?? "",
-      );
-      await client.publish(
-        path.normalize("./${home.uri.path}/devices/save"),
-        Request.withJsonBody(
-          "GET",
-          Device(
-            token,
-            signs: [home.uri.fragment],
-          ).toMap(),
-        ).toJsonString(),
-      );
-      client.disconnect();
-    }
   }
 
   void initialize() {

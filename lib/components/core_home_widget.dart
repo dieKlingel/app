@@ -92,7 +92,7 @@ class _CoreHomeWidgetState extends State<CoreHomeWidget> {
               const SizedBox(width: 6.0),
               const CupertinoButton(
                 padding: EdgeInsets.zero,
-                borderRadius: const BorderRadius.all(Radius.circular(999)),
+                borderRadius: BorderRadius.all(Radius.circular(999)),
                 color: Colors.amber,
                 onPressed: null,
                 // TODO: enable unlock

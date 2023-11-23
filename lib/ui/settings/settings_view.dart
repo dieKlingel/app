@@ -1,15 +1,16 @@
+import 'package:dieklingel_app/ui/home/home_view_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 
-import '../../blocs/home_list_view_bloc.dart';
 import '../../blocs/ice_server_list_view_bloc.dart';
 import '../../repositories/home_repository.dart';
 import '../../repositories/ice_server_repository.dart';
 import 'about/about_view.dart';
 
-import '../../views/home_list_view.dart';
 import '../../views/ice_server_list_view.dart';
+import 'homes/homes_view.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -31,11 +32,11 @@ class SettingsView extends StatelessWidget {
                   Navigator.push(
                     context,
                     CupertinoPageRoute(
-                      builder: (context) => BlocProvider(
-                        create: (_) => HomeListViewBloc(
+                      builder: (context) => ChangeNotifierProvider(
+                        create: (_) => HomeViewModel(
                           context.read<HomeRepository>(),
                         ),
-                        child: const HomeListView(),
+                        child: const HomesView(),
                       ),
                     ),
                   );

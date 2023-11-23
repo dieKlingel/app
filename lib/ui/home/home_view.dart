@@ -1,17 +1,20 @@
-import 'package:dieklingel_app/components/core_home_widget.dart';
-import 'package:dieklingel_app/components/fade_page_route.dart';
-import 'package:dieklingel_app/models/home.dart';
-import 'package:dieklingel_app/repositories/ice_server_repository.dart';
-import 'package:dieklingel_app/ui/home/home_view_model.dart';
-import 'package:dieklingel_app/ui/call/outgoing/call_outgoing_view_model.dart';
-import 'package:dieklingel_app/ui/call/outgoing/call_outgoing_view.dart';
-import 'package:dieklingel_app/views/home_add_view.dart';
-import 'package:dieklingel_app/views/ice_server_add_view.dart';
-import 'package:dieklingel_app/ui/settings/settings_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:provider/provider.dart';
 import 'package:pull_down_button/pull_down_button.dart';
+
+import '../../components/core_home_widget.dart';
+import '../../components/fade_page_route.dart';
+import '../../models/home.dart';
+import '../../repositories/home_repository.dart';
+import '../../repositories/ice_server_repository.dart';
+import '../../views/ice_server_add_view.dart';
+import '../call/outgoing/call_outgoing_view.dart';
+import '../call/outgoing/call_outgoing_view_model.dart';
+import '../settings/homes/editor/home_editor_view.dart';
+import '../settings/homes/editor/home_editor_view_model.dart';
+import '../settings/settings_view.dart';
+import 'home_view_model.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -20,8 +23,13 @@ class HomeView extends StatelessWidget {
     await showCupertinoModalPopup(
       context: context,
       builder: (context) {
-        return const CupertinoPopupSurface(
-          child: HomeAddView(),
+        return CupertinoPopupSurface(
+          child: ChangeNotifierProvider(
+            create: (_) => HomeEditorViewModel(
+              context.read<HomeRepository>(),
+            ),
+            child: const HomeEditorView(),
+          ),
         );
       },
     );
@@ -76,8 +84,13 @@ class _Content extends StatelessWidget {
     await showCupertinoModalPopup(
       context: context,
       builder: (context) {
-        return const CupertinoPopupSurface(
-          child: HomeAddView(),
+        return CupertinoPopupSurface(
+          child: ChangeNotifierProvider(
+            create: (_) => HomeEditorViewModel(
+              context.read<HomeRepository>(),
+            ),
+            child: const HomeEditorView(),
+          ),
         );
       },
     );
