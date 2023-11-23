@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:dieklingel_app/components/fade_page_route.dart';
@@ -37,15 +36,12 @@ class HomeBody extends StatelessWidget {
               borderRadius: BorderRadius.circular(10.0),
               child: Stack(
                 children: [
-                  Hero(
-                    tag: "background-image",
-                    child: ImageFiltered(
-                      imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-                      child: Image.asset(
-                        "assets/images/house.png",
-                        color: Colors.grey,
-                        colorBlendMode: BlendMode.darken,
-                      ),
+                  ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                    child: Image.asset(
+                      "assets/images/house.png",
+                      color: Colors.grey,
+                      colorBlendMode: BlendMode.darken,
                     ),
                   ),
                   Positioned.fill(
