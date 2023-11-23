@@ -36,10 +36,13 @@ class _CallActiveViewState extends State<CallActiveView> {
     return CupertinoPageScaffold(
       child: Stack(
         children: [
-          if (frameReceived)
-            InteractiveViewer(
-              child: RTCVideoView(renderer),
-            ),
+          frameReceived
+              ? InteractiveViewer(
+                  child: RTCVideoView(renderer),
+                )
+              : const Center(
+                  child: CupertinoActivityIndicator(),
+                ),
           SafeArea(
             child: Align(
               alignment: Alignment.bottomCenter,
