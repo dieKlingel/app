@@ -63,6 +63,7 @@ class CallActiveViewModel extends ChangeNotifier {
 
     call.renderer.onFirstFrameRendered = () {
       _firstFrameRenderd = true;
+      log("the first frame of the video was renderd");
       notifyListeners();
     };
   }

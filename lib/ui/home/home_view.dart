@@ -1,184 +1,102 @@
+import 'package:dieklingel_app/ui/home/widgets/app_bar_add.dart';
+import 'package:dieklingel_app/ui/home/widgets/app_bar_menu.dart';
+import 'package:dieklingel_app/ui/home/widgets/home_body.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:provider/provider.dart';
-import 'package:pull_down_button/pull_down_button.dart';
 
-import '../../components/core_home_widget.dart';
-import '../../components/fade_page_route.dart';
 import '../../models/home.dart';
 import '../../repositories/home_repository.dart';
-import '../../repositories/ice_server_repository.dart';
-import '../../views/ice_server_add_view.dart';
-import '../call/outgoing/call_outgoing_view.dart';
-import '../call/outgoing/call_outgoing_view_model.dart';
 import '../settings/homes/editor/home_editor_view.dart';
 import '../settings/homes/editor/home_editor_view_model.dart';
-import '../settings/settings_view.dart';
 import 'home_view_model.dart';
 
-class HomeView extends StatelessWidget {
+class HomeView extends StatefulWidget {
   const HomeView({super.key});
 
-  void _onAddHome(BuildContext context) async {
-    await showCupertinoModalPopup(
-      context: context,
-      builder: (context) {
-        return CupertinoPopupSurface(
-          child: ChangeNotifierProvider(
-            create: (_) => HomeEditorViewModel(
-              context.read<HomeRepository>(),
-            ),
-            child: const HomeEditorView(),
-          ),
-        );
-      },
-    );
-  }
+  @override
+  State<HomeView> createState() => _HomeViewState();
+}
 
-  void _onAddIceServer(BuildContext context) async {
-    await showCupertinoModalPopup(
-      context: context,
-      builder: (context) {
-        return const CupertinoPopupSurface(
-          child: IceServerAddView(),
-        );
-      },
-    );
-  }
+class _HomeViewState extends State<HomeView> {
+  Home? selected;
 
-  void _onSettingsTap(BuildContext context) async {
-    await Navigator.of(context).push(
-      CupertinoPageRoute(
-        builder: (context) => const SettingsView(),
-      ),
-    );
+  @override
+  void initState() {
+    setState(() {
+      selected = context.read<HomeViewModel>().homes.firstOrNull;
+    });
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final homes = context.select(
+      (HomeViewModel vm) => vm.homes,
+    );
+
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: const Text("Homes"),
+        middle: Text(selected?.name ?? "Homes"),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _AppBarAddButton(
-              addHomeFunc: _onAddHome,
-              addIceServerFunc: _onAddIceServer,
-            ),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: () => _onSettingsTap(context),
-              child: const Icon(CupertinoIcons.settings),
+            const AppBarAdd(),
+            AppBarMenu(
+              homes: homes,
+              selected: selected,
+              onHomeTap: (home) {
+                setState(() {
+                  selected = home;
+                });
+              },
+              onReconnectTap: (home) {
+                context.read<HomeViewModel>().reconnect(home);
+              },
             ),
           ],
         ),
       ),
-      child: _Content(),
-    );
-  }
-}
-
-class _Content extends StatelessWidget {
-  void _onAddHome(BuildContext context) async {
-    await showCupertinoModalPopup(
-      context: context,
-      builder: (context) {
-        return CupertinoPopupSurface(
-          child: ChangeNotifierProvider(
-            create: (_) => HomeEditorViewModel(
-              context.read<HomeRepository>(),
+      child: Builder(builder: (context) {
+        if (homes.isEmpty) {
+          return Center(
+            child: CupertinoButton(
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(CupertinoIcons.add),
+                  Text("add your first Home"),
+                ],
+              ),
+              onPressed: () {
+                showCupertinoModalPopup(
+                  context: context,
+                  builder: (context) {
+                    return CupertinoPopupSurface(
+                      child: ChangeNotifierProvider(
+                        create: (_) => HomeEditorViewModel(
+                          context.read<HomeRepository>(),
+                        ),
+                        child: const HomeEditorView(),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
-            child: const HomeEditorView(),
-          ),
-        );
-      },
-    );
-  }
+          );
+        }
 
-  @override
-  Widget build(BuildContext context) {
-    List<(Home, mqtt.Client)> connections =
-        context.select<HomeViewModel, List<(Home, mqtt.Client)>>(
-      (value) => value.connections,
-    );
+        if (selected == null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            setState(() {
+              selected = homes.first;
+            });
+          });
+          return const CupertinoActivityIndicator();
+        }
 
-    if (connections.isEmpty) {
-      return Center(
-        child: CupertinoButton(
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(CupertinoIcons.add),
-              Text("add your first Home"),
-            ],
-          ),
-          onPressed: () => _onAddHome(context),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      itemCount: connections.length,
-      itemBuilder: (context, index) {
-        final (home, client) = connections[index];
-
-        return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: CoreHomeWidget(
-            home: home,
-            client: client,
-            onCallPressed: () {
-              Navigator.of(context).push(
-                FadePageRoute(
-                  builder: (context) => ChangeNotifierProvider(
-                    create: (context) => CallOutgoingViewModel(
-                      iceServerRepository: context.read<IceServerRepository>(),
-                      home: home,
-                      connection: client,
-                    ),
-                    child: const CallOutgoingView(),
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _AppBarAddButton extends StatelessWidget {
-  final Function(BuildContext) addHomeFunc;
-  final Function(BuildContext) addIceServerFunc;
-
-  const _AppBarAddButton({
-    required this.addHomeFunc,
-    required this.addIceServerFunc,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return PullDownButton(
-      itemBuilder: (context) => [
-        PullDownMenuItem(
-          onTap: () => addHomeFunc(context),
-          title: "add Home",
-          icon: CupertinoIcons.home,
-        ),
-        const PullDownMenuDivider(),
-        PullDownMenuItem(
-          onTap: () => addIceServerFunc(context),
-          title: "add ICE Server",
-          icon: CupertinoIcons.cloud,
-        )
-      ],
-      buttonBuilder: (context, showMenu) => CupertinoButton(
-        padding: EdgeInsets.zero,
-        onPressed: showMenu,
-        child: const Icon(CupertinoIcons.plus),
-      ),
+        return HomeBody(home: selected!);
+      }),
     );
   }
 }

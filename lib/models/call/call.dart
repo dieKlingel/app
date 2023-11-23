@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -28,7 +29,9 @@ class Call {
     this.iceServers,
   ) {
     WidgetsFlutterBinding.ensureInitialized();
-    Helper.setAppleAudioIOMode(AppleAudioIOMode.localAndRemote);
+    if (!kIsWeb && Platform.isIOS) {
+      Helper.setAppleAudioIOMode(AppleAudioIOMode.localAndRemote);
+    }
     _remoteIceCandidates.stream.listen((event) {
       connection!.addCandidate(event);
     });
@@ -124,6 +127,7 @@ class Call {
         _localIceCandidates.add(candidate);
       }
       ..onTrack = (event) {
+        print(event.track);
         if (event.track.kind == "audio") {
           switch (_speaker) {
             case SpeakerState.muted:

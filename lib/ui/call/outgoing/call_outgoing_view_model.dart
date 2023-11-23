@@ -112,10 +112,12 @@ class CallOutgoingViewModel extends ChangeNotifier {
       normalize("./${home.uri.path}/connections/offer"),
       json.encode(payload.toMap()),
     );
-    _timeout = Timer(
-      const Duration(seconds: 15),
-      () => _onHangup.complete(),
-    );
+    _timeout = Timer(const Duration(seconds: 15), () {
+      if (_onHangup.isCompleted) {
+        return;
+      }
+      _onHangup.complete();
+    });
   }
 
   void hangup() {
