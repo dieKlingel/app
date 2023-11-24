@@ -10,7 +10,8 @@ import 'package:mqtt_client/mqtt_client.dart' as mqtt;
 class Client {
   final Uri _uri;
   final mqtt.MqttClient _client;
-  final Map<String, List<Subscription>> _subscriptions = {};
+  final Map<String, List<StreamController<(String, String)>>> _subscriptions =
+      {};
   Function(ConnectionState)? onConnectionStateChanged;
 
   Client._(this._client, this._uri) {
@@ -82,17 +83,16 @@ class Client {
         final pt = mqtt.PublicationTopic(topic);
 
         if (st.matches(pt)) {
-          for (Subscription sub in entry.value) {
-            sub.callback(topic, message);
+          for (StreamController<(String, String)> sub in entry.value) {
+            sub.add((topic, message));
           }
         }
       }
     });
   }
 
-  Subscription subscribe(
-    String topic,
-    Callback callback, {
+  Stream<(String, String)> topic(
+    String topic, {
     mqtt.MqttQos qosLevel = mqtt.MqttQos.exactlyOnce,
   }) {
     final mqtt.Subscription? sub = _client.subscribe(topic, qosLevel);
@@ -101,23 +101,26 @@ class Client {
       throw Exception("error while subscribing to $topic");
     }
 
-    final subscription = Subscription(
-      this,
-      callback,
-      sub,
-    );
+    final controller = StreamController<(String, String)>();
+    controller.onCancel = () {
+      List<StreamController>? subs = _subscriptions[topic];
+      subs?.remove(controller);
+      if (subs != null && subs.isEmpty) {
+        _client.unsubscribe(topic);
+      }
+    };
+    _subscriptions.putIfAbsent(topic, () => []).add(controller);
 
-    _subscriptions.putIfAbsent(topic, () => []).add(subscription);
-    return subscription;
+    return controller.stream;
   }
 
-  void unsubscribe(Subscription subscription) {
+  /* void unsubscribe(Subscription subscription) {
     List<Subscription>? subs = _subscriptions[subscription.subscription.topic];
     subs?.remove(subscription);
     if (subs != null && subs.isEmpty) {
       _client.unsubscribe(subscription.subscription.topic.toString());
     }
-  }
+  }*/
 
   Future<void> publish(
     String topic,
@@ -133,7 +136,7 @@ class Client {
     await Future.delayed(const Duration(seconds: 5));
   }
 
-  Future<String> once(String topic, {Duration? timeout}) async {
+  /* Future<String> once(String topic, {Duration? timeout}) async {
     Completer<String> completer = Completer<String>();
     Subscription subscription = subscribe(topic, (topic, message) {
       completer.complete(message);
@@ -146,5 +149,5 @@ class Client {
     }
     subscription.cancel();
     return result;
-  }
+  }*/
 }

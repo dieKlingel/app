@@ -30,9 +30,10 @@ class CallActiveViewModel extends ChangeNotifier with StreamHandlerMixin {
     required this.call,
     required this.remoteSessionId,
   }) {
-    connection.subscribe(
-      "${home.username}/connections/candidate",
-      (topic, message) {
+    streams.subscribe(
+      connection.topic("${home.username}/connections/candidate"),
+      (event) {
+        final (_, message) = event;
         try {
           final payload = CandidateMessage.fromMap(json.decode(message));
           if (payload.header.sessionId != call.id) {
@@ -46,22 +47,22 @@ class CallActiveViewModel extends ChangeNotifier with StreamHandlerMixin {
       },
     );
 
-    connection.subscribe(
-      "${home.username}/connections/close",
-      (topic, message) async {
-        try {
-          final payload = CloseMessage.fromMap(json.decode(message));
-          if (payload.header.sessionId != call.id) {
-            return;
-          }
+    streams.subscribe(connection.topic("${home.username}/connections/close"),
+        (event) async {
+      final (_, message) = event;
 
-          _onHangup.complete();
-          await call.close();
-        } catch (e) {
-          log("could not parse the close message; message: $message, error: $e");
+      try {
+        final payload = CloseMessage.fromMap(json.decode(message));
+        if (payload.header.sessionId != call.id) {
+          return;
         }
-      },
-    );
+
+        _onHangup.complete();
+        await call.close();
+      } catch (e) {
+        log("could not parse the close message; message: $message, error: $e");
+      }
+    });
 
     streams.subscribe(call.localIceCandidates, (candidate) {
       final payload = CandidateMessage(
@@ -117,6 +118,7 @@ class CallActiveViewModel extends ChangeNotifier with StreamHandlerMixin {
   }
 
   void hangup() {
+    streams.dispose();
     call.close();
 
     final payload = CloseMessage(

@@ -33,7 +33,6 @@ class AppBarAdd extends StatelessWidget {
           title: "add Home",
           icon: CupertinoIcons.home,
         ),
-        const PullDownMenuDivider(),
         PullDownMenuItem(
           onTap: () {
             showCupertinoModalPopup(

@@ -40,7 +40,6 @@ class AppBarMenu extends StatelessWidget {
             title: home.name,
             selected: home == selected,
           ),
-          const PullDownMenuDivider(),
         ],
         if (selected != null) ...[const PullDownMenuDivider.large()],
         if (selected != null)

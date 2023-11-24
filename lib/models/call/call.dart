@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:async/async.dart';
+import 'package:dieklingel_app/components/stream_subscription_mixin.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
@@ -11,7 +13,7 @@ import '../audio/microphone_state.dart';
 import '../audio/speaker_state.dart';
 import '../ice_server.dart';
 
-class Call {
+class Call with StreamHandlerMixin {
   final String id;
   final List<IceServer> iceServers;
   final renderer = RTCVideoRenderer();
@@ -19,6 +21,8 @@ class Call {
   final _remoteIceCandidates = StreamController<RTCIceCandidate>();
   final _connectionState = StreamController<RTCPeerConnectionState>();
   final _media = MediaRessource();
+  late final _remoteIceCandidatesBuffer =
+      _remoteIceCandidates.stream.listenAndBuffer();
 
   RTCPeerConnection? connection;
   SpeakerState _speaker = SpeakerState.muted;
@@ -32,9 +36,6 @@ class Call {
     if (!kIsWeb && Platform.isIOS) {
       Helper.setAppleAudioIOMode(AppleAudioIOMode.localAndRemote);
     }
-    _remoteIceCandidates.stream.listen((event) {
-      connection!.addCandidate(event);
-    });
   }
 
   List<MediaStreamTrack> get loaclAudioTracks {
@@ -150,15 +151,29 @@ class Call {
       }
       ..onConnectionState = (state) {
         _connectionState.add(state);
+      }
+      ..onIceConnectionState = (state) {
+        if (state != RTCIceConnectionState.RTCIceConnectionStateConnected) {
+          return;
+        }
+        streams.subscribe(_remoteIceCandidatesBuffer, (candidate) {
+          connection!.addCandidate(candidate);
+        });
       };
 
-    final offer = await connection!.createOffer({
-      'mandatory': {
-        'OfferToReceiveAudio': true,
-        'OfferToReceiveVideo': true,
-      },
-      'optional': [],
-    });
+    final stream = await _media.open(true, false);
+
+    await connection!.addTransceiver(
+      kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+      init: RTCRtpTransceiverInit(
+          direction: TransceiverDirection.SendRecv, streams: [stream!]),
+    );
+    await connection!.addTransceiver(
+      kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+      init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly),
+    );
+
+    final offer = await connection!.createOffer();
     await connection!.setLocalDescription(offer);
     return offer;
   }
@@ -185,6 +200,7 @@ class Call {
   }
 
   Future<void> close() async {
+    streams.dispose();
     _media.close();
     await _localIceCandidates.close();
     await _remoteIceCandidates.close();

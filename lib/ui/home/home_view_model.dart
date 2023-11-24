@@ -37,8 +37,8 @@ class HomeViewModel extends ChangeNotifier {
     });
 
     homeRepository.removed.listen((home) {
-      _connections[home]?.disconnect();
-      _connections.remove(home);
+      _connections[home.id]?.disconnect();
+      _connections.remove(home.id);
       notifyListeners();
     });
 

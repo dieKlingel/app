@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:dieklingel_app/components/stream_subscription_mixin.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mqtt/mqtt.dart' as mqtt;
@@ -17,7 +18,7 @@ import '../../../models/messages/message_header.dart';
 import '../../../models/messages/offer_message.dart';
 import '../../../models/messages/session_message_body.dart';
 
-class CallOutgoingViewModel extends ChangeNotifier {
+class CallOutgoingViewModel extends ChangeNotifier with StreamHandlerMixin {
   final IceServerRepository iceServerRepository;
   final Home home;
   final mqtt.Client connection;
@@ -32,9 +33,10 @@ class CallOutgoingViewModel extends ChangeNotifier {
     required this.connection,
     required this.iceServerRepository,
   }) {
-    connection.subscribe(
-      "${home.username}/connections/answer",
-      (topic, message) async {
+    streams.subscribe(
+      connection.topic("${home.username}/connections/answer"),
+      (event) async {
+        final (_, message) = event;
         try {
           final payload = AnswerMessage.fromMap(json.decode(message));
           if (payload.header.sessionId != _call.id) {
@@ -42,17 +44,19 @@ class CallOutgoingViewModel extends ChangeNotifier {
           }
 
           _timeout?.cancel();
-          _onAnswer.complete((_call, payload.header.senderSessionId));
           await _call.withRemoteAnswer(payload.body.sessionDescription);
+          await streams.dispose();
+          _onAnswer.complete((_call, payload.header.senderSessionId));
         } catch (e) {
           log("could not parse the answer message; message: $message, error: $e");
         }
       },
     );
 
-    connection.subscribe(
-      "${home.username}/connections/candidate",
-      (topic, message) {
+    streams.subscribe(
+      connection.topic("${home.username}/connections/candidate"),
+      (event) {
+        final (_, message) = event;
         try {
           final payload = CandidateMessage.fromMap(json.decode(message));
           if (payload.header.sessionId != _call.id) {
@@ -66,9 +70,10 @@ class CallOutgoingViewModel extends ChangeNotifier {
       },
     );
 
-    connection.subscribe(
-      "${home.username}/connections/close",
-      (topic, message) async {
+    streams.subscribe(
+      connection.topic("${home.username}/connections/close"),
+      (event) async {
+        final (_, message) = event;
         try {
           final payload = CloseMessage.fromMap(json.decode(message));
           if (payload.header.sessionId != _call.id) {
@@ -88,7 +93,7 @@ class CallOutgoingViewModel extends ChangeNotifier {
     return _onHangup.future;
   }
 
-  Future<(Call, String)> onAnswer() {
+  Future<(Call, String)> onAnswer() async {
     return _onAnswer.future;
   }
 
@@ -121,6 +126,7 @@ class CallOutgoingViewModel extends ChangeNotifier {
   }
 
   void hangup() {
+    streams.dispose();
     _call.close();
     _onHangup.complete();
   }
