@@ -36,7 +36,8 @@ class _CallActiveViewState extends State<CallActiveView> {
             child: RTCVideoView(renderer),
           ),
           SafeArea(
-            child: Align(
+            child: Container(
+              padding: const EdgeInsets.all(12.0),
               alignment: Alignment.bottomCenter,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
