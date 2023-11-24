@@ -1,8 +1,6 @@
 name: "Run Tests and Build for Web/Android/iOS"
 on:
   pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:

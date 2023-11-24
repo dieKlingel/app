@@ -1,58 +1,32 @@
-import 'package:dieklingel_app/models/hive_home.dart';
+import 'dart:async';
+
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/home.dart';
 
 class HomeRepository {
-  final Box<HiveHome> _homebox = Hive.box((Home).toString());
-  final Box _settingsbox = Hive.box("settings");
+  final Box<Home> _homebox = Hive.box((Home).toString());
+  final _add = StreamController<Home>.broadcast();
+  final _remove = StreamController<Home>.broadcast();
+  final _change = StreamController<Home>.broadcast();
 
-  List<HiveHome> get homes => _homebox.values.toList();
+  List<Home> get homes => _homebox.values.toList();
+  Stream<Home> get added => _add.stream;
+  Stream<Home> get changed => _change.stream;
+  Stream<Home> get removed => _remove.stream;
 
-  HiveHome? get selected {
-    dynamic key = _settingsbox.get("home");
-    if (key == null) {
-      return null;
-    }
-    if (!_homebox.containsKey(key) && _homebox.isNotEmpty) {
-      select(_homebox.values.first);
-      return _homebox.values.first;
-    }
-    return _homebox.get(key);
-  }
-
-  Future<void> add(HiveHome home) async {
-    if (home.isInBox) {
-      await home.save();
-      return;
-    }
-    await _homebox.add(home);
-  }
-
-  Future<void> delete(HiveHome home) async {
-    if (!home.isInBox) {
-      return;
-    }
-    await home.delete();
-    if (homes.isEmpty) {
-      await select(null);
-      return;
-    }
-    if (selected == home) {
-      select(homes.first);
+  Future<void> add(Home home) async {
+    final exists = _homebox.containsKey(home.id);
+    await _homebox.put(home.id, home);
+    if (exists) {
+      _change.add(home);
+    } else {
+      _add.add(home);
     }
   }
 
-  Future<void> select(HiveHome? home) async {
-    if (home == null) {
-      await _settingsbox.delete("home");
-      return;
-    }
-    if (!homes.contains(home)) {
-      throw Exception(
-        "The selected home cannot be selected, because it is not saved!",
-      );
-    }
-    await _settingsbox.put("home", home.key);
+  Future<void> delete(Home home) async {
+    await _homebox.delete(home.id);
+    _remove.add(home);
   }
 }

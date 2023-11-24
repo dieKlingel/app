@@ -1,0 +1,4 @@
+enum MicrophoneState {
+  muted,
+  unmuted,
+}

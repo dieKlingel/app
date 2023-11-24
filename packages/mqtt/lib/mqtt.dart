@@ -1,4 +1,4 @@
 library mqtt;
 
-export 'src/mqtt_client.dart';
-export 'src/subscription.dart';
+export 'src/client.dart';
+export 'src/connnection_state.dart';

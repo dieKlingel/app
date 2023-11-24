@@ -12,8 +12,6 @@
 	<dict>
 		<key>com.dieklingel.app</key>
 		<string>match AppStore com.dieklingel.app</string>
-		<key>com.dieklingel.app.ImageNotification</key>
-		<string>match AppStore com.dieklingel.app.ImageNotification</string>
 	</dict>
 	<key>signingCertificate</key>
 	<string>8702C3CEE167260D632A1AC65DE99063A5FEC4DF</string>
