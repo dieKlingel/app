@@ -22,7 +22,6 @@ class CallActiveViewModel extends ChangeNotifier with StreamHandlerMixin {
   final Call call;
   final Completer<void> _onHangup = Completer();
   final String remoteSessionId;
-  bool _firstFrameRenderd = false;
 
   CallActiveViewModel({
     required this.home,
@@ -80,8 +79,12 @@ class CallActiveViewModel extends ChangeNotifier with StreamHandlerMixin {
       );
     });
 
+    call.renderer.addListener(() {
+      notifyListeners();
+    });
+
     call.renderer.onFirstFrameRendered = () {
-      _firstFrameRenderd = true;
+      // BUG: this method gets not called on web
       log("the first frame of the video was renderd");
       notifyListeners();
     };
@@ -107,10 +110,6 @@ class CallActiveViewModel extends ChangeNotifier with StreamHandlerMixin {
 
   RTCVideoRenderer get renderer {
     return call.renderer;
-  }
-
-  bool get firstFrameRenderd {
-    return _firstFrameRenderd;
   }
 
   Future<void> onHangup() async {

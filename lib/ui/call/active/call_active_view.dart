@@ -25,10 +25,6 @@ class _CallActiveViewState extends State<CallActiveView> {
 
   @override
   Widget build(BuildContext context) {
-    final frameReceived = context.select(
-      (CallActiveViewModel vm) => vm.firstFrameRenderd,
-    );
-
     final renderer = context.select(
       (CallActiveViewModel vm) => vm.renderer,
     );
@@ -36,13 +32,9 @@ class _CallActiveViewState extends State<CallActiveView> {
     return CupertinoPageScaffold(
       child: Stack(
         children: [
-          frameReceived
-              ? InteractiveViewer(
-                  child: RTCVideoView(renderer),
-                )
-              : const Center(
-                  child: CupertinoActivityIndicator(),
-                ),
+          InteractiveViewer(
+            child: RTCVideoView(renderer),
+          ),
           SafeArea(
             child: Align(
               alignment: Alignment.bottomCenter,

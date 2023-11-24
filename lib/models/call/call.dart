@@ -23,6 +23,8 @@ class Call with StreamHandlerMixin {
   final _media = MediaRessource();
   late final _remoteIceCandidatesBuffer =
       _remoteIceCandidates.stream.listenAndBuffer();
+  late final _localIceCandidatesBuffer =
+      _localIceCandidates.stream.listenAndBuffer();
 
   RTCPeerConnection? connection;
   SpeakerState _speaker = SpeakerState.muted;
@@ -192,7 +194,7 @@ class Call with StreamHandlerMixin {
   }
 
   Stream<RTCIceCandidate> get localIceCandidates {
-    return _localIceCandidates.stream;
+    return _localIceCandidatesBuffer;
   }
 
   Sink<RTCIceCandidate> get remoteIceCandidates {
