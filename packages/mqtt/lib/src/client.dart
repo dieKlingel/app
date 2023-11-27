@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:mqtt/mqtt.dart';
+import 'package:mqtt/src/disconnect_message.dart';
 
 import 'factories/mqtt_client_factory.dart';
 import 'package:uuid/uuid.dart';
@@ -56,11 +57,20 @@ class Client {
     String username = "",
     String password = "",
     bool throws = true,
+    DisconnectMessage? disconnectMessage,
   }) async {
     if (state == ConnectionState.connected) {
       _client.disconnect();
       onConnectionStateChanged?.call(state);
       await Future.delayed(const Duration(milliseconds: 50));
+    }
+
+    if (disconnectMessage != null) {
+      _client.connectionMessage = mqtt.MqttConnectMessage()
+          .withWillTopic(disconnectMessage.topic)
+          .withWillMessage(disconnectMessage.message)
+          .withWillRetain()
+          .withWillQos(mqtt.MqttQos.exactlyOnce);
     }
 
     try {
@@ -122,18 +132,18 @@ class Client {
     }
   }*/
 
-  Future<void> publish(
+  void publish(
     String topic,
     String message, {
     mqtt.MqttQos qosLevel = mqtt.MqttQos.exactlyOnce,
+    bool retain = false,
   }) async {
     _client.publishMessage(
       topic,
       qosLevel,
       mqtt.MqttClientPayloadBuilder().addUTF8String(message).payload!,
+      retain: false,
     );
-    // wait until message is published
-    await Future.delayed(const Duration(seconds: 5));
   }
 
   /* Future<String> once(String topic, {Duration? timeout}) async {

@@ -14,7 +14,7 @@ class HomesViewModel extends ChangeNotifier with StreamHandlerMixin {
     );
     streams.subscribe(
       homeRepository.changed,
-      (Home home) => notifyListeners(),
+      (_) => notifyListeners(),
     );
     streams.subscribe(
       homeRepository.removed,
