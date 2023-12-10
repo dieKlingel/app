@@ -105,16 +105,23 @@ class Call with StreamHandlerMixin {
 
   set microphone(MicrophoneState state) {
     _microphone = state;
-    for (final track in loaclAudioTracks) {
-      switch (_microphone) {
-        case MicrophoneState.muted:
-          track.enabled = false;
-          break;
-        case MicrophoneState.unmuted:
-          track.enabled = true;
-          break;
+
+    connection!.getSenders().then((senders) {
+      for (final sender in senders) {
+        final track = sender.track;
+        if (track == null) {
+          continue;
+        }
+        switch (_microphone) {
+          case MicrophoneState.muted:
+            track.enabled = false;
+            break;
+          case MicrophoneState.unmuted:
+            track.enabled = true;
+            break;
+        }
       }
-    }
+    });
   }
 
   Future<RTCSessionDescription> offer() async {
@@ -163,17 +170,25 @@ class Call with StreamHandlerMixin {
         });
       };
 
-    final stream = await _media.open(true, false);
-
     await connection!.addTransceiver(
       kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
       init: RTCRtpTransceiverInit(
-          direction: TransceiverDirection.SendRecv, streams: [stream!]),
+        direction: TransceiverDirection.SendRecv,
+      ),
     );
     await connection!.addTransceiver(
       kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
       init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly),
     );
+
+    await _media.open(true, false);
+    MediaStream? stream = _media.stream;
+    if (stream != null) {
+      for (MediaStreamTrack track in stream.getTracks()) {
+        await Helper.setMicrophoneMute(true, track);
+        await connection!.addTrack(track, stream);
+      }
+    }
 
     final offer = await connection!.createOffer();
     await connection!.setLocalDescription(offer);
