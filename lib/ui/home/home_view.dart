@@ -57,7 +57,7 @@ class _HomeViewState extends State<HomeView> {
                 });
               },
               onReconnectTap: (home) {
-                context.read<HomeViewModel>().reconnect(home);
+                context.read<HomeViewModel>().reconnect();
               },
             ),
           ],

@@ -8,59 +8,47 @@ import 'package:flutter/cupertino.dart';
 
 class HomeViewModel extends ChangeNotifier {
   final HomeRepository homeRepository;
-  final Map<String, mqtt.Client> _connections = {};
+
+  Home? _home;
+  mqtt.Client? _client;
 
   HomeViewModel(this.homeRepository) {
-    homeRepository.added.listen((home) async {
-      final client = mqtt.Client(home.uri);
-      client.onConnectionStateChanged = (_) => notifyListeners();
-      _connections[home.id] = client;
-      notifyListeners();
+    homeRepository.added.listen((home) => notifyListeners());
+    homeRepository.changed.listen((home) => notifyListeners());
+    homeRepository.removed.listen((home) => notifyListeners());
 
-      await connect(home);
-    });
+    _home = homeRepository.homes.firstOrNull;
+    connect();
+  }
 
-    homeRepository.changed.listen((home) async {
-      final (oldHome, newHome) = home;
-      await disconnect(oldHome);
+  set home(Home? home) {
+    _home = home;
+    notifyListeners();
+  }
 
-      final client = mqtt.Client(newHome.uri);
-      client.onConnectionStateChanged = (_) => notifyListeners();
-      _connections[newHome.id] = client;
-      notifyListeners();
-
-      await connect(newHome);
-    });
-
-    homeRepository.removed.listen((home) async {
-      await disconnect(home);
-
-      _connections.remove(home.id);
-      notifyListeners();
-    });
-
-    for (final home in homeRepository.homes) {
-      final client = mqtt.Client(home.uri);
-      client.onConnectionStateChanged = (_) => notifyListeners();
-      _connections[home.id] = client;
-
-      reconnect(home);
-    }
+  Home? get home {
+    return _home;
   }
 
   List<Home> get homes {
     return homeRepository.homes;
   }
 
-  mqtt.ConnectionState state(Home home) {
-    return _connections[home.id]!.state;
+  mqtt.ConnectionState get state {
+    return _client?.state ?? mqtt.ConnectionState.faulted;
   }
 
-  Future<void> connect(Home home) async {
-    final connection = _connections[home.id];
-    if (connection == null) {
+  Future<void> connect() async {
+    final home = _home;
+    if (home == null) {
       return;
     }
+    _client ??= mqtt.Client(home.uri);
+    final connection = _client!;
+
+    connection.onConnectionStateChanged = (_) {
+      notifyListeners();
+    };
 
     await connection.connect(
       username: home.username ?? "",
@@ -85,9 +73,10 @@ class HomeViewModel extends ChangeNotifier {
     );
   }
 
-  Future<void> disconnect(Home home) async {
-    final connection = _connections[home.id];
-    if (connection == null) {
+  Future<void> disconnect() async {
+    final connection = _client;
+    final home = _home;
+    if (connection == null || home == null) {
       return;
     }
 
@@ -108,12 +97,8 @@ class HomeViewModel extends ChangeNotifier {
     connection.disconnect();
   }
 
-  void reconnect(Home home) async {
-    await disconnect(home);
-    await connect(home);
-  }
-
-  mqtt.Client client(Home home) {
-    return _connections[home.id]!;
+  void reconnect() async {
+    await disconnect();
+    await connect();
   }
 }
