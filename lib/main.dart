@@ -1,5 +1,4 @@
 import 'package:dieklingel_app/ui/home/home_view_model.dart';
-import 'package:dieklingel_app/handlers/notification_handler.dart';
 
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:dieklingel_app/repositories/ice_server_repository.dart';
@@ -12,9 +11,7 @@ import 'package:provider/provider.dart';
 import './models/home.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'blocs/ice_server_add_view_bloc.dart';
@@ -36,6 +33,7 @@ void main() async {
     Hive.openBox<Home>((Home).toString()),
     Hive.openBox<HiveIceServer>((IceServer).toString()),
     Hive.openBox("settings"),
+    Hive.openBox("notification_service:settings")
   ]);
 
   await Firebase.initializeApp(
@@ -53,8 +51,11 @@ void main() async {
       child: MultiProvider(
         providers: [
           BlocProvider(
-              create: (_) => IceServerAddViewBloc(iceServerRepository)),
-          ChangeNotifierProvider(create: (_) => HomesViewModel(homeRepository))
+            create: (_) => IceServerAddViewBloc(iceServerRepository),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => HomesViewModel(homeRepository),
+          )
         ],
         child: const App(),
       ),
@@ -76,38 +77,9 @@ class _App extends State<App> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) => initialize());
   }
 
-  void registerFcmPushNotifications() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    await NotificationHandler.init();
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
+  void registerFcmPushNotifications() async {}
 
-    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-      return;
-    }
-    String? token = await FirebaseMessaging.instance.getToken();
-    if (null == token) {
-      return;
-    }
-
-    Box settingsBox = Hive.box("settings");
-    settingsBox.put("token", token);
-  }
-
-  void initialize() {
-    if (kIsWeb) {
-      // TODO: implement push notifications for web
-    } else {
-      registerFcmPushNotifications();
-    }
-  }
+  void initialize() async {}
 
   @override
   Widget build(BuildContext context) {

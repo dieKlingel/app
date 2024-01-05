@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:mqtt/mqtt.dart';
-import 'package:mqtt/src/disconnect_message.dart';
 
 import 'factories/mqtt_client_factory.dart';
 import 'package:uuid/uuid.dart';

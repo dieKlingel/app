@@ -1,5 +1,7 @@
 import 'package:dieklingel_app/ui/home/home_view_model.dart';
+import 'package:dieklingel_app/ui/settings/notifications/notifications_view_model.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +13,7 @@ import 'about/about_view.dart';
 
 import '../../views/ice_server_list_view.dart';
 import 'homes/homes_view.dart';
+import 'notifications/notifications_view.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -71,6 +74,31 @@ class SettingsView extends StatelessWidget {
               ),
             ],
           ),
+          if (!kIsWeb)
+            CupertinoFormSection.insetGrouped(
+              header: const Text("Notifications"),
+              children: [
+                CupertinoListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => ChangeNotifierProvider(
+                          create: (_) => NotificationsViewModel(),
+                          child: const NotificationsView(),
+                        ),
+                      ),
+                    );
+                  },
+                  leading: const Icon(
+                    CupertinoIcons.bubble_left,
+                    color: Colors.amber,
+                  ),
+                  title: const Text("Notifications"),
+                  trailing: const Icon(CupertinoIcons.forward),
+                ),
+              ],
+            ),
           CupertinoFormSection.insetGrouped(
             header: const Text("Information"),
             children: [
