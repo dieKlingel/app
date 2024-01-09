@@ -1,21 +1,22 @@
+import 'package:dieklingel_app/models/tunnel/tunnel_state.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:mqtt/mqtt.dart' as mqtt;
-import 'package:mqtt_client/mqtt_client.dart';
 
 class ConnectionIndicator extends StatelessWidget {
-  final mqtt.ConnectionState controlConnectionState;
+  final TunnelState state;
 
   const ConnectionIndicator({
     super.key,
-    required this.controlConnectionState,
+    required this.state,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: CupertinoColors.secondarySystemBackground,
+        color: CupertinoDynamicColor.resolve(
+          CupertinoColors.secondarySystemBackground,
+          context,
+        ),
         borderRadius: BorderRadius.circular(15.0),
       ),
       padding: const EdgeInsets.all(16.0),
@@ -25,15 +26,15 @@ class ConnectionIndicator extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _Icon(controlConnectionState),
+          _Icon(state),
           const SizedBox(width: 10.0),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _Headline(controlConnectionState),
+                _Headline(state),
                 const SizedBox(height: 8.0),
-                _Subtitle(controlConnectionState),
+                _Subtitle(state),
               ],
             ),
           )
@@ -44,28 +45,33 @@ class ConnectionIndicator extends StatelessWidget {
 }
 
 class _Icon extends StatelessWidget {
-  final mqtt.ConnectionState controlConnectionState;
+  final TunnelState state;
 
-  const _Icon(this.controlConnectionState);
+  const _Icon(this.state);
 
   @override
   Widget build(BuildContext context) {
-    switch (controlConnectionState) {
-      case MqttConnectionState.disconnecting:
-      case MqttConnectionState.disconnected:
-      case MqttConnectionState.faulted:
+    switch (state) {
+      case TunnelState.disconnected:
         return const Icon(
           CupertinoIcons.exclamationmark_circle_fill,
           color: CupertinoColors.activeOrange,
           size: 30,
         );
-      case MqttConnectionState.connecting:
+      case TunnelState.connecting:
         return const Icon(
           CupertinoIcons.shield_lefthalf_fill,
           color: CupertinoColors.destructiveRed,
           size: 30,
         );
-      case MqttConnectionState.connected:
+      case TunnelState.relayed:
+        return const Icon(
+          CupertinoIcons.shield_lefthalf_fill,
+          color: CupertinoColors.systemOrange,
+          size: 30,
+        );
+
+      case TunnelState.connected:
         return const Icon(
           CupertinoIcons.check_mark_circled_solid,
           color: CupertinoColors.activeGreen,
@@ -76,26 +82,29 @@ class _Icon extends StatelessWidget {
 }
 
 class _Headline extends StatelessWidget {
-  final mqtt.ConnectionState controlConnectionState;
+  final TunnelState state;
 
-  const _Headline(this.controlConnectionState);
+  const _Headline(this.state);
 
   @override
   Widget build(BuildContext context) {
-    switch (controlConnectionState) {
-      case MqttConnectionState.disconnecting:
-      case MqttConnectionState.disconnected:
-      case MqttConnectionState.faulted:
+    switch (state) {
+      case TunnelState.disconnected:
         return const Text(
           "No Remote Access",
           style: TextStyle(fontWeight: FontWeight.bold),
         );
-      case MqttConnectionState.connecting:
+      case TunnelState.connecting:
         return const Text(
           "Connecting…",
           style: TextStyle(fontWeight: FontWeight.bold),
         );
-      case MqttConnectionState.connected:
+      case TunnelState.relayed:
+        return const Text(
+          "Partial Remote Access",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        );
+      case TunnelState.connected:
         return const Text(
           "Remote Access",
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -105,29 +114,32 @@ class _Headline extends StatelessWidget {
 }
 
 class _Subtitle extends StatelessWidget {
-  final mqtt.ConnectionState controlConnectionState;
+  final TunnelState state;
 
-  const _Subtitle(this.controlConnectionState);
+  const _Subtitle(this.state);
 
   @override
   Widget build(BuildContext context) {
-    switch (controlConnectionState) {
-      case MqttConnectionState.disconnecting:
-      case MqttConnectionState.disconnected:
-      case MqttConnectionState.faulted:
+    switch (state) {
+      case TunnelState.disconnected:
         return Text(
           "Could not establish a connenction to the Control Server",
-          style: Theme.of(context).textTheme.bodySmall,
+          style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle,
         );
-      case MqttConnectionState.connecting:
+      case TunnelState.connecting:
         return Text(
           "The connection establishment is still in progress",
-          style: Theme.of(context).textTheme.bodySmall,
+          style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle,
         );
-      case MqttConnectionState.connected:
+      case TunnelState.relayed:
         return Text(
-          "Succesfully connected to the Control Server",
-          style: Theme.of(context).textTheme.bodySmall,
+          "The connection is relayed by a Control Server",
+          style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle,
+        );
+      case TunnelState.connected:
+        return Text(
+          "Succesfully connected",
+          style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle,
         );
     }
   }

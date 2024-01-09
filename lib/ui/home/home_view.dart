@@ -4,57 +4,41 @@ import 'package:dieklingel_app/ui/home/widgets/home_body.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/home.dart';
 import '../../repositories/home_repository.dart';
 import '../settings/homes/editor/home_editor_view.dart';
 import '../settings/homes/editor/home_editor_view_model.dart';
 import 'home_view_model.dart';
 
-class HomeView extends StatefulWidget {
+class HomeView extends StatelessWidget {
   const HomeView({super.key});
-
-  @override
-  State<HomeView> createState() => _HomeViewState();
-}
-
-class _HomeViewState extends State<HomeView> {
-  Home? selected;
-
-  @override
-  void initState() {
-    setState(() {
-      selected = context.read<HomeViewModel>().homes.firstOrNull;
-    });
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     final homes = context.select(
       (HomeViewModel vm) => vm.homes,
     );
-    if (homes.isNotEmpty && !homes.contains(selected)) {
+    final home = context.select((HomeViewModel vm) => vm.home);
+
+    if (homes.isNotEmpty && home == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          selected = homes.first;
-        });
+        context.read<HomeViewModel>().home = homes.first;
       });
     }
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text(selected?.name ?? "Homes"),
+        middle: Text(home?.name ?? "Homes"),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const AppBarAdd(),
             AppBarMenu(
               homes: homes,
-              selected: selected,
+              selected: home,
               onHomeTap: (home) {
-                setState(() {
-                  selected = home;
-                });
+                final vm = context.read<HomeViewModel>();
+                vm.home = home;
+                vm.reconnect();
               },
               onReconnectTap: (home) {
                 context.read<HomeViewModel>().reconnect();
@@ -93,16 +77,11 @@ class _HomeViewState extends State<HomeView> {
           );
         }
 
-        if (selected == null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            setState(() {
-              selected = homes.first;
-            });
-          });
+        if (home == null) {
           return const CupertinoActivityIndicator();
         }
 
-        return HomeBody(home: selected!);
+        return HomeBody(home: home);
       }),
     );
   }

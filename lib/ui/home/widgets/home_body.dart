@@ -22,7 +22,7 @@ class HomeBody extends StatelessWidget {
       child: ListView(
         children: [
           ConnectionIndicator(
-            controlConnectionState: state,
+            state: state,
           ),
         ],
       ),

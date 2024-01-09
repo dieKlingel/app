@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_app/models/messages/availability_message.dart';
+import 'package:dieklingel_app/models/tunnel/tunnel_state.dart';
 import 'package:mqtt/mqtt.dart' as mqtt;
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,8 +14,18 @@ class HomeViewModel extends ChangeNotifier {
   mqtt.Client? _client;
 
   HomeViewModel(this.homeRepository) {
+    // TODO: reconnect on change
     homeRepository.added.listen((home) => notifyListeners());
-    homeRepository.changed.listen((home) => notifyListeners());
+    homeRepository.changed.listen((home) {
+      notifyListeners();
+      if (home.$1.id != _home?.id) {
+        return;
+      }
+
+      disconnect();
+      this.home = home.$2;
+      connect();
+    });
     homeRepository.removed.listen((home) => notifyListeners());
 
     _home = homeRepository.homes.firstOrNull;
@@ -34,8 +45,10 @@ class HomeViewModel extends ChangeNotifier {
     return homeRepository.homes;
   }
 
-  mqtt.ConnectionState get state {
-    return _client?.state ?? mqtt.ConnectionState.faulted;
+  TunnelState get state {
+    return TunnelState.from(
+      control: _client,
+    );
   }
 
   Future<void> connect() async {
@@ -99,6 +112,7 @@ class HomeViewModel extends ChangeNotifier {
 
   void reconnect() async {
     await disconnect();
+    await Future.delayed(const Duration(milliseconds: 200));
     await connect();
   }
 }
