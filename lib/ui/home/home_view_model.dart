@@ -1,9 +1,7 @@
-import 'dart:convert';
-
 import 'package:dieklingel_app/models/home.dart';
-import 'package:dieklingel_app/models/messages/availability_message.dart';
+import 'package:dieklingel_app/models/tunnel/tunnel.dart';
 import 'package:dieklingel_app/models/tunnel/tunnel_state.dart';
-import 'package:mqtt/mqtt.dart' as mqtt;
+
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -11,10 +9,9 @@ class HomeViewModel extends ChangeNotifier {
   final HomeRepository homeRepository;
 
   Home? _home;
-  mqtt.Client? _client;
+  Tunnel? _tunnel;
 
   HomeViewModel(this.homeRepository) {
-    // TODO: reconnect on change
     homeRepository.added.listen((home) => notifyListeners());
     homeRepository.changed.listen((home) {
       notifyListeners();
@@ -46,9 +43,7 @@ class HomeViewModel extends ChangeNotifier {
   }
 
   TunnelState get state {
-    return TunnelState.from(
-      control: _client,
-    );
+    return _tunnel?.state ?? TunnelState.disconnected;
   }
 
   Future<void> connect() async {
@@ -56,58 +51,29 @@ class HomeViewModel extends ChangeNotifier {
     if (home == null) {
       return;
     }
-    _client ??= mqtt.Client(home.uri);
-    final connection = _client!;
 
-    connection.onConnectionStateChanged = (_) {
+    final tunnel = Tunnel(
+      home.uri,
+      username: home.username ?? "",
+      password: home.password ?? "",
+    );
+    _tunnel = tunnel;
+
+    tunnel.onStateChanged = (_) {
       notifyListeners();
     };
 
-    await connection.connect(
-      username: home.username ?? "",
-      password: home.password ?? "",
-      throws: false,
-      disconnectMessage: mqtt.DisconnectMessage(
-        "${home.username}/state",
-        retain: true,
-        jsonEncode(AvailabilityMessage(
-          username: home.username ?? "",
-          online: false,
-        ).toMap()),
-      ),
-    );
-    connection.publish(
-      "${home.username}/state",
-      jsonEncode(AvailabilityMessage(
-        username: home.username ?? "",
-        online: true,
-      ).toMap()),
-      retain: true,
-    );
+    await tunnel.connect();
   }
 
   Future<void> disconnect() async {
-    final connection = _client;
+    final tunnel = _tunnel;
     final home = _home;
-    if (connection == null || home == null) {
+    if (tunnel == null || home == null) {
       return;
     }
 
-    if (connection.state != mqtt.ConnectionState.connected) {
-      return;
-    }
-
-    connection.publish(
-      "${home.username}/state",
-      jsonEncode(AvailabilityMessage(
-        username: home.username ?? "",
-        online: false,
-      ).toMap()),
-      retain: true,
-    );
-    // Cooldown
-    await Future.delayed(const Duration(milliseconds: 100));
-    connection.disconnect();
+    await tunnel.disconnect();
   }
 
   void reconnect() async {

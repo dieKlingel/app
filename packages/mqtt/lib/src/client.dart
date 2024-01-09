@@ -53,8 +53,8 @@ class Client {
   }
 
   Future<void> connect({
-    String username = "",
-    String password = "",
+    String? username,
+    String? password,
     bool throws = true,
     DisconnectMessage? disconnectMessage,
   }) async {
