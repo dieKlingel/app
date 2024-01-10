@@ -1,21 +1,19 @@
 import 'dart:convert';
-
-import 'package:dieklingel_app/components/stream_subscription_mixin.dart';
-import 'package:dieklingel_app/models/messages/answer_message.dart';
-import 'package:dieklingel_app/models/messages/candidate_message.dart';
-import 'package:dieklingel_app/models/messages/candidate_message_body.dart';
-import 'package:dieklingel_app/models/messages/close_message.dart';
-import 'package:dieklingel_app/models/messages/message_header.dart';
-import 'package:dieklingel_app/models/messages/offer_message.dart';
-import 'package:dieklingel_app/models/messages/session_message_body.dart';
-import 'package:dieklingel_app/models/messages/session_message_header.dart';
-import 'package:dieklingel_app/models/tunnel/tunnel_state.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt/mqtt.dart';
-import 'package:mqtt_client/mqtt_client.dart';
 import 'package:uuid/uuid.dart';
 
+import 'tunnel_state.dart';
 import '../ice_server.dart';
+import '../messages/answer_message.dart';
+import '../messages/candidate_message.dart';
+import '../messages/candidate_message_body.dart';
+import '../messages/close_message.dart';
+import '../messages/message_header.dart';
+import '../messages/offer_message.dart';
+import '../messages/session_message_body.dart';
+import '../messages/session_message_header.dart';
+import '../../components/stream_subscription_mixin.dart';
 
 class Tunnel with StreamHandlerMixin {
   final List<IceServer> iceServers;
@@ -29,6 +27,7 @@ class Tunnel with StreamHandlerMixin {
 
   String _remoteSessionId = "";
   void Function(TunnelState)? onStateChanged;
+  void Function(MediaStream)? onVideoTrackReceived;
 
   Tunnel(
     this.uri, {
@@ -58,7 +57,7 @@ class Tunnel with StreamHandlerMixin {
       throws: false,
     );
 
-    if (_control.state != MqttConnectionState.connected) {
+    if (_control.state != ConnectionState.connected) {
       return;
     }
 
@@ -96,6 +95,15 @@ class Tunnel with StreamHandlerMixin {
 
     _peer!.onConnectionState = (_) {
       onStateChanged?.call(state);
+    };
+
+    _peer!.onTrack = (event) {
+      if (event.track.kind == "video") {
+        onVideoTrackReceived?.call(event.streams.first);
+      }
+      if (event.track.kind == "audio") {
+        // TODO: handle audio track
+      }
     };
 
     final offer = await _peer!.createOffer();

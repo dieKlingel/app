@@ -4,9 +4,11 @@ import 'package:dieklingel_app/models/tunnel/tunnel_state.dart';
 
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 class HomeViewModel extends ChangeNotifier {
   final HomeRepository homeRepository;
+  final RTCVideoRenderer renderer = RTCVideoRenderer();
 
   Home? _home;
   Tunnel? _tunnel;
@@ -63,6 +65,11 @@ class HomeViewModel extends ChangeNotifier {
       notifyListeners();
     };
 
+    tunnel.onVideoTrackReceived = (stream) async {
+      renderer.srcObject = stream;
+    };
+
+    await renderer.initialize();
     await tunnel.connect();
   }
 
