@@ -141,7 +141,7 @@ class Client {
       topic,
       qosLevel,
       mqtt.MqttClientPayloadBuilder().addUTF8String(message).payload!,
-      retain: false,
+      retain: retain,
     );
   }
 

@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import './models/home.dart';
+import './handlers/notification_handler.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -77,9 +78,9 @@ class _App extends State<App> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) => initialize());
   }
 
-  void registerFcmPushNotifications() async {}
-
-  void initialize() async {}
+  void initialize() async {
+    await NotificationHandler.init();
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -55,11 +55,22 @@ class Tunnel with StreamHandlerMixin {
       username: username,
       password: password,
       throws: false,
+      disconnectMessage: DisconnectMessage(
+        "$username/tunnel/state",
+        jsonEncode({"online": false}),
+        retain: true,
+      ),
     );
 
     if (_control.state != ConnectionState.connected) {
       return;
     }
+
+    _control.publish(
+      "$username/tunnel/state",
+      jsonEncode({"online": true}),
+      retain: true,
+    );
 
     streams.subscribe(
       _control.topic("$username/connections/answer"),
@@ -149,7 +160,17 @@ class Tunnel with StreamHandlerMixin {
   }
 
   Future<void> disconnect() async {
-    await _peer?.close();
+    _control.publish(
+      "$username/tunnel/state",
+      jsonEncode({"online": false}),
+      retain: true,
+    );
+
+    await Future.wait([
+      _peer?.close() ?? Future(() => null),
+      Future.delayed(const Duration(milliseconds: 100)),
+    ]);
+
     _control.disconnect();
   }
 
