@@ -1,3 +1,4 @@
+import 'package:dieklingel_app/components/stream_subscription_mixin.dart';
 import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_app/models/tunnel/tunnel.dart';
 import 'package:dieklingel_app/models/tunnel/tunnel_state.dart';
@@ -6,7 +7,7 @@ import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
-class HomeViewModel extends ChangeNotifier {
+class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
   final HomeRepository homeRepository;
   final RTCVideoRenderer renderer = RTCVideoRenderer();
 
@@ -14,8 +15,8 @@ class HomeViewModel extends ChangeNotifier {
   Tunnel? _tunnel;
 
   HomeViewModel(this.homeRepository) {
-    homeRepository.added.listen((home) => notifyListeners());
-    homeRepository.changed.listen((home) {
+    streams.subscribe(homeRepository.added, (home) => notifyListeners());
+    streams.subscribe(homeRepository.changed, (home) {
       notifyListeners();
       if (home.$1.id != _home?.id) {
         return;
@@ -25,7 +26,7 @@ class HomeViewModel extends ChangeNotifier {
       this.home = home.$2;
       connect();
     });
-    homeRepository.removed.listen((home) => notifyListeners());
+    streams.subscribe(homeRepository.removed, (home) => notifyListeners());
 
     _home = homeRepository.homes.firstOrNull;
     connect();
@@ -87,5 +88,11 @@ class HomeViewModel extends ChangeNotifier {
     await disconnect();
     await Future.delayed(const Duration(milliseconds: 200));
     await connect();
+  }
+
+  @override
+  void dispose() {
+    streams.dispose();
+    super.dispose();
   }
 }
