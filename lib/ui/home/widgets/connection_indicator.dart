@@ -64,6 +64,13 @@ class _Icon extends StatelessWidget {
           color: CupertinoColors.destructiveRed,
           size: 30,
         );
+      case TunnelState.oneway:
+        return const Icon(
+          CupertinoIcons.arrow_right_arrow_left_circle,
+          color: CupertinoColors.systemCyan,
+          size: 30,
+        );
+
       case TunnelState.relayed:
         return const Icon(
           CupertinoIcons.shield_lefthalf_fill,
@@ -99,6 +106,11 @@ class _Headline extends StatelessWidget {
           "Connecting…",
           style: TextStyle(fontWeight: FontWeight.bold),
         );
+      case TunnelState.oneway:
+        return const Text(
+          "One Way Connected",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        );
       case TunnelState.relayed:
         return const Text(
           "Partial Remote Access",
@@ -129,6 +141,11 @@ class _Subtitle extends StatelessWidget {
       case TunnelState.connecting:
         return Text(
           "The connection establishment is still in progress",
+          style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle,
+        );
+      case TunnelState.oneway:
+        return Text(
+          "The remote party didn't answer yet",
           style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle,
         );
       case TunnelState.relayed:
