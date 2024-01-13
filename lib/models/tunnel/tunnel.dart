@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt/mqtt.dart';
@@ -21,6 +22,7 @@ class Tunnel with StreamHandlerMixin {
   final Client _control;
   final String username;
   final String password;
+  final StreamController<String> _messages = StreamController.broadcast();
 
   late final String sessionId = const Uuid().v4();
   RTCPeerConnection? _peer;
@@ -41,7 +43,7 @@ class Tunnel with StreamHandlerMixin {
   }
 
   TunnelState get state {
-    if (_peer != null) {
+    if (_peer != null && _remoteTunnelAvailable) {
       switch (_peer!.connectionState) {
         case RTCPeerConnectionState.RTCPeerConnectionStateConnected:
           return TunnelState.connected;
@@ -79,6 +81,22 @@ class Tunnel with StreamHandlerMixin {
         retain: true,
       ),
     );
+  }
+
+  void send(String message) {
+    switch (state) {
+      case TunnelState.connected:
+      case TunnelState.relayed:
+        final prefix = uri.path.substring(1);
+        _control.publish("$prefix/experimental/tunnel/relay/rpc", message);
+        break;
+      default:
+        throw Exception("cannot send a message if not connected or relayed");
+    }
+  }
+
+  Stream<String> get messages {
+    return _messages.stream;
   }
 
   Future<void> disconnect() async {
@@ -154,6 +172,15 @@ class Tunnel with StreamHandlerMixin {
             _onStateChanged(this.state);
           },
         );
+
+        streams.subscribe(
+          _control.topic("$prefix/experimental/tunnel/relay/rpc/response"),
+          (event) {
+            final (_, message) = event;
+            _messages.add(message);
+          },
+        );
+
         break;
       case TunnelState.relayed:
         if (_peer != null) {
@@ -253,6 +280,7 @@ class Tunnel with StreamHandlerMixin {
 
   Future<void> dispose() async {
     await disconnect();
+    await _messages.close();
     await streams.dispose();
   }
 }

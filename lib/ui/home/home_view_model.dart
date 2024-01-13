@@ -1,4 +1,5 @@
 import 'package:dieklingel_app/components/stream_subscription_mixin.dart';
+import 'package:dieklingel_app/models/core/core_rpc_api.dart';
 import 'package:dieklingel_app/models/home.dart';
 import 'package:dieklingel_app/models/tunnel/tunnel.dart';
 import 'package:dieklingel_app/models/tunnel/tunnel_state.dart';
@@ -13,6 +14,8 @@ class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
 
   Home? _home;
   Tunnel? _tunnel;
+  CoreRpcApi? _core;
+  String version = "";
 
   HomeViewModel(this.homeRepository) {
     streams.subscribe(homeRepository.added, (home) => notifyListeners());
@@ -61,9 +64,16 @@ class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
       password: home.password ?? "",
     );
     _tunnel = tunnel;
+    _core = CoreRpcApi(tunnel);
 
-    tunnel.onStateChanged = (_) {
+    tunnel.onStateChanged = (_) async {
       notifyListeners();
+      if (state == TunnelState.relayed || state == TunnelState.connected) {
+        print("state $state");
+        final v = await _core?.getVersion();
+        version = v != null ? "Version: $v" : version;
+        notifyListeners();
+      }
     };
 
     tunnel.onVideoTrackReceived = (stream) async {
@@ -92,6 +102,7 @@ class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
 
   @override
   void dispose() {
+    _core?.dispose();
     streams.dispose();
     super.dispose();
   }
