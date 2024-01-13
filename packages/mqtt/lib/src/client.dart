@@ -114,7 +114,10 @@ class Client {
     controller.onCancel = () {
       List<StreamController>? subs = _subscriptions[topic];
       subs?.remove(controller);
-      if (subs != null && subs.isEmpty) {
+      if (subs != null &&
+          subs.isEmpty &&
+          _client.connectionStatus?.state ==
+              mqtt.MqttConnectionState.connected) {
         _client.unsubscribe(topic);
       }
     };

@@ -58,6 +58,8 @@ class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
       return;
     }
 
+    await _tunnel?.dispose();
+    await _core?.dispose();
     final tunnel = Tunnel(
       home.uri,
       username: home.username ?? "",
@@ -69,7 +71,6 @@ class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
     tunnel.onStateChanged = (_) async {
       notifyListeners();
       if (state == TunnelState.relayed || state == TunnelState.connected) {
-        print("state $state");
         final v = await _core?.getVersion();
         version = v != null ? "Version: $v" : version;
         notifyListeners();
@@ -96,7 +97,7 @@ class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
 
   void reconnect() async {
     await disconnect();
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(milliseconds: 100));
     await connect();
   }
 

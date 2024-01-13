@@ -35,7 +35,7 @@ class CoreRpcApi with StreamHandlerMixin {
     });
   }
 
-  Future<String> getVersion() async {
+  Future<String?> getVersion() async {
     final req = Request("Core.GetVersion");
     final completer = Completer<Response?>();
     _request[req.id] = completer;
@@ -47,7 +47,7 @@ class CoreRpcApi with StreamHandlerMixin {
 
     _request.remove(req.id);
     if (res == null) {
-      throw Exception("getVersion did not receive a response");
+      return null;
     }
 
     res.throwIfError();

@@ -27,6 +27,7 @@ class Tunnel with StreamHandlerMixin {
   late final String sessionId = const Uuid().v4();
   RTCPeerConnection? _peer;
   bool _remoteTunnelAvailable = false;
+  bool _firstTimeConnected = true;
   String _remoteSessionId = "";
   void Function(TunnelState)? onStateChanged;
   void Function(MediaStream)? onVideoTrackReceived;
@@ -38,7 +39,7 @@ class Tunnel with StreamHandlerMixin {
     this.iceServers = const [],
   }) : _control = Client(uri) {
     _control.onConnectionStateChanged = (_) {
-      _onStateChanged(state);
+      _onStateChanged();
     };
   }
 
@@ -70,6 +71,8 @@ class Tunnel with StreamHandlerMixin {
   Future<void> connect() async {
     _control.disconnect();
     await _peer?.close();
+    _peer = null;
+    _onStateChanged();
 
     await _control.connect(
       username: username,
@@ -86,6 +89,12 @@ class Tunnel with StreamHandlerMixin {
   void send(String message) {
     switch (state) {
       case TunnelState.connected:
+        if (_control.state == ConnectionState.connected) {
+          // TODO: send over datachannel
+          final prefix = uri.path.substring(1);
+          _control.publish("$prefix/experimental/tunnel/relay/rpc", message);
+        }
+        break;
       case TunnelState.relayed:
         final prefix = uri.path.substring(1);
         _control.publish("$prefix/experimental/tunnel/relay/rpc", message);
@@ -112,22 +121,33 @@ class Tunnel with StreamHandlerMixin {
       _peer?.close() ?? Future(() => null),
       Future.delayed(const Duration(milliseconds: 100)),
     ]);
+    _peer = null;
+    _remoteTunnelAvailable = false;
+    _onStateChanged();
 
     _control.disconnect();
-    _remoteTunnelAvailable = false;
   }
 
-  void _onStateChanged(TunnelState state) async {
+  void _onStateChanged() async {
     onStateChanged?.call(state);
 
     switch (state) {
       case TunnelState.oneway:
-        await _peer?.close();
+        if (_peer != null) {
+          await _peer?.close();
+          return;
+        }
+
         _control.publish(
           "$username/tunnel/state",
           jsonEncode({"online": true}),
           retain: true,
         );
+
+        if (!_firstTimeConnected) {
+          return;
+        }
+        _firstTimeConnected = false;
 
         streams.subscribe(
           _control.topic("$username/connections/answer"),
@@ -169,7 +189,7 @@ class Tunnel with StreamHandlerMixin {
               return;
             }
             _remoteTunnelAvailable = payload["online"];
-            _onStateChanged(this.state);
+            _onStateChanged();
           },
         );
 
@@ -191,11 +211,25 @@ class Tunnel with StreamHandlerMixin {
           "sdpSemantics": "unified-plan",
         });
 
-        _peer!.onConnectionState = (_) {
-          _onStateChanged(state);
-        };
+        // TODO: use correct and transceivers, transceivers are neccessary for the web to work (on iOS also works without)
+        await _peer!.addTransceiver(
+          kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+          init: RTCRtpTransceiverInit(
+            direction: TransceiverDirection.RecvOnly,
+          ),
+        );
+        await _peer!.addTransceiver(
+          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+          init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly),
+        );
+
+        _peer!.onConnectionState = (_) => _onStateChanged();
+        _peer!.onIceConnectionState = (_) => _onStateChanged();
+        _peer!.onIceGatheringState = (_) => _onStateChanged();
+        _peer!.onSignalingState = (_) => _onStateChanged();
 
         _peer!.onTrack = (event) {
+          _onStateChanged();
           if (event.track.kind == "video") {
             onVideoTrackReceived?.call(event.streams.first);
           }
