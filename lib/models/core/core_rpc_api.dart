@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dieklingel_app/components/stream_subscription_mixin.dart';
+import 'package:dieklingel_app/models/core/exceptions.dart';
 import 'package:dieklingel_app/models/tunnel/tunnel.dart';
 import 'package:rpc/rpc.dart';
 
@@ -35,7 +36,7 @@ class CoreRpcApi with StreamHandlerMixin {
     });
   }
 
-  Future<String?> getVersion() async {
+  Future<String> getVersion() async {
     final req = Request("Core.GetVersion");
     final completer = Completer<Response?>();
     _request[req.id] = completer;
@@ -47,7 +48,7 @@ class CoreRpcApi with StreamHandlerMixin {
 
     _request.remove(req.id);
     if (res == null) {
-      return null;
+      throw RpcTimeoutException(req.method);
     }
 
     res.throwIfError();
@@ -71,7 +72,7 @@ class CoreRpcApi with StreamHandlerMixin {
 
     _request.remove(req.id);
     if (res == null) {
-      throw Exception("did not receive a response, for setFcmToken");
+      throw RpcTimeoutException(req.method);
     }
 
     res.throwIfError();
