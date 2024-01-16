@@ -13,6 +13,7 @@ class StreamHandler {
         (sub) => sub.cancel(),
       ),
     );
+    _subscriptions.clear();
   }
 }
 

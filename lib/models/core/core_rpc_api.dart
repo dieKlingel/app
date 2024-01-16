@@ -39,7 +39,7 @@ class CoreRpcApi with StreamHandlerMixin {
     final req = Request("Core.GetVersion");
     final completer = Completer<Response?>();
     _request[req.id] = completer;
-    tunnel.send(jsonEncode(req.toMap()));
+    await tunnel.send(jsonEncode(req.toMap()));
     final res = await completer.future.timeout(
       const Duration(seconds: 5),
       onTimeout: () => null,
@@ -52,6 +52,29 @@ class CoreRpcApi with StreamHandlerMixin {
 
     res.throwIfError();
     return GetVersionResponse.fromMap(res.result).version;
+  }
+
+  Future<void> setFcmToken(String username, String token) async {
+    final req = Request("Core.SetFcmToken", params: [
+      {
+        "username": username,
+        "token": token,
+      }
+    ]);
+    final completer = Completer<Response?>();
+    _request[req.id] = completer;
+    await tunnel.send(jsonEncode(req.toMap()));
+    final res = await completer.future.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () => null,
+    );
+
+    _request.remove(req.id);
+    if (res == null) {
+      throw Exception("did not receive a response, for setFcmToken");
+    }
+
+    res.throwIfError();
   }
 
   Future<void> dispose() async {
