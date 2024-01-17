@@ -69,12 +69,19 @@ class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
     _core = CoreRpcApi(tunnel);
 
     tunnel.onStateChanged = (_) async {
-      notifyListeners();
-      if (state == TunnelState.relayed || state == TunnelState.connected) {
-        final v = await _core?.getVersion();
-        version = v != null ? "Version: $v" : version;
-        notifyListeners();
+      final core = _core;
+      if (core == null) {
+        return;
       }
+
+      if (state == TunnelState.relayed || state == TunnelState.connected) {
+        final v = await core.getVersion();
+        version = "Version: $v";
+
+        // TODO: set the fcm token
+        // await core.setFcmToken(tunnel.username, "");
+      }
+      notifyListeners();
     };
 
     tunnel.onVideoTrackReceived = (stream) async {

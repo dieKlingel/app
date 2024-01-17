@@ -259,6 +259,13 @@ class Tunnel with StreamHandlerMixin {
       "tunnel",
       RTCDataChannelInit(),
     );
+    _channel!.onMessage = (message) {
+      if (message.isBinary) {
+        return;
+      }
+
+      _messages.add(message.text);
+    };
 
     _peer!.onConnectionState = (_) => _onStateChanged();
     _peer!.onIceConnectionState = (_) => _onStateChanged();
