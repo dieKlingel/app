@@ -195,6 +195,13 @@ class Tunnel with StreamHandlerMixin {
       },
     );
 
+    streams.subscribe(_control.topic("$username/connections/renegotiation"),
+        (event) {
+      final (_, message) = event;
+      final payload = AnswerMessage.fromMap(jsonDecode(message));
+      _onConnectionRenegotation(payload);
+    });
+
     streams.subscribe(
       _control.topic("$username/connections/candidate"),
       (event) {
@@ -283,7 +290,40 @@ class Tunnel with StreamHandlerMixin {
       }
     };
 
-    final offer = await _peer!.createOffer();
+    _peer!.onRenegotiationNeeded = () async {
+      final peer = _peer!;
+      final offer = await peer.createOffer({
+        // Set offerToReceiveAudio and offerToReceiveVideo to false, otherwise a
+        // transceiver with audio and video RecvOnly is created.
+        "offerToReceiveAudio": false,
+        "offerToReceiveVideo": false,
+      });
+      await peer.setLocalDescription(offer);
+
+      final prefix = uri.path.substring(1);
+      _control.publish(
+        "$prefix/connections/renegotiation",
+        jsonEncode(
+          AnswerMessage(
+            header: SessionMessageHeader(
+              senderDeviceId: username,
+              senderSessionId: sessionId,
+              sessionId: _remoteSessionId,
+            ),
+            body: SessionMessageBody(
+              sessionDescription: offer,
+            ),
+          ).toMap(),
+        ),
+      );
+    };
+
+    final offer = await _peer!.createOffer({
+      // Set offerToReceiveAudio and offerToReceiveVideo to false, otherwise a
+      // transceiver with audio and video RecvOnly is created.
+      "offerToReceiveAudio": false,
+      "offerToReceiveVideo": false,
+    });
     await _peer!.setLocalDescription(offer);
 
     final prefix = uri.path.substring(1);
@@ -319,11 +359,6 @@ class Tunnel with StreamHandlerMixin {
         ),
       );
     };
-
-    _peer!.onRenegotiationNeeded = () {
-      print("renegotation needed");
-      // TODO: resend offer
-    };
   }
 
   Future<void> _onDisposePeerConnection() async {
@@ -332,6 +367,33 @@ class Tunnel with StreamHandlerMixin {
     await _peer?.close();
     await _peer?.dispose();
     _peer = null;
+  }
+
+  void _onConnectionRenegotation(AnswerMessage message) async {
+    if (message.header.sessionId != sessionId) {
+      return;
+    }
+
+    await _peer!.setRemoteDescription(message.body.sessionDescription);
+    final answer = await _peer!.createAnswer();
+    await _peer!.setLocalDescription(answer);
+
+    final prefix = uri.path.substring(1);
+    _control.publish(
+      "$prefix/connections/answer",
+      jsonEncode(
+        AnswerMessage(
+          header: SessionMessageHeader(
+            senderDeviceId: username,
+            senderSessionId: sessionId,
+            sessionId: _remoteSessionId,
+          ),
+          body: SessionMessageBody(
+            sessionDescription: answer,
+          ),
+        ).toMap(),
+      ),
+    );
   }
 
   void _onConnectionAnswer(AnswerMessage message) {
