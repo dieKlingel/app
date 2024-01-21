@@ -6,6 +6,7 @@ import 'package:dieklingel_app/models/tunnel/tunnel_state.dart';
 
 import 'package:dieklingel_app/repositories/home_repository.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
@@ -89,13 +90,28 @@ class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
     };
 
     tunnel.onVideoTrackReceived = (stream) async {
-      renderer.srcObject = stream;
+      if (kIsWeb || renderer.srcObject == null) {
+        renderer.srcObject = stream;
+      } else {
+        renderer.srcObject!.addTrack(
+          stream.getVideoTracks().first,
+          addToNative: false,
+        );
+      }
     };
     tunnel.onAudioTrackReceived = (stream) async {
-      stream.getAudioTracks().forEach((element) {
-        element.enabled = false;
-      });
-      renderer.srcObject = stream;
+      for (final track in stream.getAudioTracks()) {
+        track.enabled = false;
+      }
+      if (kIsWeb || renderer.srcObject == null) {
+        renderer.srcObject = stream;
+      } else {
+        final track = stream.getAudioTracks().first;
+        renderer.srcObject!.addTrack(
+          track,
+          addToNative: false,
+        );
+      }
     };
 
     await renderer.initialize();
@@ -103,6 +119,7 @@ class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
   }
 
   Future<void> disconnect() async {
+    renderer.srcObject = null;
     final tunnel = _tunnel;
     final home = _home;
     if (tunnel == null || home == null) {

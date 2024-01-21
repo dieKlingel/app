@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt/mqtt.dart';
 import 'package:uuid/uuid.dart';
@@ -118,11 +117,27 @@ class Tunnel with StreamHandlerMixin {
       );
     }
 
+    if (_peer != null && _remoteSessionId.isNotEmpty) {
+      final prefix = uri.path.substring(1);
+      _control.publish(
+        "$prefix/connections/close",
+        jsonEncode(
+          CloseMessage(
+            header: SessionMessageHeader(
+                senderDeviceId: username,
+                sessionId: _remoteSessionId,
+                senderSessionId: sessionId),
+          ).toMap(),
+        ),
+      );
+    }
+
     await Future.wait([
       _peer?.close() ?? Future(() => null),
       Future.delayed(const Duration(milliseconds: 100)),
     ]);
     _peer = null;
+    _remoteSessionId = "";
     _remoteTunnelAvailable = false;
     _onStateChanged();
 
@@ -277,16 +292,7 @@ class Tunnel with StreamHandlerMixin {
 
     _peer!.onRenegotiationNeeded = () async {
       final peer = _peer!;
-      final offer = await peer.createOffer(
-        kIsWeb
-            ? {}
-            : {
-                // iOS: Set offerToReceiveAudio and offerToReceiveVideo to false, otherwise a
-                //      transceiver with audio and video RecvOnly is created.
-                "offerToReceiveAudio": false,
-                "offerToReceiveVideo": false,
-              },
-      );
+      final offer = await peer.createOffer();
       await peer.setLocalDescription(offer);
 
       final prefix = uri.path.substring(1);
@@ -308,34 +314,12 @@ class Tunnel with StreamHandlerMixin {
       );
     };
 
-    /*final offer = await _peer!.createOffer(
-      kIsWeb
-          ? {}
-          : {
-              // iOS: Set offerToReceiveAudio and offerToReceiveVideo to false, otherwise a
-              //      transceiver with audio and video RecvOnly is created.
-              "offerToReceiveAudio": false,
-              "offerToReceiveVideo": false,
-            },
+    _peer!.addTransceiver(
+      kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+      init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly),
     );
-    await _peer!.setLocalDescription(offer);*/
 
     final prefix = uri.path.substring(1);
-    /*_control.publish(
-      "$prefix/connections/offer",
-      jsonEncode(
-        OfferMessage(
-          header: MessageHeader(
-            senderDeviceId: username,
-            senderSessionId: sessionId,
-          ),
-          body: SessionMessageBody(
-            sessionDescription: offer,
-          ),
-        ).toMap(),
-      ),
-    );*/
-
     _peer!.onIceCandidate = (candidate) {
       _control.publish(
         "$prefix/connections/candidate",
@@ -353,15 +337,6 @@ class Tunnel with StreamHandlerMixin {
         ),
       );
     };
-
-    await _peer!.addTransceiver(
-      kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
-      init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly),
-    );
-    await _peer!.addTransceiver(
-      kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
-      init: RTCRtpTransceiverInit(direction: TransceiverDirection.SendRecv),
-    );
 
     _channel = await _peer!.createDataChannel(
       "tunnel",
@@ -390,7 +365,15 @@ class Tunnel with StreamHandlerMixin {
       return;
     }
 
-    await _peer!.setRemoteDescription(message.body.sessionDescription);
+    if (_peer!.signalingState != RTCSignalingState.RTCSignalingStateStable) {
+      await Future.wait([
+        _peer!.setLocalDescription(RTCSessionDescription(null, "rollback")),
+        _peer!.setRemoteDescription(message.body.sessionDescription),
+      ]);
+    } else {
+      await _peer!.setRemoteDescription(message.body.sessionDescription);
+    }
+
     final answer = await _peer!.createAnswer();
     await _peer!.setLocalDescription(answer);
 

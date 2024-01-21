@@ -11,6 +11,7 @@ class CallViewModel extends ChangeNotifier {
 
   MicrophoneState _microphone = MicrophoneState.muted;
   SpeakerState _speaker = SpeakerState.muted;
+  MediaStreamTrack? _track;
 
   CallViewModel({
     required this.renderer,
@@ -21,13 +22,13 @@ class CallViewModel extends ChangeNotifier {
 
   Future<void> _init() async {
     final stream = await _media.open(true, false);
-    final track = stream?.getAudioTracks().firstOrNull;
-    if (track == null) {
+    _track = stream?.getAudioTracks().firstOrNull;
+    if (_track == null) {
       return;
     }
 
-    await connection.addTrack(track, stream!);
-    track.enabled = false;
+    await connection.addTrack(_track!, stream!);
+    await Helper.setMicrophoneMute(true, _track!);
   }
 
   MicrophoneState get microphone {
@@ -35,18 +36,19 @@ class CallViewModel extends ChangeNotifier {
   }
 
   set microphone(MicrophoneState state) {
-    _microphone = state;
-    final List<MediaStreamTrack> tracks = _media.stream?.getAudioTracks() ?? [];
+    if (_track == null) {
+      _microphone = MicrophoneState.muted;
+    } else {
+      _microphone = state;
+    }
 
-    for (final track in tracks) {
-      switch (_microphone) {
-        case MicrophoneState.muted:
-          track.enabled = false;
-          break;
-        case MicrophoneState.unmuted:
-          track.enabled = true;
-          break;
-      }
+    switch (_microphone) {
+      case MicrophoneState.muted:
+        Helper.setMicrophoneMute(true, _track!);
+        break;
+      case MicrophoneState.unmuted:
+        Helper.setMicrophoneMute(false, _track!);
+        break;
     }
     notifyListeners();
   }
@@ -88,6 +90,9 @@ class CallViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    speaker = SpeakerState.muted;
+    microphone = MicrophoneState.muted;
+    _track?.stop();
     _media.close();
     super.dispose();
   }

@@ -25,7 +25,7 @@ class VideoView extends StatelessWidget {
           children: [
             Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 720),
+                constraints: const BoxConstraints(maxHeight: 480),
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
                   child: Hero(
