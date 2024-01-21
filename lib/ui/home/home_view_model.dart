@@ -52,6 +52,10 @@ class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
     return _tunnel?.state ?? TunnelState.disconnected;
   }
 
+  RTCPeerConnection? get connection {
+    return _tunnel?.connection;
+  }
+
   Future<void> connect() async {
     final home = _home;
     if (home == null) {
@@ -85,6 +89,12 @@ class HomeViewModel extends ChangeNotifier with StreamHandlerMixin {
     };
 
     tunnel.onVideoTrackReceived = (stream) async {
+      renderer.srcObject = stream;
+    };
+    tunnel.onAudioTrackReceived = (stream) async {
+      stream.getAudioTracks().forEach((element) {
+        element.enabled = false;
+      });
       renderer.srcObject = stream;
     };
 

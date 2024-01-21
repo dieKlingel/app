@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mqtt/mqtt.dart';
 import 'package:uuid/uuid.dart';
@@ -9,8 +10,6 @@ import '../messages/answer_message.dart';
 import '../messages/candidate_message.dart';
 import '../messages/candidate_message_body.dart';
 import '../messages/close_message.dart';
-import '../messages/message_header.dart';
-import '../messages/offer_message.dart';
 import '../messages/session_message_body.dart';
 import '../messages/session_message_header.dart';
 import '../../components/stream_subscription_mixin.dart';
@@ -32,6 +31,7 @@ class Tunnel with StreamHandlerMixin {
   String _remoteSessionId = "";
   void Function(TunnelState)? onStateChanged;
   void Function(MediaStream)? onVideoTrackReceived;
+  void Function(MediaStream)? onAudioTrackReceived;
 
   Tunnel(
     this.uri, {
@@ -67,6 +67,10 @@ class Tunnel with StreamHandlerMixin {
     }
 
     return TunnelState.disconnected;
+  }
+
+  RTCPeerConnection? get connection {
+    return _peer;
   }
 
   Future<void> connect() async {
@@ -199,7 +203,7 @@ class Tunnel with StreamHandlerMixin {
         (event) {
       final (_, message) = event;
       final payload = AnswerMessage.fromMap(jsonDecode(message));
-      _onConnectionRenegotation(payload);
+      _onConnectionRenegotiation(payload);
     });
 
     streams.subscribe(
@@ -256,29 +260,10 @@ class Tunnel with StreamHandlerMixin {
       "sdpSemantics": "unified-plan",
     });
 
-    // TODO: use correct and transceivers, transceivers are neccessary for the web to work (on iOS also works without)
-    await _peer!.addTransceiver(
-      kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
-      init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly),
-    );
-
-    _channel = await _peer!.createDataChannel(
-      "tunnel",
-      RTCDataChannelInit(),
-    );
-    _channel!.onMessage = (message) {
-      if (message.isBinary) {
-        return;
-      }
-
-      _messages.add(message.text);
-    };
-
     _peer!.onConnectionState = (_) => _onStateChanged();
     _peer!.onIceConnectionState = (_) => _onStateChanged();
     _peer!.onIceGatheringState = (_) => _onStateChanged();
     _peer!.onSignalingState = (_) => _onStateChanged();
-    _channel!.onDataChannelState = (_) => _onStateChanged();
 
     _peer!.onTrack = (event) {
       _onStateChanged();
@@ -286,23 +271,28 @@ class Tunnel with StreamHandlerMixin {
         onVideoTrackReceived?.call(event.streams.first);
       }
       if (event.track.kind == "audio") {
-        // TODO: handle audio track
+        onAudioTrackReceived?.call(event.streams.first);
       }
     };
 
     _peer!.onRenegotiationNeeded = () async {
       final peer = _peer!;
-      final offer = await peer.createOffer({
-        // Set offerToReceiveAudio and offerToReceiveVideo to false, otherwise a
-        // transceiver with audio and video RecvOnly is created.
-        "offerToReceiveAudio": false,
-        "offerToReceiveVideo": false,
-      });
+      final offer = await peer.createOffer(
+        kIsWeb
+            ? {}
+            : {
+                // iOS: Set offerToReceiveAudio and offerToReceiveVideo to false, otherwise a
+                //      transceiver with audio and video RecvOnly is created.
+                "offerToReceiveAudio": false,
+                "offerToReceiveVideo": false,
+              },
+      );
       await peer.setLocalDescription(offer);
 
       final prefix = uri.path.substring(1);
+      final channel = _remoteSessionId.isEmpty ? "offer" : "renegotiation";
       _control.publish(
-        "$prefix/connections/renegotiation",
+        "$prefix/connections/$channel",
         jsonEncode(
           AnswerMessage(
             header: SessionMessageHeader(
@@ -318,16 +308,20 @@ class Tunnel with StreamHandlerMixin {
       );
     };
 
-    final offer = await _peer!.createOffer({
-      // Set offerToReceiveAudio and offerToReceiveVideo to false, otherwise a
-      // transceiver with audio and video RecvOnly is created.
-      "offerToReceiveAudio": false,
-      "offerToReceiveVideo": false,
-    });
-    await _peer!.setLocalDescription(offer);
+    /*final offer = await _peer!.createOffer(
+      kIsWeb
+          ? {}
+          : {
+              // iOS: Set offerToReceiveAudio and offerToReceiveVideo to false, otherwise a
+              //      transceiver with audio and video RecvOnly is created.
+              "offerToReceiveAudio": false,
+              "offerToReceiveVideo": false,
+            },
+    );
+    await _peer!.setLocalDescription(offer);*/
 
     final prefix = uri.path.substring(1);
-    _control.publish(
+    /*_control.publish(
       "$prefix/connections/offer",
       jsonEncode(
         OfferMessage(
@@ -340,7 +334,7 @@ class Tunnel with StreamHandlerMixin {
           ),
         ).toMap(),
       ),
-    );
+    );*/
 
     _peer!.onIceCandidate = (candidate) {
       _control.publish(
@@ -359,6 +353,28 @@ class Tunnel with StreamHandlerMixin {
         ),
       );
     };
+
+    await _peer!.addTransceiver(
+      kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+      init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly),
+    );
+    await _peer!.addTransceiver(
+      kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
+      init: RTCRtpTransceiverInit(direction: TransceiverDirection.SendRecv),
+    );
+
+    _channel = await _peer!.createDataChannel(
+      "tunnel",
+      RTCDataChannelInit(),
+    );
+    _channel!.onMessage = (message) {
+      if (message.isBinary) {
+        return;
+      }
+
+      _messages.add(message.text);
+    };
+    _channel!.onDataChannelState = (_) => _onStateChanged();
   }
 
   Future<void> _onDisposePeerConnection() async {
@@ -369,7 +385,7 @@ class Tunnel with StreamHandlerMixin {
     _peer = null;
   }
 
-  void _onConnectionRenegotation(AnswerMessage message) async {
+  void _onConnectionRenegotiation(AnswerMessage message) async {
     if (message.header.sessionId != sessionId) {
       return;
     }

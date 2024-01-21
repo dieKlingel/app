@@ -1,3 +1,6 @@
+import 'package:dieklingel_app/ui/home/call/call_view_model.dart';
+
+import '../call/call_view.dart';
 import 'package:dieklingel_app/ui/home/home_view_model.dart';
 import 'package:dieklingel_app/ui/home/widgets/connection_indicator.dart';
 import 'package:dieklingel_app/ui/home/widgets/viedeo_view.dart';
@@ -26,7 +29,28 @@ class HomeBody extends StatelessWidget {
           ConnectionIndicator(
             state: state,
           ),
-          VideoView(renderer),
+          VideoView(
+            renderer,
+            onTap: () async {
+              final vm = context.read<HomeViewModel>();
+              final connection = vm.connection;
+              if (connection == null) {
+                return;
+              }
+              await Navigator.push(
+                context,
+                CupertinoPageRoute(
+                  builder: (_) => ChangeNotifierProvider(
+                    create: (_) => CallViewModel(
+                      renderer: renderer,
+                      connection: connection,
+                    ),
+                    child: const CallView(),
+                  ),
+                ),
+              );
+            },
+          ),
           Text(
             version,
             style: CupertinoTheme.of(context).textTheme.tabLabelTextStyle,
