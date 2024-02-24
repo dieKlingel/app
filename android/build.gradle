@@ -18,6 +18,9 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven {
+        	url "https://linphone.org/maven_repository"
+    	}
     }
 }
 
