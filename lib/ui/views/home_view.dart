@@ -1,3 +1,4 @@
+import 'package:dieklingel_app/ui/extensions/registration_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_liblinphone/flutter_liblinphone.dart';
 
@@ -54,7 +55,7 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("dieKlingel"),
-        leading: Center(child: Text(registrationState.toString())),
+        leading: registrationState.indicator,
         actions: [
           IconButton(
             onPressed: () {
@@ -69,28 +70,41 @@ class _HomeViewState extends State<HomeView> {
         ],
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: registrationState == RegistrationState.ok
-              ? () {
-                  final params = widget.core.createCallParams();
-                  params.enableVideo(true);
-                  params.setVideoDirection(MediaDirection.recvOnly);
+        child: Column(
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  widget.core.reloadSoundDevices();
+                  final devices = widget.core.getAudioDevices();
+                  devices.forEach((element) {
+                    print(element.getDeviceName());
+                  });
+                },
+                child: Text("test")),
+            ElevatedButton(
+              onPressed: registrationState == RegistrationState.ok
+                  ? () {
+                      final params = widget.core.createCallParams();
+                      params.enableVideo(true);
+                      params.setVideoDirection(MediaDirection.recvOnly);
 
-                  final call =
-                      //widget.core.invite("sip:kai123@sip.linphone.org");
-                      widget.core.inviteWithParams(
-                          "sip:kai123@sip.linphone.org", params);
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => OutgoingCallView(
-                        core: widget.core,
-                        call: call,
-                      ),
-                    ),
-                  );
-                }
-              : null,
-          child: const Text("call kai123@sip.linphone.org"),
+                      final call = widget.core.inviteWithParams(
+                        "sip:kai123@sip.linphone.org",
+                        params,
+                      );
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => OutgoingCallView(
+                            core: widget.core,
+                            call: call,
+                          ),
+                        ),
+                      );
+                    }
+                  : null,
+              child: const Text("call kai123@sip.linphone.org"),
+            ),
+          ],
         ),
       ),
     );

@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
-		2AB3ECD02B8A004500FFD248 /* NativeVideoRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3ECCF2B8A004500FFD248 /* NativeVideoRenderer.swift */; };
 		2AFE262C29EC7A7100B3D853 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2AFE262B29EC7A7100B3D853 /* GoogleService-Info.plist */; };
 		2AFE263029EC7C3C00B3D853 /* ringtone.wav in Resources */ = {isa = PBXBuildFile; fileRef = 2AFE262F29EC7C3C00B3D853 /* ringtone.wav */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
@@ -46,7 +45,6 @@
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		1D3A49B4068FA52AA8D90F9A /* Pods-ImageNotification.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ImageNotification.profile.xcconfig"; path = "Target Support Files/Pods-ImageNotification/Pods-ImageNotification.profile.xcconfig"; sourceTree = "<group>"; };
-		2AB3ECCF2B8A004500FFD248 /* NativeVideoRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NativeVideoRenderer.swift; sourceTree = "<group>"; };
 		2AFE260B29EC773F00B3D853 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		2AFE260D29EC773F00B3D853 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2AFE261C29EC785400B3D853 /* NotificationService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NotificationService.h; sourceTree = "<group>"; };
@@ -146,7 +144,6 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
-				2AB3ECCF2B8A004500FFD248 /* NativeVideoRenderer.swift */,
 				2AFE263129EC7D3D00B3D853 /* Runner.entitlements */,
 				2AFE262F29EC7C3C00B3D853 /* ringtone.wav */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
@@ -339,7 +336,6 @@
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
-				2AB3ECD02B8A004500FFD248 /* NativeVideoRenderer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
