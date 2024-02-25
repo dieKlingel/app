@@ -1,4 +1,3 @@
-import 'package:dieklingel_app/ui/views/account_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_liblinphone/flutter_liblinphone.dart';
 import 'ui/views/home_view.dart';
@@ -7,7 +6,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final Core core = Factory.instance.createCore();
-
   runApp(
     App(core: core),
   );
@@ -35,7 +33,7 @@ class _App extends State<App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: AccountView(core: widget.core), //HomeView(core: widget.core),
+      home: HomeView(core: widget.core),
     );
   }
 }

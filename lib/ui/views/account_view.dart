@@ -1,12 +1,8 @@
-import 'dart:ffi';
-
-import 'package:dieklingel_app/ui/views/video_renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_liblinphone/flutter_liblinphone.dart';
-import 'package:flutter_liblinphone/flutter_liblinphone_wrapper.dart';
 
 class AccountView extends StatefulWidget {
-  AccountView({
+  const AccountView({
     super.key,
     required this.core,
   });
@@ -22,11 +18,11 @@ class _AccountViewState extends State<AccountView> {
   final _password = TextEditingController();
   final _server = TextEditingController();
 
-  final _renderer = VideoRendererController();
-  bool state = false;
-
   void _onSave() {
-    /*final address = Factory.instance.createAddress(
+    widget.core.clearAccounts();
+    widget.core.clearAllAuthInfo();
+
+    final address = Factory.instance.createAddress(
       "sip:${_username.text}@${_server.text}",
     );
     final authInfo = Factory.instance.createAuthInfo(
@@ -34,19 +30,17 @@ class _AccountViewState extends State<AccountView> {
       password: _password.text,
       domain: _server.text,
     );
-    core.addAuthInfo(authInfo);
-
-    final params = core.createAccountParams();
+    widget.core.addAuthInfo(authInfo);
+    final params = widget.core.createAccountParams();
     params.setIdentityAddress(address);
-    final account = core.createAccount(params);
-    core.addAccount(account);*/
+    params.setServerAddress("sip:${_server.text}");
+    params.setTransport(TransportType.tls);
+    params.setRegisterEnabled(true);
+    final account = widget.core.createAccount(params);
+    widget.core.addAccount(account);
+    widget.core.setDefaultAccount(account);
 
-    print("account: ${widget.core.getGlobalState()}");
-    flutterLinphoneWrapper.linphone_core_enable_video_preview(
-        widget.core.cPtr, 1);
-    /*flutterLinphoneWrapper.linphone_core_use_preview_window(
-        widget.core.cPtr, 1);*/
-    //flutterLinphoneWrapper.linphone_core_show_video(core.cPtr, 1);
+    Navigator.pop(context);
   }
 
   @override
@@ -68,6 +62,7 @@ class _AccountViewState extends State<AccountView> {
             decoration: const InputDecoration(
               labelText: "Password",
             ),
+            obscureText: true,
             controller: _password,
           ),
           TextFormField(
@@ -80,15 +75,6 @@ class _AccountViewState extends State<AccountView> {
           ElevatedButton(
             onPressed: () => _onSave(),
             child: const Text("Save"),
-          ),
-          VideoRenderer(
-            controller: _renderer,
-            onNativeId: (id) {
-              flutterLinphoneWrapper.linphone_core_set_native_preview_window_id(
-                widget.core.cPtr,
-                Pointer.fromAddress(id),
-              );
-            },
           ),
         ],
       ),

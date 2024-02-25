@@ -11,10 +11,6 @@ import Flutter
       UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
     }
 
-      let reg = registrar(forPlugin: "Runner")!;
-      let nativeViewFactory = NativeVideoRendererFactory(messenger: reg.messenger())
-      reg.register(nativeViewFactory, withId: "NativeVideoRenderer")
-
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
