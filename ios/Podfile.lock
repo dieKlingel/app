@@ -1,5 +1,9 @@
 PODS:
+  - CryptoSwift (1.8.1)
   - Flutter (1.0.0)
+  - flutter_callkeep (0.3.0):
+    - CryptoSwift
+    - Flutter
   - flutter_liblinphone (0.0.1):
     - Flutter
     - linphone-sdk
@@ -9,27 +13,34 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - flutter_callkeep (from `.symlinks/plugins/flutter_callkeep/ios`)
   - flutter_liblinphone (from `.symlinks/plugins/flutter_liblinphone/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
   https://gitlab.linphone.org/BC/public/podspec.git:
     - linphone-sdk
+  trunk:
+    - CryptoSwift
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  flutter_callkeep:
+    :path: ".symlinks/plugins/flutter_callkeep/ios"
   flutter_liblinphone:
     :path: ".symlinks/plugins/flutter_liblinphone/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
+  CryptoSwift: b9c701d6f5011df23794dbf7f2e480a77835d83d
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_callkeep: e94ee31d8797776cee91bf288c62ca4aa89fb5a8
   flutter_liblinphone: c5d52b2806cae26f5f36d98b1620b7bd9014eed7
   linphone-sdk: 0f377eb95c8bbde662ebf309a123b9738415dd6a
   url_launcher_ios: 08a3dfac5fb39e8759aeb0abbd5d9480f30fc8b4
 
-PODFILE CHECKSUM: 91898fb04b62eb6a32f24ea4b05508c06c92ec4b
+PODFILE CHECKSUM: f8c7e5d8f9b4fe80abc96c2a00c761e11a54cb19
 
 COCOAPODS: 1.14.3

@@ -27,7 +27,8 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_ios_podfile_setup
 
-source "https://gitlab.linphone.org/BC/public/podspec.git"
+#source "https://github.com/CocoaPods/Specs.git"
+#source "https://gitlab.linphone.org/BC/public/podspec.git"
 
 target 'Runner' do
   use_frameworks!

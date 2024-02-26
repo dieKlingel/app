@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_liblinphone/flutter_liblinphone.dart';
 import 'ui/views/home_view.dart';
@@ -6,6 +9,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final Core core = Factory.instance.createCore();
+  // Do not autoiterate, because its not threadsafe
+  core.enableAutoIterate(false);
+  Timer.periodic(const Duration(milliseconds: 20), (timer) {
+    core.iterate();
+  });
+
+  if (Platform.isIOS) {
+    core.enableCallkit(true);
+  }
+
   runApp(
     App(core: core),
   );

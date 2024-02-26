@@ -1,4 +1,3 @@
-import 'package:dieklingel_app/models/fake_audio_device.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_liblinphone/flutter_liblinphone.dart';
 import 'package:flutter_liblinphone/widgets.dart';
@@ -19,8 +18,8 @@ class _ActiveCallViewState extends State<ActiveCallView> {
     ..onCallStateChanged = onCallStateChanged;
   int videoWidth = 0;
   int videoHeight = 0;
-  bool isMicEnabled = false;
-  AudioDevice audioOutputDevice = FakeAudioDevice();
+  late bool isMicMuted = widget.call.getMicrophoneMuted();
+  late AudioDevice audioOutputDevice = widget.call.getOutputAudioDevice();
 
   @override
   void initState() {
@@ -30,8 +29,10 @@ class _ActiveCallViewState extends State<ActiveCallView> {
       videoWidth = defintion.getWidth();
       videoHeight = defintion.getHeight();
     });
-    widget.core.enableMic(isMicEnabled);
-    widget.call.setSpeakerMuted(audioOutputDevice is FakeAudioDevice);
+    setState(() {
+      isMicMuted = true;
+    });
+    widget.call.setMicrophoneMuted(true);
     super.initState();
   }
 
@@ -53,10 +54,7 @@ class _ActiveCallViewState extends State<ActiveCallView> {
     setState(() {
       audioOutputDevice = device;
     });
-    widget.call.setSpeakerMuted(device is FakeAudioDevice);
-    if (device is! FakeAudioDevice) {
-      widget.core.setOutputAudioDevice(device);
-    }
+    widget.core.setOutputAudioDevice(device);
   }
 
   @override
@@ -97,10 +95,6 @@ class _ActiveCallViewState extends State<ActiveCallView> {
                     itemBuilder: (context) {
                       final devices = widget.core.getAudioDevices();
                       return [
-                        const PopupMenuItem(
-                          value: FakeAudioDevice(),
-                          child: Text("Muted"),
-                        ),
                         for (final device in devices)
                           PopupMenuItem(
                             value: device,
@@ -129,13 +123,13 @@ class _ActiveCallViewState extends State<ActiveCallView> {
                   IconButton.filled(
                     onPressed: () {
                       setState(() {
-                        isMicEnabled = !isMicEnabled;
+                        isMicMuted = !isMicMuted;
                       });
-                      widget.core.enableMic(isMicEnabled);
+                      widget.call.setMicrophoneMuted(isMicMuted);
                     },
                     icon: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Icon(isMicEnabled ? Icons.mic : Icons.mic_off),
+                      child: Icon(isMicMuted ? Icons.mic_off : Icons.mic),
                     ),
                   ),
                 ],

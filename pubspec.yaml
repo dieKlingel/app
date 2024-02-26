@@ -32,6 +32,8 @@ dependencies:
   url_launcher: ^6.1.6
   flutter_liblinphone:
     path: /Users/kai/Projects/dieklingel/app/packages/flutter_liblinphone
+  uuid: ^4.3.3
+  flutter_callkeep: ^0.3.3
 
 dev_dependencies:
   flutter_test:
