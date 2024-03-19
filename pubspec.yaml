@@ -34,6 +34,10 @@ dependencies:
     path: /Users/kai/Projects/dieklingel/app/packages/flutter_liblinphone
   uuid: ^4.3.3
   flutter_callkeep: ^0.3.3
+#  callkeep:
+#    path: /Users/kai/Projects/dieklingel/app/packages/callkeep/callkeep
+  path_provider: ^2.1.2
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:

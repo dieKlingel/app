@@ -1,13 +1,16 @@
+import 'dart:convert';
+import 'dart:developer';
+
+import 'package:dieklingel_app/ui/views/home/componets/registration_state_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_callkeep/flutter_callkeep.dart';
 import 'package:flutter_liblinphone/flutter_liblinphone.dart';
 import 'package:uuid/uuid.dart';
 
-import 'account_view.dart';
-import 'call/active_call_view.dart';
-import 'call/outgoing_call_view.dart';
-import '../extensions/registration_state.dart';
-import '../../config/callkeep.dart';
+import '../account_view.dart';
+import '../call/active_call_view.dart';
+import '../call/outgoing_call_view.dart';
+import '../../../config/callkeep.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key, required this.core});
@@ -21,48 +24,35 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   final Map<String, Call> calls = {};
   late final CoreCbs cbs = Factory.instance.createCoreCbs()
-    ..onRegistrationStateChanged = onRegistrationStateChanged
-    ..onCallStateChanged = onCallStateChanged;
+    ..onRegistrationStateChanged = _onRegistrationStateChanged
+    ..onCallStateChanged = _onCallStateChanged
+    ..onGlobalStateChanged = _onGlobalStateChanged;
 
   RegistrationState registrationState = RegistrationState.none;
 
-  void onRegistrationStateChanged(
+  void _onGlobalStateChanged(Core core, GlobalState state, String message) {
+    log("global core state changed: $state");
+  }
+
+  void _onRegistrationStateChanged(
     Core core,
     ProxyConfig config,
     RegistrationState state,
   ) {
+    log("Registration state changed: $state.");
+
     setState(() {
       registrationState = state;
     });
   }
 
-  void onCallStateChanged(
+  void _onCallStateChanged(
     Core core,
     Call call,
     CallState state,
   ) {
-    print("state $state");
+    log("Call state changed: call: ${call.getCallLog().getCallId()}; state: $state.");
     switch (state) {
-      case CallState.connected:
-        /*Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => ActiveCallView(
-              core: widget.core,
-              call: call,
-            ),
-          ),
-        );*/
-        break;
-      case CallState.outgoingInit:
-        /*Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => OutgoingCallView(
-              core: widget.core,
-              call: call,
-            ),
-          ),
-        );*/
-        break;
       case CallState.incomingReceived:
         final uuid = const Uuid().v4();
         calls[uuid] = call;
@@ -87,6 +77,7 @@ class _HomeViewState extends State<HomeView> {
         }
         break;
       default:
+        log("The call state $state for the call ${call.getCallLog().getCallId()} was not handled.");
         break;
     }
   }
@@ -99,24 +90,41 @@ class _HomeViewState extends State<HomeView> {
       ..setAutomaticallyAccept(true);
     widget.core.setVideoActivationPolicy(videoActivationPolicy);
 
-    CallKeep.instance.onEvent.listen(onCallkeepEvent);
+    CallKeep.instance.onEvent.listen(_onCallkeepEvent);
     super.initState();
   }
 
-  void onCallkeepEvent(CallKeepEvent? event) {
+  void _onCallkeepEvent(CallKeepEvent? event) {
     if (event == null) {
       return;
     }
+
     String uuid = event.data.uuid.toLowerCase();
+    log("Received callkeep event: id: $uuid; type: ${event.type}; data: ${event.data}.");
 
     switch (event.type) {
+      case CallKeepEventType.callIncoming:
+        final call = calls[uuid];
+        if (call != null) {
+          // call was not from pushkit, but linphone, so nothing to do
+          break;
+        }
+        final data = event.data as CallKeepCallData;
+        final id = data.extra?["aps"]?["call-id"] as String?;
+        if (id == null) {
+          break;
+        }
+        widget.core.pushNotificationReceived(jsonEncode(data.extra), id);
+        widget.core.processPushNotification(id);
+        print("call incoming via flutter_callkee$id");
+        break;
       case CallKeepEventType.callStart:
         final params = widget.core.createCallParams()
           ..enableVideo(true)
           ..setVideoDirection(MediaDirection.recvOnly);
 
         final call = widget.core.inviteWithParams(
-          "sip:kai123@sip.linphone.org",
+          "kai123",
           params,
         );
         calls[uuid] = call;
@@ -176,6 +184,13 @@ class _HomeViewState extends State<HomeView> {
         final data = event.data as AudioSessionToggleData;
         widget.core.activateAudioSession(data.isActivated);
         break;
+      case CallKeepEventType.devicePushTokenUpdated:
+        final data = event.data as VoipTokenData;
+        final token = data.token;
+        if (token.isNotEmpty) {
+          widget.core.getPushNotificationConfig().setVoipToken(token);
+        }
+        break;
       default:
         break;
     }
@@ -186,7 +201,12 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("dieKlingel"),
-        leading: registrationState.indicator,
+        leading: IconButton(
+          onPressed: () {
+            widget.core.refreshRegisters();
+          },
+          icon: RegistrationStateIcon(state: registrationState),
+        ),
         actions: [
           IconButton(
             onPressed: () {
@@ -200,26 +220,7 @@ class _HomeViewState extends State<HomeView> {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          children: [
-            ElevatedButton(onPressed: () {}, child: const Text("test")),
-            ElevatedButton(
-              onPressed: registrationState == RegistrationState.ok
-                  ? () {
-                      final config = CallKeepOutgoingConfig.fromBaseConfig(
-                        config: callKeepBaseConfig,
-                        uuid: const Uuid().v4(),
-                      );
-
-                      CallKeep.instance.startCall(config);
-                    }
-                  : null,
-              child: const Text("call kai123@sip.linphone.org"),
-            ),
-          ],
-        ),
-      ),
+      body: const Center(child: Text("dieKlingel")),
     );
   }
 

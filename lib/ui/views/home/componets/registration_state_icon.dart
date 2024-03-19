@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_liblinphone/flutter_liblinphone.dart';
 
-extension RegistrationStateExt on RegistrationState {
-  Widget? get indicator {
-    switch (this) {
+class RegistrationStateIcon extends StatelessWidget {
+  final RegistrationState state;
+
+  const RegistrationStateIcon({super.key, required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    switch (state) {
       case RegistrationState.none:
-        return null;
+        return Container();
       case RegistrationState.refreshing:
       case RegistrationState.progress:
         return const Center(

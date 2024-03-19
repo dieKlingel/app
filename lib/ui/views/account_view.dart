@@ -14,9 +14,9 @@ class AccountView extends StatefulWidget {
 }
 
 class _AccountViewState extends State<AccountView> {
-  final _username = TextEditingController();
-  final _password = TextEditingController();
-  final _server = TextEditingController();
+  final _username = TextEditingController(text: "koifresh");
+  final _password = TextEditingController(text: "Kaioliver");
+  final _server = TextEditingController(text: "sip.linphone.org");
   TransportType _transport = TransportType.tls;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -55,6 +55,8 @@ class _AccountViewState extends State<AccountView> {
     params.setServerAddress("sip:${_server.text}");
     params.setTransport(_transport);
     params.setRegisterEnabled(true);
+    params.setRemotePushNotificationAllowed(true);
+    params.setPushNotificationAllowed(true);
     final account = widget.core.createAccount(params);
     widget.core.addAccount(account);
     widget.core.setDefaultAccount(account);

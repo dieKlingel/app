@@ -8,6 +8,9 @@ PODS:
     - Flutter
     - linphone-sdk
   - linphone-sdk (5.3.23)
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - url_launcher_ios (0.0.1):
     - Flutter
 
@@ -15,6 +18,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_callkeep (from `.symlinks/plugins/flutter_callkeep/ios`)
   - flutter_liblinphone (from `.symlinks/plugins/flutter_liblinphone/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
@@ -30,6 +34,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_callkeep/ios"
   flutter_liblinphone:
     :path: ".symlinks/plugins/flutter_liblinphone/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
@@ -39,6 +45,7 @@ SPEC CHECKSUMS:
   flutter_callkeep: e94ee31d8797776cee91bf288c62ca4aa89fb5a8
   flutter_liblinphone: c5d52b2806cae26f5f36d98b1620b7bd9014eed7
   linphone-sdk: 0f377eb95c8bbde662ebf309a123b9738415dd6a
+  path_provider_foundation: 3784922295ac71e43754bd15e0653ccfd36a147c
   url_launcher_ios: 08a3dfac5fb39e8759aeb0abbd5d9480f30fc8b4
 
 PODFILE CHECKSUM: f8c7e5d8f9b4fe80abc96c2a00c761e11a54cb19
